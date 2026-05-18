@@ -1,17 +1,41 @@
+'use client';
+
+import { useParams } from 'next/navigation';
 import styles from './page.module.css';
+import Link from 'next/link';
 
 export default function ProductDetail() {
-  // Static data matching the user's provided HTML
+  const params = useParams();
+  const id = params?.id;
+
+  // Mock database
+  const allProducts: Record<number, any> = {
+    1: { title: 'Jas lab fisika bekas', price: 'Rp50.000', location: 'Ganesha', img: 'https://placehold.co/600x600' },
+    2: { title: 'Penggaris besi 30cm', price: 'Rp15.000', location: 'Jatinangor', img: 'https://placehold.co/600x600' },
+    3: { title: 'Jas Laboratorium TPB', price: 'Rp32.000', location: 'Cirebon', img: 'https://placehold.co/600x600' },
+    4: { title: 'BMP280 Sensor Tekanan Udara Pressure Altimeter', price: 'Rp10.000', location: 'Cirebon', img: 'https://placehold.co/600x600' },
+    5: { title: 'Buku Chempro Edisi 2025 masih bersih', price: 'Rp50.000', location: 'Cirebon', img: 'https://placehold.co/600x600' },
+    6: { title: 'Jas Laboratorium Fisika TPB', price: 'Rp32.000', location: 'Ganesha', img: 'https://placehold.co/600x600' },
+    7: { title: 'Phiwiki FISIKA DASAR II Soal dan Pembahasan', price: 'Rp50.000', location: 'Cirebon', img: 'https://placehold.co/600x600' },
+    8: { title: 'ESP32 Bekas Micro USB', price: 'Rp50.000', location: 'Cirebon', img: 'https://placehold.co/600x600' },
+  };
+
+  const productData = allProducts[Number(id)] || {
+    title: 'Produk Tidak Ditemukan',
+    price: 'Rp0',
+    location: '-',
+    img: 'https://placehold.co/600x600'
+  };
+
   const product = {
-    title: 'Jas Laboratorium Fisika TPB',
-    price: 'Rp32.000',
+    ...productData,
     likes: 12,
     postedTime: '5 hari lalu',
     sellerName: 'Jae Hwan',
     usagePeriod: 'Pemakaian Sept 2024-Juli 2025',
     originality: 'Tidak original',
     category: 'Alat Laboratorium',
-    description: 'Jas ini cuma dipakai satu semester pas praktikum Kimia Dasar dan Fisika Dasar. Udah dicuci bersih dan disetrika rapi, tinggal pakai. Alasan jual: Udah lulus matkulnya dan mau ngosongin lemari kosan.',
+    description: 'Barang ini masih dalam kondisi prima. Alasan jual: Sudah tidak digunakan lagi dan ingin membantu sesama mahasiswa mendapatkan barang berkualitas dengan harga terjangkau.',
     deliveryMethods: [
       { type: 'Jasa Pengiriman', detail: '29 Maret - 5 April 2026', icon: '/img/icons/delivery.png' },
       { type: 'Ketemuan', detail: 'Kampus Ganesha', icon: '/img/icons/location.png' }
@@ -25,24 +49,25 @@ export default function ProductDetail() {
     review: {
       buyer: 'zizadhrmaaa (Pembeli)',
       date: '27 April 2026',
-      content: 'Catnya nyampe dengan selamat 🎨✨ Seller juga gercep, ramah, dan enak diajak chat. Kondisi buku masih oke, sesuai ekspektasi. Pokoknya belanja di sini rasanya kayak nemu harta karun kecil. Makasih ya kak, semoga toko kakak makin laris manis 🫶😂'
+      content: 'Barangnya mantap! Seller juga gercep, ramah, dan enak diajak chat. Kondisi masih oke, sesuai ekspektasi. Makasih ya kak! 🫶😂'
     }
   };
 
   const recommended = [
-    { title: 'Buku Chempro Edisi 2025 masih bersih', price: 'Rp50.000', location: 'Cirebon', img: 'https://placehold.co/300x200' },
-    { title: 'Jas Laboratorium Fisika TPB', price: 'Rp75.000', location: 'Ganesha', img: 'https://placehold.co/300x200' },
-    { title: 'Phiwiki FISIKA DASAR II Soal dan Pembahasan', price: 'Rp50.000', location: 'Cirebon', img: 'https://placehold.co/300x200' },
-    { title: 'ESP32 Bekas Micro USB', price: 'Rp50.000', location: 'Cirebon', img: 'https://placehold.co/300x200' },
+    { id: 1, title: 'Buku Chempro Edisi 2025 masih bersih', price: 'Rp50.000', location: 'Cirebon', img: 'https://placehold.co/300x200' },
+    { id: 2, title: 'Jas Laboratorium Fisika TPB', price: 'Rp75.000', location: 'Ganesha', img: 'https://placehold.co/300x200' },
+    { id: 3, title: 'Phiwiki FISIKA DASAR II Soal dan Pembahasan', price: 'Rp50.000', location: 'Cirebon', img: 'https://placehold.co/300x200' },
+    { id: 4, title: 'ESP32 Bekas Micro USB', price: 'Rp50.000', location: 'Cirebon', img: 'https://placehold.co/300x200' },
   ];
 
   return (
     <div className={styles.container}>
-      {/* Reusing the Fixed Header from Main Page */}
       <header className={styles.header}>
         <div className={styles.headerContent}>
           <div className={styles.headerLeft}>
-            <img src="/img/logo.png" alt="Temu.in Logo" className={styles.logo} />
+            <Link href="/">
+              <img src="/img/logo.png" alt="Temu.in Logo" className={styles.logo} />
+            </Link>
             <div className={styles.searchBar}>
               <input 
                 type="text" 
@@ -66,39 +91,33 @@ export default function ProductDetail() {
               <div className={styles.iconItem}>
                 <img src="/img/icons/cart.png" alt="Cart" className={styles.actionIcon} />
               </div>
-              <button className={styles.uploadButton}>
+              <Link href="/upload" className={styles.uploadButton}>
                 + Upload Barang
-              </button>
+              </Link>
             </div>
           </div>
         </div>
       </header>
 
       <main className={styles.main}>
-        {/* Breadcrumb / Back Navigation */}
         <div className={styles.navigationRow}>
-          <button className={styles.backButton}>
+          <Link href="/" className={styles.backButton}>
              <img src="/img/icons/back-left.png" alt="" className={styles.navIconSmall} />
              Kembali
-          </button>
+          </Link>
         </div>
 
-        {/* Product Layout: Two Columns on Desktop */}
         <div className={styles.productLayout}>
-          
-          {/* Left Column: Images */}
           <div className={styles.imageGallery}>
             <div className={styles.mainImageWrapper}>
-              <img src="https://placehold.co/600x600" alt={product.title} className={styles.mainImage} />
+              <img src={product.img} alt={product.title} className={styles.mainImage} />
             </div>
-            {/* Thumbnail List */}
             <div className={styles.thumbnailList}>
-              <img src="https://placehold.co/100x100" className={styles.thumbnail} alt="thumb" />
+              <img src={product.img} className={styles.thumbnail} alt="thumb" />
               <img src="https://placehold.co/100x100" className={styles.thumbnail} alt="thumb" />
             </div>
           </div>
 
-          {/* Right Column: Product Info & Actions */}
           <div className={styles.productInfo}>
             <div className={styles.titleRow}>
               <h1 className={styles.productTitle}>{product.title}</h1>
@@ -109,7 +128,6 @@ export default function ProductDetail() {
             </div>
             <p className={styles.productPrice}>{product.price}</p>
 
-            {/* Specs List with Icons */}
             <ul className={styles.specList}>
               <li>
                 <img src="/img/icons/clock.png" alt="" className={styles.specIcon} />
@@ -133,51 +151,42 @@ export default function ProductDetail() {
               </li>
             </ul>
 
-            {/* Condition Summary Box (Blue Box) */}
             <div className={styles.conditionBox}>
               <div className={styles.conditionHeader}>
                 <h3>Ringkasan Kondisi Barang</h3>
-                <img src="/img/icons/graph.png" alt="Sparkle" className={styles.sparkleIcon} />
+                <img src="/img/icons/graph.png" alt="Analysis" className={styles.sparkleIcon} />
               </div>
               <div className={styles.conditionDetails}>
-                <p><strong>Warna:</strong> Putih (terlihat masih cukup cerah, tetapi ada sedikit bayangan lipatan atau kerutan karena penyimpanan)</p>
-                <p><strong>Material:</strong> Terlihat seperti kain katun tebal atau campuran poliester (standard jas lab)</p>
-                <p><strong>Label:</strong> Terdapat label merek "Dua Saudara" dengan ukuran "S". Merek ini cukup dikenal di Indonesia untuk seragam medis/laboratorium karena kualitasnya yang standar instansi</p>
-                <p>✅ Bentuk masih simetris, kancing lengkap, dan kerah tidak terlihat menguning secara signifikan</p>
-                <p>⚠️ Barang terlihat sangat kusut, perlu disetrika ulang agar daya tarik visualnya meningkat. Tidak terlihat adanya noda tinta atau lubang (berdasarkan foto jarak jauh ini)</p>
+                <p><strong>Warna:</strong> {productData.title.includes('Jas') ? 'Putih' : 'Sesuai Foto'} (terlihat masih cukup cerah, tetapi ada sedikit bayangan lipatan atau kerutan karena penyimpanan)</p>
+                <p><strong>Material:</strong> {productData.title.includes('Jas') ? 'Kain katun tebal' : 'Material standar berkualitas'}</p>
+                <p>✅ Bentuk masih simetris, kancing lengkap (jika ada), dan tidak terlihat menguning secara signifikan</p>
+                <p>⚠️ Barang terlihat sedikit kusut, disarankan setrika ulang agar daya tarik visualnya meningkat.</p>
               </div>
             </div>
 
-            {/* Description Text */}
             <div className={styles.description}>
               <p>{product.description}</p>
             </div>
 
-            {/* Delivery Methods with Available Icons */}
             <div className={styles.deliverySection}>
               <h3>Metode Pengambilan</h3>
               <ul className={styles.deliveryList}>
-                <li>
-                  <img src="/img/icons/delivery.png" alt="" className={styles.deliveryIconImg} />
-                  <span>Jasa Pengiriman (29 Maret - 5 April 2026)</span>
-                </li>
-                <li>
-                  <img src="/img/icons/location.png" alt="" className={styles.deliveryIconImg} />
-                  <span>Ketemuan (Kampus Ganesha)</span>
-                </li>
+                {product.deliveryMethods.map((m, idx) => (
+                  <li key={idx}>
+                    <img src={m.icon} alt="" className={styles.deliveryIconImg} />
+                    <span>{m.type} ({m.detail})</span>
+                  </li>
+                ))}
               </ul>
             </div>
 
-            {/* Action Buttons - Owner View (Ubah Status Only) */}
             <div className={styles.actionButtons}>
-              <button className={styles.btnStatusFull}>Ubah Status Barang</button>
+              <button className={styles.btnStatusFull}>Beli Sekarang</button>
             </div>
           </div>
         </div>
 
-        {/* Below Fold Content: Seller, Reviews, Recommendations */}
         <div className={styles.secondaryContent}>
-          {/* Seller Profile */}
           <section className={styles.sellerProfile}>
             <img src="https://placehold.co/90x90" alt={product.seller.name} className={styles.sellerAvatar} />
             <div className={styles.sellerInfo}>
@@ -193,13 +202,12 @@ export default function ProductDetail() {
             </div>
           </section>
 
-          {/* Reviews */}
           <section className={styles.reviewsSection}>
             <h2 className={styles.sectionTitle}>Ulasan</h2>
             <div className={styles.reviewCard}>
               <div className={styles.reviewHeader}>
                 <div className={styles.reviewerInfo}>
-                  <img src="https://placehold.co/40x40" alt="Reviewer" className={styles.reviewerAvatar} />
+                  <img src="https://placehold.co/48x48" alt="Reviewer" className={styles.reviewerAvatar} />
                   <div>
                     <p className={styles.reviewerName}>{product.review.buyer}</p>
                     <div className={styles.stars}>⭐⭐⭐⭐⭐</div>
@@ -219,12 +227,11 @@ export default function ProductDetail() {
             </div>
           </section>
 
-          {/* Related Products */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Pilihan produk lain untuk kamu</h2>
             <div className={styles.productGrid}>
-              {recommended.map((item, idx) => (
-                <div key={idx} className={styles.productCard}>
+              {recommended.map((item) => (
+                <Link href={`/product/${item.id}`} key={item.id} className={styles.productCard}>
                   <img src={item.img} alt={item.title} className={styles.productImage} />
                   <div className={styles.productInfoMini}>
                     <h3 className={styles.productTitleMini}>{item.title}</h3>
@@ -236,7 +243,7 @@ export default function ProductDetail() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </section>
