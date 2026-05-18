@@ -4,15 +4,18 @@
   min-height: 100vh;
 }
 
-/* Header & Navbar - Adjusted scale from User request */
+/* Header & Navbar - Fixed Position */
 .header {
   background-color: #008585;
-  padding: 12px 100px; /* Reduced from 42px */
+  padding: 12px 100px;
   display: flex;
   justify-content: center;
   align-items: center;
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
   z-index: 1000;
 }
 
@@ -32,13 +35,13 @@
 }
 
 .logo {
-  width: 60px; /* Slightly reduced */
+  width: 60px;
   height: auto;
   object-fit: contain;
 }
 
 .searchBar {
-  flex: 0 1 800px; /* Flexible but with max-width */
+  flex: 0 1 800px;
   padding: 8px 24px;
   background: white;
   border-radius: 100px;
@@ -96,8 +99,7 @@
   width: 28px;
   height: 28px;
   object-fit: contain;
-  /* If icons are not already #EEFFFC, you might need filtering */
-  filter: brightness(0) invert(1) brightness(1.2); /* Adjusting to look white/light */
+  filter: brightness(0) invert(1) brightness(1.2);
 }
 
 .uploadButton {
@@ -121,7 +123,7 @@
 .main {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 40px 24px;
+  padding: 120px 24px 40px 24px; /* Added 120px top padding to avoid overlap with fixed header */
   display: flex;
   flex-direction: column;
   gap: 48px;
