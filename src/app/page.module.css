@@ -1,5 +1,4 @@
 .container {
-  font-family: 'Inter', sans-serif;
   color: #292929;
   background-color: #f8fcfb;
   min-height: 100vh;
@@ -14,7 +13,7 @@
   align-items: center;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1000;
 }
 
 .headerContent {
