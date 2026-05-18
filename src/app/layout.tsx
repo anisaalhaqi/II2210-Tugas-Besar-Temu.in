@@ -5,6 +5,7 @@ import "./globals.css";
 const plusJakartaSans = Plus_Jakarta_Sans({ 
   subsets: ["latin"],
   weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-plus-jakarta-sans',
 });
 
 export const metadata: Metadata = {
@@ -19,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={plusJakartaSans.className}>{children}</body>
+      <body className={`${plusJakartaSans.className} ${plusJakartaSans.variable}`}>{children}</body>
     </html>
   );
 }
