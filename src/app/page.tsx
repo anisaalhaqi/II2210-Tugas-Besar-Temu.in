@@ -1,4 +1,5 @@
 import styles from './page.module.css';
+import Link from 'next/link';
 
 export default function DesktopHome() {
   // Data statis berdasarkan desain HTML
@@ -57,9 +58,9 @@ export default function DesktopHome() {
               <div className={styles.iconItem}>
                 <img src="/img/icons/cart.png" alt="Cart" className={styles.actionIcon} />
               </div>
-              <button className={styles.uploadButton}>
+              <Link href="/upload" className={styles.uploadButton}>
                 + Upload Barang
-              </button>
+              </Link>
             </div>
           </div>
         </div>
