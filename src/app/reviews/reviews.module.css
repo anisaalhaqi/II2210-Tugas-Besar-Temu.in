@@ -1,0 +1,388 @@
+.container {
+  min-height: 100vh;
+  background-color: #f8fcfb;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Global Header - Reused & Synchronized */
+.header {
+  background-color: #008585;
+  padding: 12px 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+.headerContent {
+  width: 100%;
+  max-width: 1400px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex: 1;
+}
+
+.logo {
+  width: 60px;
+  height: auto;
+  cursor: pointer;
+}
+
+.locationPicker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 1.5px solid #008585;
+  cursor: pointer;
+  white-space: nowrap;
+  position: relative;
+}
+
+.locText {
+  color: #434343;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.locIconHeader {
+  width: 18px;
+  height: auto;
+}
+
+.dropdownIcon {
+  width: 16px;
+  height: auto;
+  opacity: 0.5;
+}
+
+.searchBar {
+  flex: 1;
+  padding: 8px 24px;
+  background: white;
+  border-radius: 100px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.searchInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  font-weight: 400;
+  color: #767676;
+}
+
+.searchIconWrapper {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.searchIcon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  margin-left: 32px;
+}
+
+.iconsGroup {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.iconItem {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.actionIcon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: brightness(0) invert(1) brightness(1.2);
+}
+
+.uploadButton {
+  padding: 10px 24px;
+  background: white;
+  border-radius: 8px;
+  border: none;
+  color: #008585;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.2s ease;
+  text-decoration: none;
+}
+
+.uploadButton:hover {
+  transform: scale(1.05);
+}
+
+/* Main Content */
+.main {
+  max-width: 1000px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 120px 24px 80px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.pageTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.backButton {
+  background: white;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  border-radius: 12px;
+  transition: background-color 0.2s;
+}
+
+.backButton:hover {
+  background-color: #f9fafb;
+}
+
+.pageTitle {
+  font-size: 28px;
+  font-weight: 700;
+  color: #292929;
+}
+
+/* Tabs */
+.tabRow {
+  display: flex;
+  gap: 120px; /* Increased further from 80px */
+  border-bottom: 1px solid #e5e7eb;
+  justify-content: flex-start;
+}
+
+.tab {
+  padding: 12px 40px; /* Increased horizontal padding from 24px */
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #A5A5A5;
+  transition: all 0.2s;
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+}
+
+.tabActive {
+  color: #008585;
+  border-bottom-color: #008585;
+}
+
+/* Rating Summary */
+.ratingSummary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px;
+}
+
+.ratingValue {
+  font-size: 48px;
+  font-weight: 800;
+  color: #292929;
+}
+
+.starsRow {
+  display: flex;
+  gap: 4px;
+}
+
+.starFill {
+  width: 32px;
+  height: 32px;
+  background-color: #FFC118;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+/* Review Cards */
+.reviewList {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.reviewCard {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.reviewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.reviewerInfo {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.reviewerName {
+  font-size: 16px;
+  font-weight: 600;
+  color: #292929;
+}
+
+.smallStars {
+  display: flex;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.smallStar {
+  width: 14px;
+  height: 14px;
+  background-color: #FFBD14;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+.metaActions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.reportLink {
+  color: #DC2626;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.dateText {
+  color: #767676;
+  font-size: 13px;
+}
+
+.reviewText {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #434343;
+}
+
+.reviewPhotos {
+  display: flex;
+  gap: 16px;
+}
+
+.reviewPhoto {
+  width: 200px;
+  height: 150px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+/* Product Box inside Review */
+.productRef {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 12px;
+}
+
+.prodImg {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.prodTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #292929;
+}
+
+.prodPrice {
+  font-size: 14px;
+  color: #767676;
+}
+
+/* Seller Response */
+.sellerResponse {
+  background: #DBEAFE;
+  padding: 16px 20px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.responseTitle {
+  font-weight: 700;
+  font-size: 14px;
+  color: #1e40af;
+}
+
+.responseText {
+  font-size: 14px;
+  color: #1e3a8a;
+  line-height: 1.4;
+}

@@ -1,11 +1,12 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import styles from './page.module.css';
 import Link from 'next/link';
 
 export default function ProductDetail() {
   const params = useParams();
+  const router = useRouter();
   const id = params?.id;
 
   // Mock database
@@ -223,7 +224,24 @@ export default function ProductDetail() {
                  <img src="https://placehold.co/171x126" alt="Review Photo 1" />
                  <img src="https://placehold.co/171x126" alt="Review Photo 2" />
               </div>
-              <a href="#" className={styles.readAllLink}>Baca Semua</a>
+              <div 
+                className={styles.readAllLink}
+                style={{ 
+                  cursor: 'pointer', 
+                  color: '#008585', 
+                  fontWeight: '700',
+                  padding: '10px',
+                  backgroundColor: 'rgba(0, 133, 133, 0.05)',
+                  borderRadius: '8px',
+                  display: 'inline-block',
+                  textAlign: 'right',
+                  position: 'relative',
+                  zIndex: 999
+                }}
+                onClick={() => router.push('/reviews')}
+              >
+                Baca Semua &rarr;
+              </div>
             </div>
           </section>
 
