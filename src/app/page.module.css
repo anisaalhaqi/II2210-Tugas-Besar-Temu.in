@@ -44,6 +44,41 @@
   border: 1.5px solid #008585;
   cursor: pointer;
   white-space: nowrap;
+  position: relative; /* Base for dropdown */
+}
+
+.locationDropdown {
+  position: absolute;
+  top: 50px;
+  left: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border: 1px solid #f0f0f0;
+  z-index: 1050;
+  min-width: 180px;
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.locDropdownItem {
+  padding: 12px 20px;
+  font-size: 15px;
+  color: #434343;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.locDropdownItem:hover {
+  background-color: #EEFFFC;
+  color: #008585;
+}
+
+.locDropdownItemActive {
+  background-color: #EEFFFC;
+  color: #008585;
+  font-weight: 600;
 }
 
 .locText {

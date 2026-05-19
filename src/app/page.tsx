@@ -6,6 +6,10 @@ import Link from 'next/link';
 
 export default function DesktopHome() {
   const [showNotifPopup, setShowNotifPopup] = useState(false);
+  const [showLocDropdown, setShowLocDropdown] = useState(false);
+  const [selectedLoc, setSelectedLoc] = useState('ITB Jatinangor');
+
+  const locations = ['ITB Ganesha', 'ITB Jatinangor', 'ITB Cirebon'];
 
   // Mock notifications for the popup
   const [notifications, setNotifications] = useState([
@@ -63,12 +67,39 @@ export default function DesktopHome() {
       <header className={styles.header}>
         <div className={styles.headerContent}>
           <div className={styles.headerLeft}>
-            <img src="/img/logo.png" alt="Temu.in Logo" className={styles.logo} />
-            <div className={styles.locationPicker}>
+            <Link href="/">
+              <img src="/img/logo.png" alt="Temu.in Logo" className={styles.logo} />
+            </Link>
+            
+            {/* Location Picker with Dropdown */}
+            <div className={styles.locationPicker} onClick={() => setShowLocDropdown(!showLocDropdown)}>
               <img src="/img/icons/location.png" alt="" className={styles.locIconHeader} />
-              <span className={styles.locText}>ITB Jatinangor</span>
-              <img src="/img/icons/arrow-down.png" alt="" className={styles.dropdownIcon} />
+              <span className={styles.locText}>{selectedLoc}</span>
+              <img 
+                src="/img/icons/arrow-down.png" 
+                alt="" 
+                className={styles.dropdownIcon} 
+                style={{ transform: showLocDropdown ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} 
+              />
+              
+              {showLocDropdown && (
+                <div className={styles.locationDropdown} onClick={(e) => e.stopPropagation()}>
+                  {locations.map((loc) => (
+                    <div 
+                      key={loc} 
+                      className={`${styles.locDropdownItem} ${selectedLoc === loc ? styles.locDropdownItemActive : ''}`}
+                      onClick={() => {
+                        setSelectedLoc(loc);
+                        setShowLocDropdown(false);
+                      }}
+                    >
+                      {loc}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
+
             <form 
               className={styles.searchBar}
               style={{ flex: '1' }}
@@ -148,11 +179,11 @@ export default function DesktopHome() {
           </div>
         </section>
 
-        {/* Barang Favorit - NEW SECTION */}
+        {/* Barang Favorit */}
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>Cek barang favoritmu di sini!</h2>
-            <Link href="/search" className={styles.seeAll}>Lihat Semua &rarr;</Link>
+            <Link href="/favorites" className={styles.seeAll}>Lihat Semua &rarr;</Link>
           </div>
           <div className={styles.productGrid}>
             {favorites.map((item) => (
