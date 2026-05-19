@@ -1,10 +1,37 @@
 'use client';
 
+import { useState } from 'react';
 import styles from './page.module.css';
 import Link from 'next/link';
 
 export default function DesktopHome() {
-  // Data statis berdasarkan desain HTML
+  const [showNotifPopup, setShowNotifPopup] = useState(false);
+
+  // Mock notifications for the popup
+  const [notifications, setNotifications] = useState([
+    {
+      id: 1,
+      type: 'Pengajuan Tawaran',
+      message: '@zizadhrmaa mengajukan tawaran Rp31.000 untuk Jas Lab',
+      unread: true,
+      img: 'https://placehold.co/60x60'
+    },
+    {
+      id: 2,
+      type: 'Penawaran Ditolak',
+      message: '@parkjihoon menolak tawaranmu Rp35.000 untuk Cat Sakura',
+      unread: true,
+      img: 'https://placehold.co/60x60'
+    },
+    {
+      id: 3,
+      type: 'Penawaran Balik',
+      message: '@hayosiapa menawar balik sebesar Rp27.000 untuk Jas Lab',
+      unread: false,
+      img: 'https://placehold.co/60x60'
+    }
+  ]);
+
   const categories = [
     { name: 'Alat Hitung', icon: '🧮' },
     { name: 'Alat Lab', icon: '🔬' },
@@ -32,7 +59,7 @@ export default function DesktopHome() {
 
   return (
     <div className={styles.container}>
-      {/* Top Navigation Bar - Adjusted Scale */}
+      {/* Top Navigation Bar */}
       <header className={styles.header}>
         <div className={styles.headerContent}>
           <div className={styles.headerLeft}>
@@ -59,9 +86,33 @@ export default function DesktopHome() {
 
           <div className={styles.headerActions}>
             <div className={styles.iconsGroup}>
-              <div className={styles.iconItem}>
+              {/* Notification Icon with Popup */}
+              <div className={styles.iconItem} onClick={() => setShowNotifPopup(!showNotifPopup)}>
                 <img src="/img/icons/notification.png" alt="Notification" className={styles.actionIcon} />
+                
+                {showNotifPopup && (
+                  <div className={styles.notifPopup} onClick={(e) => e.stopPropagation()}>
+                    <div className={styles.popupHeader}>Notifikasi</div>
+                    <div className={styles.popupList}>
+                      {notifications.map((n) => (
+                        <Link 
+                          href="/notifications" 
+                          key={n.id} 
+                          className={`${styles.popupItem} ${n.unread ? styles.popupItemUnread : ''}`}
+                        >
+                          <img src={n.img} alt="" className={styles.popupImg} />
+                          <div className={styles.popupContent}>
+                            <div className={styles.popupStatus}>{n.type}</div>
+                            <div className={styles.popupMsg}>{n.message}</div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                    <Link href="/notifications" className={styles.seeMore}>Lihat lebih banyak</Link>
+                  </div>
+                )}
               </div>
+
               <div className={styles.iconItem}>
                 <img src="/img/icons/chat.png" alt="Chat" className={styles.actionIcon} />
               </div>

@@ -82,9 +82,9 @@ export default function ProductDetail() {
 
           <div className={styles.headerActions}>
             <div className={styles.iconsGroup}>
-              <div className={styles.iconItem}>
+              <Link href="/notifications" className={styles.iconItem}>
                 <img src="/img/icons/notification.png" alt="Notification" className={styles.actionIcon} />
-              </div>
+              </Link>
               <div className={styles.iconItem}>
                 <img src="/img/icons/chat.png" alt="Chat" className={styles.actionIcon} />
               </div>

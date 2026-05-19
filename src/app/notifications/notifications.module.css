@@ -1,0 +1,235 @@
+.container {
+  min-height: 100vh;
+  background-color: #f8fcfb;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Global Header - Fixed & Consistent */
+.header {
+  background-color: #008585;
+  padding: 12px 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+.headerContent {
+  width: 100%;
+  max-width: 1400px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.logo {
+  width: 60px;
+  height: auto;
+  cursor: pointer;
+}
+
+.navActions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.iconItem {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.actionIcon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: brightness(0) invert(1) brightness(1.2);
+}
+
+.uploadButton {
+  padding: 10px 24px;
+  background: white;
+  border-radius: 8px;
+  border: none;
+  color: #008585;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.2s ease;
+  text-decoration: none;
+}
+
+.uploadButton:hover {
+  transform: scale(1.05);
+}
+
+/* Main Content */
+.main {
+  max-width: 1000px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 120px 24px 40px 24px; /* Space for fixed header */
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.topRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pageTitle {
+  font-size: 28px;
+  font-weight: 700;
+  color: #292929;
+}
+
+.markAll {
+  color: #008585;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.markAll:hover {
+  opacity: 0.8;
+}
+
+/* Tabs */
+.tabRow {
+  display: flex;
+  gap: 16px;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 16px;
+}
+
+.tabChip {
+  height: 42px;
+  padding: 0 24px;
+  border-radius: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid #A5A5A5;
+  color: #A5A5A5;
+  transition: all 0.2s;
+  background: white;
+}
+
+.tabChipActive {
+  background-color: #EEFFFC;
+  border-color: #008585;
+  color: #008585;
+}
+
+/* Notification List */
+.notifList {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f0f0f0;
+}
+
+.notifItem {
+  display: flex;
+  align-items: center;
+  padding: 24px;
+  gap: 20px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  background-color: white; /* Default state: Read */
+}
+
+.notifItem:last-child {
+  border-bottom: none;
+}
+
+.notifItem:hover {
+  background-color: #f9fafb;
+}
+
+.unread {
+  background-color: #EEFFFC; /* Unread state: Light teal */
+}
+
+.unread:hover {
+  background-color: #e6fcf9;
+}
+
+.itemImage {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.itemContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.contentHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.statusText {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.roleText {
+  font-size: 14px;
+  font-weight: 500;
+  color: #767676;
+}
+
+.message {
+  font-size: 15px;
+  color: #434343;
+  line-height: 1.4;
+}
+
+.timestamp {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* Status Specific Colors */
+.status_pengajuan { color: #434343; }
+.status_ditolak { color: #DC2626; }
+.status_tawarbalik { color: #2563EB; }
+.status_diterima { color: #16A34A; }

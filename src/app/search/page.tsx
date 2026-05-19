@@ -77,6 +77,9 @@ export default function SearchPage() {
           </div>
 
           <div style={{ display: 'flex', gap: '24px', alignItems: 'center', marginLeft: '32px' }}>
+             <Link href="/notifications">
+                <img src="/img/icons/notification.png" alt="Notification" style={{ width: '28px', height: '28px', filter: 'brightness(0) invert(1)' }} />
+             </Link>
              <Link href="/upload" style={{ color: 'white', fontWeight: '600' }}>+ Upload Barang</Link>
           </div>
         </div>
