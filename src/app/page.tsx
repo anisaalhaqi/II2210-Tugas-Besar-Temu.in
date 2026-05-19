@@ -64,8 +64,14 @@ export default function DesktopHome() {
         <div className={styles.headerContent}>
           <div className={styles.headerLeft}>
             <img src="/img/logo.png" alt="Temu.in Logo" className={styles.logo} />
+            <div className={styles.locationPicker}>
+              <img src="/img/icons/location.png" alt="" className={styles.locIconHeader} />
+              <span className={styles.locText}>ITB Jatinangor</span>
+              <img src="/img/icons/arrow-down.png" alt="" className={styles.dropdownIcon} />
+            </div>
             <form 
               className={styles.searchBar}
+              style={{ flex: '1' }}
               onSubmit={(e) => {
                 e.preventDefault();
                 const q = (e.currentTarget.elements.namedItem('q') as HTMLInputElement).value;
@@ -142,11 +148,11 @@ export default function DesktopHome() {
           </div>
         </section>
 
-        {/* Barang Favorit */}
+        {/* Barang Favorit - NEW SECTION */}
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>Cek barang favoritmu di sini!</h2>
-            <a href="#" className={styles.seeAll}>Lihat Semua &rarr;</a>
+            <Link href="/search" className={styles.seeAll}>Lihat Semua &rarr;</Link>
           </div>
           <div className={styles.productGrid}>
             {favorites.map((item) => (

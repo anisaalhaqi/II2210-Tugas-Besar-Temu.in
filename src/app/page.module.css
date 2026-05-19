@@ -34,6 +34,35 @@
   flex: 1;
 }
 
+.locationPicker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 1.5px solid #008585;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.locText {
+  color: #434343;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.locIconHeader {
+  width: 18px;
+  height: auto;
+}
+
+.dropdownIcon {
+  width: 16px;
+  height: auto;
+  opacity: 0.5;
+}
+
 .logo {
   width: 60px;
   height: auto;
