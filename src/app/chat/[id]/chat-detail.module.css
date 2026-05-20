@@ -1,0 +1,341 @@
+.container {
+  min-height: 100vh;
+  background-color: #f8fcfb;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Focused Conversation Header - Teal & Standard Height */
+.header {
+  background-color: #008585;
+  padding: 12px 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 1000;
+  min-height: 84px; /* Matching homepage height */
+}
+
+.headerContent {
+  width: 100%;
+  max-width: 1400px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.conversationInfo {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.backButton {
+  background: white;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  transition: transform 0.2s;
+}
+
+.backButton:hover {
+  transform: scale(1.05);
+}
+
+.backIcon {
+  filter: invert(34%) sepia(85%) saturate(1352%) hue-rotate(145deg) brightness(95%) contrast(101%); /* #008585 color */
+  width: 20px;
+  height: 20px;
+}
+
+.avatarCircle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid white;
+  object-fit: cover;
+}
+
+.userDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.userNameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.userName {
+  font-size: 19px;
+  font-weight: 700;
+  color: white;
+}
+
+.verifiedBadge {
+  width: 18px;
+  height: 18px;
+  background: #171717;
+  border-radius: 4px;
+}
+
+.statusText {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Main Chat Area */
+.main {
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 120px 24px 200px 24px; /* Space for fixed header/footer */
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.dateSeparator {
+  text-align: center;
+  font-size: 14px;
+  color: #000;
+  margin: 10px 0;
+  font-weight: 400;
+}
+
+/* Product Message Card */
+.productMessageWrapper {
+  align-self: flex-end;
+  width: 100%;
+  max-width: 450px;
+}
+
+.productCard {
+  background: #EEFFFC;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 133, 133, 0.1);
+  display: flex;
+  gap: 20px;
+  border: 1px solid #c5fff7;
+}
+
+.prodImg {
+  width: 125px;
+  height: 125px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.prodInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.prodTitle {
+  font-size: 16px;
+  color: rgba(0, 0, 0, 0.4); /* Faded color as per user spec */
+  font-weight: 400;
+}
+
+.prodPrice {
+  font-size: 17px;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.tawarButton {
+  margin-top: auto;
+  background: #008585;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.tawarButton:hover {
+  background: #006b6b;
+}
+
+/* Bottom Seller Info Box */
+.sellerSection {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 32px;
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #f0f0f0;
+  margin-top: 40px;
+}
+
+.sellerAvatarLarge {
+  width: 75px;
+  height: 75px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.sellerDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sellerName {
+  font-size: 17px;
+  font-weight: 600;
+  color: #000;
+}
+
+.blueBadge {
+  width: 24px;
+  height: 24px;
+  background: #2563EB;
+  border-radius: 4px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 8px;
+}
+
+.locRow, .ratingRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  color: #434343;
+}
+
+.iconSmall {
+  width: 18px;
+  height: auto;
+}
+
+.ratingValue {
+  font-weight: 600;
+  color: #575757;
+}
+
+/* Footer Input Area */
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  padding: 24px 0 40px 0;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+  z-index: 1000;
+}
+
+.footerContent {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.chipsRow {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+}
+
+.chip {
+  padding: 10px 24px;
+  border-radius: 100px;
+  border: 1px solid #767676;
+  color: #767676;
+  font-size: 17px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.chip:hover {
+  border-color: #008585;
+  color: #008585;
+  background: #EEFFFC;
+}
+
+.inputBar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.plusButton {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1.5px solid #008585;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.plusIcon {
+  width: 18px;
+  height: 18px;
+  background-color: #008585;
+  mask: url('/img/icons/plus.png') no-repeat center / contain;
+  -webkit-mask: url('/img/icons/plus.png') no-repeat center / contain;
+}
+
+.textFieldWrapper {
+  flex: 1;
+  background: white;
+  border-radius: 100px;
+  padding: 16px 28px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+  border: 1px solid #eee;
+}
+
+.textField {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  color: #292929;
+}
+
+.sendBtn {
+  width: 60px;
+  height: 60px;
+  background: #008585;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.sendIcon {
+  width: 32px;
+  height: 32px;
+  background-color: #EEFFFC;
+  mask: url('/img/icons/arrow-right.png') no-repeat center / contain;
+  -webkit-mask: url('/img/icons/arrow-right.png') no-repeat center / contain;
+  transform: rotate(-45deg);
+}

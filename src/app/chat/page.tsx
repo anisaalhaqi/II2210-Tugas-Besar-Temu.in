@@ -117,7 +117,7 @@ export default function ChatPage() {
 
         <div className={styles.chatList}>
           {chats.map((chat) => (
-            <div key={chat.id} className={styles.chatItem}>
+            <Link href={`/chat/${chat.id}`} key={chat.id} className={styles.chatItem} style={{ textDecoration: 'none' }}>
               <img src={chat.img} alt={chat.name} className={styles.avatar} />
               <div className={styles.chatContent}>
                 <div className={styles.chatHeader}>
@@ -126,7 +126,7 @@ export default function ChatPage() {
                 </div>
                 <p className={styles.lastMessage}>{chat.message}</p>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </main>
