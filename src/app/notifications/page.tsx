@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import styles from './notifications.module.css';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function NotificationsPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('Semua');
 
   const tabs = ['Semua', 'Sebagai Penjual', 'Sebagai Pembeli'];
@@ -62,6 +64,10 @@ export default function NotificationsPage() {
     ));
   };
 
+  const handleBack = () => {
+    router.back();
+  };
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -75,9 +81,9 @@ export default function NotificationsPage() {
             <Link href="/notifications" className={styles.iconItem}>
               <img src="/img/icons/notification.png" alt="Notification" className={styles.actionIcon} />
             </Link>
-            <div className={styles.iconItem}>
+            <Link href="/chat" className={styles.iconItem}>
               <img src="/img/icons/chat.png" alt="Chat" className={styles.actionIcon} />
-            </div>
+            </Link>
             <div className={styles.iconItem}>
               <img src="/img/icons/cart.png" alt="Cart" className={styles.actionIcon} />
             </div>
@@ -88,7 +94,19 @@ export default function NotificationsPage() {
 
       <main className={styles.main}>
         <div className={styles.topRow}>
-          <h1 className={styles.pageTitle}>Notifications</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <button 
+              onClick={handleBack} 
+              style={{
+                background: 'white', border: '1px solid #e5e7eb', cursor: 'pointer', padding: '10px',
+                display: 'flex', alignItems: 'center', borderRadius: '12px'
+              }}
+              title="Kembali"
+            >
+              <img src="/img/icons/back-left.png" alt="Back" width={20} height={20} />
+            </button>
+            <h1 className={styles.pageTitle}>Notifications</h1>
+          </div>
           <span className={styles.markAll} onClick={markAllAsRead}>Tandai Baca Semua</span>
         </div>
 
@@ -96,7 +114,7 @@ export default function NotificationsPage() {
           {tabs.map((tab) => (
             <div 
               key={tab} 
-              className={`${styles.tabChip} ${activeTab === tab ? styles.tabChipActive : ''}`}
+              className={`${styles.tab} ${activeTab === tab ? styles.tabActive : ''}`}
               onClick={() => setActiveTab(tab)}
             >
               {tab}

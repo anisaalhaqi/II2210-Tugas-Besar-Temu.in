@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import styles from './upload.module.css';
+import Link from 'next/link';
 
 type Step = 'category' | 'detail';
 
@@ -9,8 +10,11 @@ export default function UploadPage() {
   const [step, setStep] = useState<Step>('category');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [originality, setOriginality] = useState<'original' | 'non-original'>('original');
+  const [showLocDropdown, setShowLocDropdown] = useState(false);
+  const [selectedLoc, setSelectedLoc] = useState('ITB Jatinangor');
 
-  // Icons matched with homepage (emojis as per src/app/page.tsx)
+  const locations = ['ITB Ganesha', 'ITB Jatinangor', 'ITB Cirebon'];
+
   const categories = [
     { name: 'Alat Hitung', icon: '🧮' },
     { name: 'Alat Lab', icon: '🔬' },
@@ -37,44 +41,31 @@ export default function UploadPage() {
 
   return (
     <div className={styles.container}>
-      {/* Header Standardized with Homepage */}
+      {/* Simplified Teal Header with standard navbar size */}
       <header className={styles.header}>
-        <div className={styles.headerContent}>
-          <div className={styles.navBar}>
-            <button className={styles.backButton} onClick={handleBack} title="Back">
-              <img src="/img/icons/back-left.png" alt="Back" width={24} height={24} className={styles.backIcon} />
-            </button>
-            <h1 className={styles.pageTitle}>{step === 'category' ? 'Pilih Kategori' : 'Detail Barang'}</h1>
-          </div>
-          
-          {step === 'category' && (
-            <div className={styles.searchWrapper}>
-              <div className={styles.searchBar}>
-                <img src="/img/icons/search.png" alt="Search" width={20} height={20} />
-                <input 
-                  type="text" 
-                  placeholder="Cari kategori barang..." 
-                  className={styles.searchInput}
-                />
-              </div>
+        <div className={styles.headerContent} style={{ justifyContent: 'flex-start' }}>
+          <div className={styles.headerLeft}>
+            <div className={styles.navBar}>
+              <button className={styles.backButtonHeader} onClick={handleBack} title="Back">
+                <img src="/img/icons/back-left.png" alt="Back" width={20} height={20} className={styles.backIcon} />
+              </button>
+              <h1 className={styles.pageTitleHeader}>{step === 'category' ? 'Pilih Kategori' : 'Detail Barang'}</h1>
             </div>
-          )}
+          </div>
         </div>
       </header>
 
-      {step === 'category' ? (
-        <main className={styles.categorySection}>
-          {categories.map((cat, idx) => (
-            <div key={idx} className={styles.categoryItem} onClick={() => handleCategorySelect(cat.name)}>
-              <div className={styles.categoryIconBox}>
-                {cat.icon}
+      <main className={styles.main}>
+        {step === 'category' ? (
+          <section className={styles.categorySection}>
+            {categories.map((cat, idx) => (
+              <div key={idx} className={styles.categoryItem} onClick={() => handleCategorySelect(cat.name)}>
+                <div className={styles.categoryIconBox}>{cat.icon}</div>
+                <span className={styles.categoryLabel}>{cat.name}</span>
               </div>
-              <span className={styles.categoryLabel}>{cat.name}</span>
-            </div>
-          ))}
-        </main>
-      ) : (
-        <main className={styles.main}>
+            ))}
+          </section>
+        ) : (
           <div className={styles.formContainer}>
             <div className={styles.leftColumn}>
               <section className={styles.photoSection}>
@@ -114,17 +105,11 @@ export default function UploadPage() {
               <div className={styles.formGroup}>
                 <label className={styles.label}>Pilih Originalitas</label>
                 <div className={styles.radioGroup}>
-                  <div 
-                    className={`${styles.radioOption} ${originality === 'original' ? styles.radioOptionActive : ''}`} 
-                    onClick={() => setOriginality('original')}
-                  >
+                  <div className={`${styles.radioOption} ${originality === 'original' ? styles.radioOptionActive : ''}`} onClick={() => setOriginality('original')}>
                     <div className={styles.radioCircle}></div>
                     <span>Original</span>
                   </div>
-                  <div 
-                    className={`${styles.radioOption} ${originality === 'non-original' ? styles.radioOptionActive : ''}`} 
-                    onClick={() => setOriginality('non-original')}
-                  >
+                  <div className={`${styles.radioOption} ${originality === 'non-original' ? styles.radioOptionActive : ''}`} onClick={() => setOriginality('non-original')}>
                     <div className={styles.radioCircle}></div>
                     <span>Non-original</span>
                   </div>
@@ -146,12 +131,11 @@ export default function UploadPage() {
                       <img src="/img/icons/calendar.png" className={styles.inputIcon} alt="Calendar" />
                     </div>
                   </div>
-
                   <div className={styles.formGroup}>
                     <label className={styles.label}>Ketemuan (COD)</label>
                     <div className={styles.inputWrapper}>
                       <input type="text" placeholder="Masukkan lokasi ketemuan" className={styles.input} />
-                      <img src="/img/icons/location.png" className={styles.inputIcon} alt="Location" />
+                      <img src="/img/icons/location.png" alt="Location" className={styles.inputIcon} />
                     </div>
                   </div>
                 </div>
@@ -169,22 +153,18 @@ export default function UploadPage() {
                 </div>
                 <div className={styles.aiContent}>
                   <p style={{ marginBottom: '12px' }}>Berdasarkan foto yang kamu unggah, berikut analisis kami:</p>
-                  <span className={styles.aiBold}>Warna</span>: Putih (terlihat masih cukup cerah, tetapi ada sedikit bayangan lipatan atau kerutan karena penyimpanan)<br/>
-                  <span className={styles.aiBold}>Material</span>: Terlihat seperti kain katun tebal atau campuran poliester (standard jas lab)<br/>
-                  <span className={styles.aiBold}>Label</span>: Terdapat label merek "Dua Saudara" dengan ukuran "S".<br/><br/>
-                  ✅ Bentuk masih simetris, kancing lengkap.<br/>
-                  ⚠️ Barang terlihat kusut, disarankan setrika ulang.<br/><br/>
+                  <span className={styles.aiBold}>Warna</span>: Putih...<br/>
+                  ✅ Bentuk masih simetris.<br/>
+                  ⚠️ Barang terlihat kusut.<br/><br/>
                   <span className={styles.aiBold}>Rekomendasi Harga:</span><br/>
-                  • Kondisi Baik: <span className={styles.aiBold}>Rp65k – Rp85k</span><br/>
-                  • Kondisi Mulus: <span className={styles.aiBold}>Rp90k – Rp100k</span>
+                  • Kondisi Baik: <span className={styles.aiBold}>Rp65k – Rp85k</span>
                 </div>
               </div>
-
               <button className={styles.submitButton}>Mulai Jual Sekarang</button>
             </aside>
           </div>
-        </main>
-      )}
+        )}
+      </main>
     </div>
   );
 }

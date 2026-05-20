@@ -117,7 +117,9 @@ export default function ReviewsPage() {
               <Link href="/notifications" className={styles.iconItem}>
                 <img src="/img/icons/notification.png" alt="Notification" className={styles.actionIcon} />
               </Link>
-              <div className={styles.iconItem}><img src="/img/icons/chat.png" alt="Chat" className={styles.actionIcon} /></div>
+              <Link href="/chat" className={styles.iconItem}>
+                <img src="/img/icons/chat.png" alt="Chat" className={styles.actionIcon} />
+              </Link>
               <div className={styles.iconItem}><img src="/img/icons/cart.png" alt="Cart" className={styles.actionIcon} /></div>
               <Link href="/upload" className={styles.uploadButton}>+ Upload Barang</Link>
             </div>
