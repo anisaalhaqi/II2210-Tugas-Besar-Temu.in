@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import Sidebar from "@/components/Sidebar/Sidebar";
+import Header from "@/components/Header/Header";
+import styles from "./layout.module.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({ 
   subsets: ["latin"],
@@ -20,7 +23,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${plusJakartaSans.className} ${plusJakartaSans.variable}`}>{children}</body>
+      <body className={`${plusJakartaSans.className} ${plusJakartaSans.variable}`}>
+        <div className={styles.wrapper}>
+          <Sidebar />
+          <div className={styles.contentWrapper}>
+            <Header />
+            <main className={styles.mainContent}>
+              {children}
+            </main>
+          </div>
+        </div>
+      </body>
     </html>
   );
 }

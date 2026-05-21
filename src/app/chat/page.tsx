@@ -6,10 +6,6 @@ import Link from 'next/link';
 
 export default function ChatPage() {
   const [activeTab, setActiveTab] = useState('Semua');
-  const [showLocDropdown, setShowLocDropdown] = useState(false);
-  const [selectedLoc, setSelectedLoc] = useState('ITB Jatinangor');
-
-  const locations = ['ITB Ganesha', 'ITB Jatinangor', 'ITB Cirebon'];
   const tabs = ['Semua', 'Ketemuan', 'Belum dibaca'];
 
   const chats = [
@@ -25,76 +21,6 @@ export default function ChatPage() {
 
   return (
     <div className={styles.container}>
-      {/* Global Header */}
-      <header className={styles.header}>
-        <div className={styles.headerContent}>
-          <div className={styles.headerLeft}>
-            <Link href="/">
-              <img src="/img/logo.png" alt="Temu.in Logo" className={styles.logo} />
-            </Link>
-            
-            <div className={styles.locationPicker} onClick={() => setShowLocDropdown(!showLocDropdown)}>
-              <img src="/img/icons/location.png" alt="" className={styles.locIconHeader} />
-              <span className={styles.locText}>{selectedLoc}</span>
-              <img 
-                src="/img/icons/arrow-down.png" 
-                alt="" 
-                className={styles.dropdownIcon} 
-                style={{ transform: showLocDropdown ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} 
-              />
-              
-              {showLocDropdown && (
-                <div style={{
-                  position: 'absolute', top: '50px', left: 0, background: 'white', borderRadius: '12px',
-                  boxShadow: '0 10px 25px rgba(0,0,0,0.1)', border: '1px solid #f0f0f0', zIndex: 1050,
-                  minWidth: '180px', padding: '8px 0', display: 'flex', flexDirection: 'column'
-                }} onClick={(e) => e.stopPropagation()}>
-                  {locations.map((loc) => (
-                    <div 
-                      key={loc} 
-                      style={{
-                        padding: '12px 20px', fontSize: '15px', color: '#434343', cursor: 'pointer',
-                        backgroundColor: selectedLoc === loc ? '#EEFFFC' : 'transparent',
-                        fontWeight: selectedLoc === loc ? '600' : '400'
-                      }}
-                      onClick={() => { setSelectedLoc(loc); setShowLocDropdown(false); }}
-                    >
-                      {loc}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <form className={styles.searchBar} onSubmit={(e) => {
-              e.preventDefault();
-              const q = (e.currentTarget.elements.namedItem('q') as HTMLInputElement).value;
-              if (q) window.location.href = `/search?q=${encodeURIComponent(q)}`;
-            }}>
-              <input name="q" type="text" placeholder="Cari barang kuliahmu..." className={styles.searchInput} />
-              <button type="submit" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-                <img src="/img/icons/search.png" alt="Search" width={20} height={20} />
-              </button>
-            </form>
-          </div>
-
-          <div className={styles.headerActions}>
-            <div className={styles.iconsGroup}>
-              <Link href="/notifications" className={styles.iconItem}>
-                <img src="/img/icons/notification.png" alt="Notification" className={styles.actionIcon} />
-              </Link>
-              <Link href="/chat" className={styles.iconItem}>
-                <img src="/img/icons/chat.png" alt="Chat" className={styles.actionIcon} />
-              </Link>
-              <div className={styles.iconItem}>
-                <img src="/img/icons/cart.png" alt="Cart" className={styles.actionIcon} />
-              </div>
-              <Link href="/upload" className={styles.uploadButton}>+ Upload Barang</Link>
-            </div>
-          </div>
-        </div>
-      </header>
-
       <main className={styles.main}>
         <div className={styles.pageHeader}>
           <button className={styles.backButton} onClick={handleBack} title="Kembali">

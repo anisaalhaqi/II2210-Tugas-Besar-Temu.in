@@ -24,10 +24,6 @@ export default function FavoritesPage() {
   const [availabilityFilter, setAvailabilityFilter] = useState<'Semua' | 'Tersedia' | 'Tidak Tersedia'>('Semua');
   const [categoryFilter, setCategoryFilter] = useState<string>('Semua');
   const [openDropdown, setOpenDropdown] = useState<'availability' | 'category' | null>(null);
-  const [showLocDropdown, setShowLocDropdown] = useState(false);
-  const [selectedLoc, setSelectedLoc] = useState('ITB Jatinangor');
-
-  const locations = ['ITB Ganesha', 'ITB Jatinangor', 'ITB Cirebon'];
 
   const filteredFavorites = useMemo(() => {
     return MOCK_FAVORITES.filter(item => {
@@ -51,39 +47,6 @@ export default function FavoritesPage() {
 
   return (
     <div className={styles.container}>
-      <header className={styles.header}>
-        <div className={styles.headerContent}>
-          <div className={styles.headerLeft}>
-            <Link href="/"><img src="/img/logo.png" alt="Logo" className={styles.logo} /></Link>
-            <div className={styles.locationPicker} onClick={() => setShowLocDropdown(!showLocDropdown)}>
-              <img src="/img/icons/location.png" alt="" className={styles.locIconHeader} />
-              <span className={styles.locText}>{selectedLoc}</span>
-              <img src="/img/icons/arrow-down.png" alt="" className={styles.dropdownIcon} style={{ transform: showLocDropdown ? 'rotate(180deg)' : 'none' }} />
-              {showLocDropdown && (
-                <div style={{ position: 'absolute', top: '50px', left: 0, background: 'white', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', border: '1px solid #f0f0f0', zIndex: 1050, minWidth: '180px', padding: '8px 0', display: 'flex', flexDirection: 'column' }}>
-                  {locations.map((loc) => (
-                    <div key={loc} style={{ padding: '12px 20px', fontSize: '15px', color: '#434343', cursor: 'pointer', backgroundColor: selectedLoc === loc ? '#EEFFFC' : 'transparent', fontWeight: selectedLoc === loc ? '600' : '400' }} onClick={() => { setSelectedLoc(loc); setShowLocDropdown(false); }}>{loc}</div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <form className={styles.globalSearchBar} onSubmit={(e) => { e.preventDefault(); const q = (e.currentTarget.elements.namedItem('q') as HTMLInputElement).value; if (q) window.location.href = `/search?q=${encodeURIComponent(q)}`; }}>
-              <input name="q" type="text" placeholder="Cari barang kuliahmu..." className={styles.globalSearchInput} />
-              <button type="submit" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}><img src="/img/icons/search.png" alt="Search" width={20} height={20} /></button>
-            </form>
-          </div>
-          <div className={styles.navActions}>
-            <Link href="/notifications" className={styles.iconItem}><img src="/img/icons/notification.png" alt="Notification" className={styles.actionIcon} /></Link>
-            <Link href="/chat" className={styles.iconItem}><img src="/img/icons/chat.png" alt="Chat" className={styles.actionIcon} /></Link>
-            <div className={styles.iconItem}>
-              <img src="/img/icons/cart.png" alt="Cart" className={styles.actionIcon} />
-              <div style={{ position: 'absolute', top: 0, right: 0, background: '#008585', color: 'white', fontSize: '10px', borderRadius: '10px', padding: '2px 6px', fontWeight: 'bold' }}>15</div>
-            </div>
-            <Link href="/upload" className={styles.uploadButton}>+ Upload Barang</Link>
-          </div>
-        </div>
-      </header>
-
       <main className={styles.main}>
         <section className={styles.pageHeader}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>

@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import styles from './upload.module.css';
-import Link from 'next/link';
 
 type Step = 'category' | 'detail';
 
@@ -10,10 +9,6 @@ export default function UploadPage() {
   const [step, setStep] = useState<Step>('category');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [originality, setOriginality] = useState<'original' | 'non-original'>('original');
-  const [showLocDropdown, setShowLocDropdown] = useState(false);
-  const [selectedLoc, setSelectedLoc] = useState('ITB Jatinangor');
-
-  const locations = ['ITB Ganesha', 'ITB Jatinangor', 'ITB Cirebon'];
 
   const categories = [
     { name: 'Alat Hitung', icon: '🧮' },
@@ -41,17 +36,12 @@ export default function UploadPage() {
 
   return (
     <div className={styles.container}>
-      {/* Simplified Teal Header with standard navbar size */}
-      <header className={styles.header}>
-        <div className={styles.headerContent} style={{ justifyContent: 'flex-start' }}>
-          <div className={styles.headerLeft}>
-            <div className={styles.navBar}>
-              <button className={styles.backButtonHeader} onClick={handleBack} title="Back">
-                <img src="/img/icons/back-left.png" alt="Back" width={20} height={20} className={styles.backIcon} />
-              </button>
-              <h1 className={styles.pageTitleHeader}>{step === 'category' ? 'Pilih Kategori' : 'Detail Barang'}</h1>
-            </div>
-          </div>
+      <header className={styles.pageHeader}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <button className={styles.backButton} onClick={handleBack} title="Back">
+            <img src="/img/icons/back-left.png" alt="Back" width={20} height={20} />
+          </button>
+          <h1 className={styles.pageTitle}>{step === 'category' ? 'Pilih Kategori' : `Detail Barang (${selectedCategory})`}</h1>
         </div>
       </header>
 

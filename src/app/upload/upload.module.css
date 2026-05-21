@@ -6,119 +6,32 @@
   width: 100%;
   margin: 0 auto;
   position: relative;
-  font-family: 'Inter', sans-serif;
   padding-bottom: 40px;
 }
 
-/* Standardized Global Header */
-.header {
-  background-color: #008585;
-  padding: 12px 100px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  z-index: 1000;
-  min-height: 84px; /* Added to match homepage navbar height */
+.pageHeader {
+  padding: 40px 40px 0;
 }
 
-.headerContent {
-  width: 100%;
-  max-width: 1400px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.headerLeft {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  flex: 1;
-}
-
-.logo {
-  width: 60px;
-  height: auto;
-  cursor: pointer;
-}
-
-.navActions {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
-
-.iconItem {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  position: relative;
-}
-
-.actionIcon {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-  filter: brightness(0) invert(1) brightness(1.2);
-}
-
-.uploadButton {
-  padding: 10px 24px;
+.backButton {
   background: white;
-  border-radius: 8px;
-  border: none;
-  color: #008585;
-  font-size: 16px;
-  font-weight: 600;
+  border: 1px solid #e5e7eb;
   cursor: pointer;
-  white-space: nowrap;
-  transition: transform 0.2s ease;
-  text-decoration: none;
-}
-
-.uploadButton:hover {
-  transform: scale(1.05);
-}
-
-/* Nav Bar internal to header for Step 1/2 info */
-.navBar {
+  padding: 10px;
   display: flex;
   align-items: center;
-  gap: 16px;
-}
-
-.backButtonHeader {
-  background: white;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  display: flex;
-  align-items: center;
-  border-radius: 8px;
+  border-radius: 12px;
   transition: transform 0.2s;
 }
 
-.backButtonHeader:hover {
+.backButton:hover {
   transform: scale(1.05);
 }
 
-.backIcon {
-  filter: invert(34%) sepia(85%) saturate(1352%) hue-rotate(145deg) brightness(95%) contrast(101%); /* #008585 color */
-}
-
-.pageTitleHeader {
-  font-size: 24px;
+.pageTitle {
+  font-size: 28px;
   font-weight: 700;
-  color: white;
-  line-height: 1.2;
+  color: #292929;
 }
 
 /* Content Area */
@@ -126,7 +39,7 @@
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
-  padding: 120px 24px 40px 24px; /* Space for fixed header */
+  padding: 40px 24px;
 }
 
 /* Category Grid */
@@ -134,7 +47,6 @@
   display: grid;
   grid-template-columns: repeat(8, 1fr);
   gap: 24px;
-  margin-top: 24px;
 }
 
 .categoryItem {
@@ -414,9 +326,4 @@
   background-color: #006b6b;
   transform: translateY(-2px);
   box-shadow: 0 8px 16px rgba(0, 133, 133, 0.3);
-}
-
-/* Hidden Mobile elements */
-.statusBar, .homeIndicator {
-  display: none;
 }

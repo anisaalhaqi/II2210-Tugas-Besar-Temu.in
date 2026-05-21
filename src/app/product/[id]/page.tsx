@@ -63,43 +63,6 @@ export default function ProductDetail() {
 
   return (
     <div className={styles.container}>
-      <header className={styles.header}>
-        <div className={styles.headerContent}>
-          <div className={styles.headerLeft}>
-            <Link href="/">
-              <img src="/img/logo.png" alt="Temu.in Logo" className={styles.logo} />
-            </Link>
-            <div className={styles.searchBar}>
-              <input 
-                type="text" 
-                placeholder="Cari barang kuliahmu..." 
-                className={styles.searchInput} 
-              />
-              <div className={styles.searchIconWrapper}>
-                <img src="/img/icons/search.png" alt="Search" className={styles.searchIcon} />
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.headerActions}>
-            <div className={styles.iconsGroup}>
-              <Link href="/notifications" className={styles.iconItem}>
-                <img src="/img/icons/notification.png" alt="Notification" className={styles.actionIcon} />
-              </Link>
-              <Link href="/chat" className={styles.iconItem}>
-                <img src="/img/icons/chat.png" alt="Chat" className={styles.actionIcon} />
-              </Link>
-              <div className={styles.iconItem}>
-                <img src="/img/icons/cart.png" alt="Cart" className={styles.actionIcon} />
-              </div>
-              <Link href="/upload" className={styles.uploadButton}>
-                + Upload Barang
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
-
       <main className={styles.main}>
         <div className={styles.navigationRow}>
           <Link href="/" className={styles.backButton}>

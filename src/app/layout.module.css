@@ -1,0 +1,16 @@
+.wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+.contentWrapper {
+  flex: 1;
+  margin-left: 280px; /* Sidebar width */
+  display: flex;
+  flex-direction: column;
+}
+
+.mainContent {
+  padding-top: 84px; /* Header height */
+  flex: 1;
+}

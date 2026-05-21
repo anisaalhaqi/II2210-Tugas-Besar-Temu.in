@@ -4,82 +4,6 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  font-family: 'Inter', sans-serif;
-}
-
-/* Global Header - Fixed & Consistent */
-.header {
-  background-color: #008585;
-  padding: 12px 100px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  z-index: 1000;
-}
-
-.headerContent {
-  width: 100%;
-  max-width: 1400px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.headerLeft {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
-
-.logo {
-  width: 60px;
-  height: auto;
-  cursor: pointer;
-}
-
-.navActions {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
-
-.iconItem {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-}
-
-.actionIcon {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-  filter: brightness(0) invert(1) brightness(1.2);
-}
-
-.uploadButton {
-  padding: 10px 24px;
-  background: white;
-  border-radius: 8px;
-  border: none;
-  color: #008585;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: transform 0.2s ease;
-  text-decoration: none;
-}
-
-.uploadButton:hover {
-  transform: scale(1.05);
 }
 
 /* Main Content */
@@ -87,7 +11,7 @@
   max-width: 1000px;
   width: 100%;
   margin: 0 auto;
-  padding: 120px 24px 40px 24px; /* Space for fixed header */
+  padding: 40px 24px;
   display: flex;
   flex-direction: column;
   gap: 32px;
@@ -125,13 +49,9 @@
   padding-bottom: 16px;
 }
 
-.tabChip {
-  height: 42px;
-  padding: 0 24px;
+.tab {
+  padding: 10px 24px;
   border-radius: 100px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
@@ -141,7 +61,7 @@
   background: white;
 }
 
-.tabChipActive {
+.tabActive {
   background-color: #EEFFFC;
   border-color: #008585;
   color: #008585;

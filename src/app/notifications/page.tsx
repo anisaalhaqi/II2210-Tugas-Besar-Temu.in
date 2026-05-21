@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import styles from './notifications.module.css';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 export default function NotificationsPage() {
@@ -70,28 +69,6 @@ export default function NotificationsPage() {
 
   return (
     <div className={styles.container}>
-      <header className={styles.header}>
-        <div className={styles.headerContent}>
-          <div className={styles.headerLeft}>
-            <Link href="/">
-              <img src="/img/logo.png" alt="Temu.in" className={styles.logo} />
-            </Link>
-          </div>
-          <div className={styles.navActions}>
-            <Link href="/notifications" className={styles.iconItem}>
-              <img src="/img/icons/notification.png" alt="Notification" className={styles.actionIcon} />
-            </Link>
-            <Link href="/chat" className={styles.iconItem}>
-              <img src="/img/icons/chat.png" alt="Chat" className={styles.actionIcon} />
-            </Link>
-            <div className={styles.iconItem}>
-              <img src="/img/icons/cart.png" alt="Cart" className={styles.actionIcon} />
-            </div>
-            <Link href="/upload" className={styles.uploadButton}>+ Upload Barang</Link>
-          </div>
-        </div>
-      </header>
-
       <main className={styles.main}>
         <div className={styles.topRow}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>

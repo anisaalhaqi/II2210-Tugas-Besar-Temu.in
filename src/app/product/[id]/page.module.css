@@ -4,126 +4,11 @@
   min-height: 100vh;
 }
 
-/* Header Styles Reused */
-.header {
-  background-color: #008585;
-  padding: 12px 100px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  z-index: 1000;
-}
-
-.headerContent {
-  width: 100%;
-  max-width: 1400px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.headerLeft {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  flex: 1;
-}
-
-.logo {
-  width: 60px;
-  height: auto;
-  object-fit: contain;
-}
-
-.searchBar {
-  flex: 0 1 800px;
-  padding: 8px 24px;
-  background: white;
-  border-radius: 100px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-}
-
-.searchInput {
-  flex: 1;
-  border: none;
-  outline: none;
-  font-size: 16px;
-  font-weight: 400;
-  color: #767676;
-}
-
-.searchIconWrapper {
-  width: 20px;
-  height: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.searchIcon {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.headerActions {
-  display: flex;
-  align-items: center;
-  margin-left: 32px;
-}
-
-.iconsGroup {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
-
-.iconItem {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-}
-
-.actionIcon {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-  filter: brightness(0) invert(1) brightness(1.2);
-}
-
-.uploadButton {
-  padding: 10px 24px;
-  background: white;
-  border-radius: 8px;
-  border: none;
-  color: #008585;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: transform 0.2s ease;
-}
-
-.uploadButton:hover {
-  transform: scale(1.05);
-}
-
 /* Product Main Layout */
 .main {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 120px 24px 80px 24px;
+  padding: 40px 24px 80px 24px;
   display: flex;
   flex-direction: column;
   gap: 32px;
@@ -144,6 +29,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  text-decoration: none;
 }
 
 .navIconSmall {
@@ -565,6 +451,7 @@
   transition: box-shadow 0.2s ease, transform 0.2s ease;
   cursor: pointer;
   border: 1px solid #f0f0f0;
+  text-decoration: none;
 }
 
 .productCard:hover {
