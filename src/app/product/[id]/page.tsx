@@ -3,6 +3,7 @@
 import { useParams, useRouter } from 'next/navigation';
 import styles from './page.module.css';
 import Link from 'next/link';
+import { ArrowLeft, Heart, Clock, Hourglass, ShieldCheck, Tag, ShoppingBag, MapPin, Star } from 'lucide-react';
 
 export default function ProductDetail() {
   const params = useParams();
@@ -38,8 +39,8 @@ export default function ProductDetail() {
     category: 'Alat Laboratorium',
     description: 'Barang ini masih dalam kondisi prima. Alasan jual: Sudah tidak digunakan lagi dan ingin membantu sesama mahasiswa mendapatkan barang berkualitas dengan harga terjangkau.',
     deliveryMethods: [
-      { type: 'Jasa Pengiriman', detail: '29 Maret - 5 April 2026', icon: '/img/icons/delivery.png' },
-      { type: 'Ketemuan', detail: 'Kampus Ganesha', icon: '/img/icons/location.png' }
+      { type: 'Jasa Pengiriman', detail: '29 Maret - 5 April 2026', icon: ShoppingBag },
+      { type: 'Ketemuan', detail: 'Kampus Ganesha', icon: MapPin }
     ],
     seller: {
       name: 'Jae Hwan',
@@ -65,10 +66,10 @@ export default function ProductDetail() {
     <div className={styles.container}>
       <main className={styles.main}>
         <div className={styles.navigationRow}>
-          <Link href="/" className={styles.backButton}>
-             <img src="/img/icons/back-left.png" alt="" className={styles.navIconSmall} />
+          <button onClick={() => router.back()} className={styles.backButton} style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: '#767676' }}>
+             <ArrowLeft size={20} />
              Kembali
-          </Link>
+          </button>
         </div>
 
         <div className={styles.productLayout}>
@@ -86,7 +87,7 @@ export default function ProductDetail() {
             <div className={styles.titleRow}>
               <h1 className={styles.productTitle}>{product.title}</h1>
               <div className={styles.likes}>
-                <img src="/img/icons/favorite.png" alt="Likes" className={styles.likeIcon} />
+                <Heart size={20} className={styles.likeIcon} fill="#FF4B4B" color="#FF4B4B" />
                 <span>{product.likes}</span>
               </div>
             </div>
@@ -94,22 +95,22 @@ export default function ProductDetail() {
 
             <ul className={styles.specList}>
               <li>
-                <img src="/img/icons/clock.png" alt="" className={styles.specIcon} />
+                <Clock size={18} className={styles.specIcon} color="#008585" />
                 <span className={styles.specLabel}>{product.postedTime} oleh</span>
                 <span className={styles.specValueBold}>{product.sellerName}</span>
               </li>
               <li>
-                <img src="/img/icons/hourglass.png" alt="" className={styles.specIcon} />
+                <Hourglass size={18} className={styles.specIcon} color="#008585" />
                 <span className={styles.specLabel}>Pemakaian</span>
                 <span className={styles.specValue}>{product.usagePeriod}</span>
               </li>
               <li>
-                <img src="/img/icons/protect.png" alt="" className={styles.specIcon} />
+                <ShieldCheck size={18} className={styles.specIcon} color="#008585" />
                 <span className={styles.specLabel}>Status</span>
                 <span className={styles.specValue}>{product.originality}</span>
               </li>
               <li>
-                <img src="/img/icons/category.png" alt="" className={styles.specIcon} />
+                <Tag size={18} className={styles.specIcon} color="#008585" />
                 <span className={styles.specLabel}>Di Kategori</span>
                 <span className={styles.specValueBold}>{product.category}</span>
               </li>
@@ -118,7 +119,7 @@ export default function ProductDetail() {
             <div className={styles.conditionBox}>
               <div className={styles.conditionHeader}>
                 <h3>Ringkasan Kondisi Barang</h3>
-                <img src="/img/icons/graph.png" alt="Analysis" className={styles.sparkleIcon} />
+                <Star size={20} className={styles.sparkleIcon} color="#008585" />
               </div>
               <div className={styles.conditionDetails}>
                 <p><strong>Warna:</strong> {productData.title.includes('Jas') ? 'Putih' : 'Sesuai Foto'} (terlihat masih cukup cerah, tetapi ada sedikit bayangan lipatan atau kerutan karena penyimpanan)</p>
@@ -135,12 +136,15 @@ export default function ProductDetail() {
             <div className={styles.deliverySection}>
               <h3>Metode Pengambilan</h3>
               <ul className={styles.deliveryList}>
-                {product.deliveryMethods.map((m, idx) => (
-                  <li key={idx}>
-                    <img src={m.icon} alt="" className={styles.deliveryIconImg} />
-                    <span>{m.type} ({m.detail})</span>
-                  </li>
-                ))}
+                {product.deliveryMethods.map((m, idx) => {
+                  const Icon = m.icon;
+                  return (
+                    <li key={idx}>
+                      <Icon size={20} color="#008585" />
+                      <span>{m.type} ({m.detail})</span>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
 
@@ -219,7 +223,7 @@ export default function ProductDetail() {
                     <p className={styles.productPriceMini}>{item.price}</p>
                     <div className={styles.productFooterMini}>
                       <div className={styles.productLocationMini}>
-                        <img src="/img/icons/location.png" alt="" className={styles.locIcon} />
+                        <MapPin size={14} color="#767676" />
                         <span>{item.location}</span>
                       </div>
                     </div>

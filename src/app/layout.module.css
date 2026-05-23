@@ -14,3 +14,7 @@
   padding-top: 84px; /* Header height */
   flex: 1;
 }
+
+.noPadding {
+  padding-top: 0 !important;
+}

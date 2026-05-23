@@ -2,10 +2,13 @@
 
 import { useState } from 'react';
 import styles from './upload.module.css';
+import { ArrowLeft, Plus, Calendar, MapPin, BarChart3, ChevronDown } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 type Step = 'category' | 'detail';
 
 export default function UploadPage() {
+  const router = useRouter();
   const [step, setStep] = useState<Step>('category');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [originality, setOriginality] = useState<'original' | 'non-original'>('original');
@@ -30,7 +33,7 @@ export default function UploadPage() {
     if (step === 'detail') {
       setStep('category');
     } else {
-      window.history.back();
+      router.back();
     }
   };
 
@@ -38,8 +41,16 @@ export default function UploadPage() {
     <div className={styles.container}>
       <header className={styles.pageHeader}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <button className={styles.backButton} onClick={handleBack} title="Back">
-            <img src="/img/icons/back-left.png" alt="Back" width={20} height={20} />
+          <button 
+            className={styles.backButton} 
+            onClick={handleBack} 
+            title="Back"
+            style={{
+              background: 'white', border: '1px solid #e5e7eb', cursor: 'pointer', padding: '10px',
+              display: 'flex', alignItems: 'center', borderRadius: '12px', color: '#292929'
+            }}
+          >
+            <ArrowLeft size={20} />
           </button>
           <h1 className={styles.pageTitle}>{step === 'category' ? 'Pilih Kategori' : `Detail Barang (${selectedCategory})`}</h1>
         </div>
@@ -64,7 +75,7 @@ export default function UploadPage() {
                   <img src="https://placehold.co/120x120" alt="Item" className={styles.photoImage} />
                   {[1, 2, 3].map((i) => (
                     <div key={i} className={styles.photoPlaceholder}>
-                      <img src="/img/icons/plus.png" alt="Add" className={styles.photoIcon} />
+                      <Plus size={24} color="#A5A5A5" />
                     </div>
                   ))}
                 </div>
@@ -80,7 +91,7 @@ export default function UploadPage() {
                 <label className={styles.label}>Lama Pemakaian</label>
                 <div className={styles.inputWrapper}>
                   <input type="text" placeholder="Masukkan lama pemakaian" className={styles.input} />
-                  <img src="/img/icons/calendar.png" className={styles.inputIcon} alt="Calendar" />
+                  <Calendar size={20} className={styles.inputIcon} color="#767676" />
                 </div>
               </div>
 
@@ -118,14 +129,14 @@ export default function UploadPage() {
                     <label className={styles.label}>Jasa Pengiriman</label>
                     <div className={styles.inputWrapper}>
                       <input type="text" placeholder="Pilih tanggal pengiriman" className={styles.input} />
-                      <img src="/img/icons/calendar.png" className={styles.inputIcon} alt="Calendar" />
+                      <Calendar size={20} className={styles.inputIcon} color="#767676" />
                     </div>
                   </div>
                   <div className={styles.formGroup}>
                     <label className={styles.label}>Ketemuan (COD)</label>
                     <div className={styles.inputWrapper}>
                       <input type="text" placeholder="Masukkan lokasi ketemuan" className={styles.input} />
-                      <img src="/img/icons/location.png" alt="Location" className={styles.inputIcon} />
+                      <MapPin size={20} className={styles.inputIcon} color="#767676" />
                     </div>
                   </div>
                 </div>
@@ -136,10 +147,10 @@ export default function UploadPage() {
               <div className={styles.aiAnalysisCard}>
                 <div className={styles.aiHeader}>
                   <div className={styles.aiTitle}>
-                    <img src="/img/icons/graph.png" alt="AI Analysis" className={styles.aiIcon} />
+                    <BarChart3 size={20} className={styles.aiIcon} color="#008585" />
                     <span>Analisis AI Temu.in</span>
                   </div>
-                  <img src="/img/icons/arrow-down.png" alt="Expand" width={24} height={24} style={{ opacity: 0.5 }} />
+                  <ChevronDown size={24} style={{ opacity: 0.5 }} />
                 </div>
                 <div className={styles.aiContent}>
                   <p style={{ marginBottom: '12px' }}>Berdasarkan foto yang kamu unggah, berikut analisis kami:</p>

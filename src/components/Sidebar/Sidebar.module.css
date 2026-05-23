@@ -8,25 +8,42 @@
   left: 0;
   display: flex;
   flex-direction: column;
-  padding: 32px 24px;
+  padding: 24px;
   z-index: 1001;
 }
 
 .logoContainer {
-  margin-bottom: 48px;
-  padding-left: 12px;
+  margin-bottom: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  flex-shrink: 0;
 }
 
 .logo {
-  width: 80px;
-  height: auto;
+  height: 64px;
+  width: auto;
+  object-fit: contain;
+}
+
+.scrollableContent {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 16px;
+  padding-right: 4px;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.scrollableContent::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }
 
 .navLinks {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  flex: 1;
 }
 
 .navItem {
@@ -53,24 +70,27 @@
   font-weight: 600;
 }
 
-.activeNavItem .navIcon {
-  filter: none; /* If teal icons are default */
-}
-
 .navIcon {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-  opacity: 0.7;
+  color: #767676;
+  transition: color 0.2s ease;
 }
 
 .activeNavItem .navIcon {
-  opacity: 1;
+  color: #008585;
+}
+
+.bottomSection {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex-shrink: 0;
+  padding-top: 20px;
+  border-top: 1px solid #f0f0f0;
 }
 
 .uploadSection {
-  margin-top: auto;
-  padding-top: 24px;
+  /* removed padding-top and border-top as it's now in bottomSection */
 }
 
 .uploadButton {
@@ -86,16 +106,71 @@
   font-weight: 600;
   font-size: 16px;
   text-decoration: none;
-  transition: transform 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .uploadButton:hover {
-  transform: scale(1.02);
   background-color: #007575;
+  box-shadow: 0 4px 12px rgba(0, 133, 133, 0.2);
 }
 
-.plusIcon {
-  width: 18px;
-  height: 18px;
-  filter: brightness(0) invert(1);
+.profileSection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background-color: #f9fafb;
+  border-radius: 16px;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.userAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.userDetails {
+  display: flex;
+  flex-direction: column;
+}
+
+.userName {
+  font-size: 14px;
+  font-weight: 700;
+  color: #292929;
+}
+
+.userRole {
+  font-size: 12px;
+  color: #767676;
+}
+
+.profileActions {
+  display: flex;
+  gap: 4px;
+}
+
+.actionBtn {
+  background: none;
+  border: none;
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #767676;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.actionBtn:hover {
+  background-color: #f0f0f0;
+  color: #008585;
 }

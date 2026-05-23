@@ -3,8 +3,11 @@
 import { useState } from 'react';
 import styles from './chat.module.css';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
 
 export default function ChatPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('Semua');
   const tabs = ['Semua', 'Ketemuan', 'Belum dibaca'];
 
@@ -15,16 +18,27 @@ export default function ChatPage() {
     { id: 4, name: 'Jessica', time: '6 hari yang lalu', message: 'Iyah bubb', img: 'https://placehold.co/58x58' }
   ];
 
-  const handleBack = () => {
-    window.history.back();
-  };
-
   return (
     <div className={styles.container}>
       <main className={styles.main}>
         <div className={styles.pageHeader}>
-          <button className={styles.backButton} onClick={handleBack} title="Kembali">
-            <img src="/img/icons/back-left.png" alt="Back" width={24} height={24} />
+          <button 
+            className={styles.backButton} 
+            onClick={() => router.back()} 
+            title="Kembali"
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              color: '#292929',
+              background: 'white',
+              border: '1px solid #e5e7eb',
+              borderRadius: '12px',
+              padding: '10px',
+              cursor: 'pointer'
+            }}
+          >
+            <ArrowLeft size={24} />
           </button>
           <h1 className={styles.pageTitle}>Chat</h1>
         </div>

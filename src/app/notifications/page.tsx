@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import styles from './notifications.module.css';
 import { useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
 
 export default function NotificationsPage() {
   const router = useRouter();
@@ -76,11 +77,11 @@ export default function NotificationsPage() {
               onClick={handleBack} 
               style={{
                 background: 'white', border: '1px solid #e5e7eb', cursor: 'pointer', padding: '10px',
-                display: 'flex', alignItems: 'center', borderRadius: '12px'
+                display: 'flex', alignItems: 'center', borderRadius: '12px', color: '#292929'
               }}
               title="Kembali"
             >
-              <img src="/img/icons/back-left.png" alt="Back" width={20} height={20} />
+              <ArrowLeft size={20} />
             </button>
             <h1 className={styles.pageTitle}>Notifications</h1>
           </div>

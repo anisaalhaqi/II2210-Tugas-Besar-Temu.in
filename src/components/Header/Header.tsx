@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Search, ShoppingCart, MapPin, ChevronDown } from 'lucide-react';
 import styles from './Header.module.css';
 
 export default function Header() {
@@ -20,7 +21,7 @@ export default function Header() {
               if (q) window.location.href = `/search?q=${encodeURIComponent(q)}`;
             }}
           >
-            <img src="/img/icons/search.png" alt="" className={styles.searchIcon} />
+            <Search size={20} className={styles.searchIcon} />
             <input 
               name="q"
               type="text" 
@@ -31,12 +32,15 @@ export default function Header() {
         </div>
 
         <div className={styles.rightSection}>
+          <button className={styles.cartButton} aria-label="Keranjang">
+            <ShoppingCart size={24} />
+          </button>
+
           <div className={styles.locationPicker} onClick={() => setShowLocDropdown(!showLocDropdown)}>
-            <img src="/img/icons/location.png" alt="" className={styles.locIcon} />
+            <MapPin size={20} className={styles.locIcon} />
             <span className={styles.locText}>{selectedLoc}</span>
-            <img 
-              src="/img/icons/arrow-down.png" 
-              alt="" 
+            <ChevronDown 
+              size={18}
               className={styles.dropdownIcon}
               style={{ transform: showLocDropdown ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}
             />

@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { ArrowLeft, Search } from 'lucide-react';
 import styles from './favorites.module.css';
 
 const MOCK_FAVORITES = [
@@ -50,14 +51,14 @@ export default function FavoritesPage() {
       <main className={styles.main}>
         <section className={styles.pageHeader}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <button onClick={handleBack} className={styles.backButton} style={{ padding: '10px', borderRadius: '12px', background: 'white', border: '1px solid #e5e7eb', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Kembali">
-              <img src="/img/icons/back-left.png" alt="Back" width={20} height={20} />
+            <button onClick={handleBack} className={styles.backButton} style={{ padding: '10px', borderRadius: '12px', background: 'white', border: '1px solid #e5e7eb', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#292929' }} title="Kembali">
+              <ArrowLeft size={20} />
             </button>
             <h1 className={styles.pageTitle}>Favorit</h1>
           </div>
           <div className={styles.localSearchWrapper}>
             <div className={styles.localSearchBar}>
-              <img src="/img/icons/search.png" alt="Search" width={20} height={20} style={{ opacity: 0.5 }} />
+              <Search size={20} style={{ color: '#A5A5A5' }} />
               <input type="text" placeholder="Cari barang" className={styles.localSearchInput} value={localQuery} onChange={(e) => setLocalQuery(e.target.value)} />
             </div>
           </div>

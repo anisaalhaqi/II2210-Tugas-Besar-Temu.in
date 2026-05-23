@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import styles from './search.module.css';
 import Link from 'next/link';
+import { Search, Bell, MessageCircle, PlusCircle, ArrowLeft, MapPin } from 'lucide-react';
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -56,15 +57,14 @@ export default function SearchPage() {
 
   return (
     <div className={styles.container}>
-      {/* Global Header */}
       <header className={styles.header}>
         <div className={styles.headerContent}>
           <div className={styles.headerLeft}>
-            <Link href="/">
-              <img src="/img/logo.png" alt="Temu.in" className={styles.logo} />
-            </Link>
+            <button onClick={() => router.back()} className={styles.backButton} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', marginRight: '16px' }}>
+              <ArrowLeft size={24} />
+            </button>
             <form onSubmit={handleSearch} className={styles.searchBarWrapper}>
-              <img src="/img/icons/search.png" alt="" className={styles.searchIcon} />
+              <Search size={20} className={styles.searchIcon} color="#767676" />
               <input 
                 type="text" 
                 placeholder="Cari barang kuliahmu..." 
@@ -78,18 +78,20 @@ export default function SearchPage() {
 
           <div style={{ display: 'flex', gap: '24px', alignItems: 'center', marginLeft: '32px' }}>
              <Link href="/notifications">
-                <img src="/img/icons/notification.png" alt="Notification" style={{ width: '28px', height: '28px', filter: 'brightness(0) invert(1)' }} />
+                <Bell size={24} color="white" />
              </Link>
              <Link href="/chat">
-                <img src="/img/icons/chat.png" alt="Chat" style={{ width: '28px', height: '28px', filter: 'brightness(0) invert(1)' }} />
+                <MessageCircle size={24} color="white" />
              </Link>
-             <Link href="/upload" style={{ color: 'white', fontWeight: '600' }}>+ Upload Barang</Link>
+             <Link href="/upload" style={{ color: 'white', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <PlusCircle size={20} />
+                Upload Barang
+             </Link>
           </div>
         </div>
       </header>
 
       {!isSearching ? (
-        /* Suggestions View */
         <main className={styles.suggestionsMain}>
           {suggestions.map((s, idx) => (
             <div key={idx} className={styles.suggestionItem} onClick={() => handleSuggestionClick(s)}>
@@ -101,7 +103,6 @@ export default function SearchPage() {
           ))}
         </main>
       ) : (
-        /* Results View */
         <main className={styles.resultsMain}>
           <div className={styles.filterRow}>
             {filters.map((f) => (
@@ -123,7 +124,7 @@ export default function SearchPage() {
                   <h3 className={styles.productTitle}>{item.title}</h3>
                   <p className={styles.productPrice}>{item.price}</p>
                   <div className={styles.productFooter}>
-                    <img src="/img/icons/location.png" alt="" className={styles.locIcon} />
+                    <MapPin size={14} color="#767676" style={{ marginRight: '6px' }} />
                     <span className={styles.locationText}>{item.location}</span>
                   </div>
                 </div>

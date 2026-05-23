@@ -1,8 +1,11 @@
 'use client';
 
+import { ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import styles from './aktivitas.module.css';
 
 export default function AktivitasPage() {
+  const router = useRouter();
   const activities = [
     { id: 1, type: 'Pembelian', title: 'Jas Laboratorium TPB', status: 'Selesai', date: '20 Mei 2026', price: 'Rp32.000', img: 'https://placehold.co/100x100' },
     { id: 2, type: 'Penjualan', title: 'Buku Kalkulus Purcel', status: 'Dikirim', date: '19 Mei 2026', price: 'Rp50.000', img: 'https://placehold.co/100x100' },
@@ -12,7 +15,25 @@ export default function AktivitasPage() {
   return (
     <div className={styles.container}>
       <header className={styles.pageHeader}>
-        <h1 className={styles.pageTitle}>Aktivitas Saya</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+          <button 
+            onClick={() => router.back()} 
+            style={{ 
+              padding: '10px', 
+              borderRadius: '12px', 
+              background: 'white', 
+              border: '1px solid #e5e7eb', 
+              cursor: 'pointer', 
+              display: 'flex', 
+              alignItems: 'center',
+              color: '#292929'
+            }}
+            title="Kembali"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <h1 className={styles.pageTitle} style={{ marginBottom: 0 }}>Aktivitas Saya</h1>
+        </div>
         <div className={styles.tabs}>
           <button className={`${styles.tab} ${styles.activeTab}`}>Semua</button>
           <button className={styles.tab}>Pembelian</button>
