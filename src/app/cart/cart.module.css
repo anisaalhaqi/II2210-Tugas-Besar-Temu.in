@@ -1,0 +1,262 @@
+.container {
+  min-height: 100vh;
+  background-color: #f8fcfb;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 100px; /* Space for fixed bottom bar */
+}
+
+.main {
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.pageTitle {
+  font-size: 28px;
+  font-weight: 700;
+  color: #292929;
+}
+
+.headerIcons {
+  display: flex;
+  gap: 16px;
+}
+
+.headerIconBtn {
+  background: none;
+  border: none;
+  color: #008585;
+  cursor: pointer;
+  padding: 4px;
+  transition: transform 0.2s;
+}
+
+.headerIconBtn:hover {
+  transform: scale(1.1);
+}
+
+.cartList {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.sellerGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sellerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.sellerTitleArea {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sellerNameLink {
+  text-decoration: none;
+}
+
+.sellerName {
+  font-size: 16px;
+  font-weight: 700;
+  color: #292929;
+  transition: color 0.2s;
+}
+
+.sellerNameLink:hover .sellerName {
+  color: #008585;
+}
+
+.sellerChatBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background-color: #EEFFFC;
+  color: #008585;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid #008585;
+  transition: all 0.2s;
+}
+
+.sellerChatBtn:hover {
+  background-color: #008585;
+  color: white;
+}
+
+.cartItem {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: white;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.checkbox {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #A5A5A5;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.checkboxChecked {
+  background-color: #008585;
+  border-color: #008585;
+}
+
+.productImg {
+  width: 110px;
+  height: 110px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.productInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.productTitle {
+  font-size: 16px;
+  font-weight: 500;
+  color: #292929;
+  line-height: 1.4;
+}
+
+.productPrice {
+  font-size: 20px;
+  font-weight: 700;
+  color: #292929;
+}
+
+.deleteBtn {
+  height: 36px;
+  padding: 0 16px;
+  background: none;
+  border: 1px solid #DC2626;
+  border-radius: 8px;
+  color: #DC2626;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.deleteBtn:hover {
+  background-color: #fef2f2;
+}
+
+/* Fixed Bottom Bar */
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 280px; /* Sidebar width */
+  right: 0;
+  height: 84px;
+  background: white;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  padding: 0 40px;
+  z-index: 1000;
+}
+
+.bottomBarContent {
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.selectAllArea {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.selectAllText {
+  font-size: 16px;
+  font-weight: 600;
+  color: #292929;
+}
+
+.summaryArea {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.totalPrice {
+  font-size: 22px;
+  font-weight: 700;
+  color: #292929;
+}
+
+.buyBtn {
+  height: 44px;
+  padding: 0 40px;
+  background-color: #008585;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.buyBtn:hover {
+  background-color: #007575;
+  box-shadow: 0 4px 12px rgba(0, 133, 133, 0.2);
+}
+
+.buyBtnDisabled {
+  background-color: #A5A5A5;
+  cursor: not-allowed;
+}
+
+.buyBtnDisabled:hover {
+  box-shadow: none;
+}

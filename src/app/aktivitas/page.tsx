@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { ArrowLeft, Heart, MessageCircle, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import styles from './aktivitas.module.css';
@@ -82,12 +83,12 @@ export default function AktivitasPage() {
             <h1 className={styles.pageTitle}>Aktivitas</h1>
           </div>
           <div className={styles.headerIcons}>
-            <button className={styles.headerIconBtn} title="Favorit">
+            <Link href="/favorites" className={styles.headerIconBtn} title="Favorit">
               <Heart size={24} />
-            </button>
-            <button className={styles.headerIconBtn} title="Chat">
+            </Link>
+            <Link href="/chat" className={styles.headerIconBtn} title="Chat">
               <MessageCircle size={24} />
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -139,11 +140,9 @@ export default function AktivitasPage() {
               </div>
             </div>
             <div className={styles.cardActions}>
-              <div className={styles.actionCol}>
-                <button className={styles.outlineBtn}>Tawar Balik</button>
-                <button className={styles.outlineBtn}>Tolak</button>
-              </div>
-              <button className={styles.primaryBtn}>Terima</button>
+              <button className={`${styles.btnAction} ${styles.btnTolak}`}>Tolak</button>
+              <button className={`${styles.btnAction} ${styles.btnTawar}`}>Tawar Balik</button>
+              <button className={`${styles.btnAction} ${styles.btnTerima}`}>Terima</button>
             </div>
           </div>
         ))}

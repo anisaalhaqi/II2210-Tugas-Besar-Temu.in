@@ -1,0 +1,398 @@
+.container {
+  min-height: 100vh;
+  background-color: #f8fcfb;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.backBtn {
+  padding: 10px;
+  border-radius: 12px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: #292929;
+  transition: all 0.2s;
+}
+
+.backBtn:hover {
+  background-color: #f9fafb;
+}
+
+.pageTitle {
+  font-size: 28px;
+  font-weight: 700;
+  color: #292929;
+}
+
+.orderLayout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 32px;
+  align-items: start;
+}
+
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Sections */
+.sectionCard {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #292929;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Location */
+.locationContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.locLabel {
+  font-size: 14px;
+  color: #767676;
+  margin-bottom: 4px;
+}
+
+.locValue {
+  font-size: 20px;
+  font-weight: 700;
+  color: #292929;
+}
+
+.outlineBtn {
+  padding: 8px 20px;
+  border-radius: 8px;
+  border: 1px solid #008585;
+  background: none;
+  color: #008585;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.outlineBtn:hover {
+  background-color: #EEFFFC;
+}
+
+/* Items */
+.sellerInfo {
+  font-size: 15px;
+  font-weight: 700;
+  color: #767676;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f9fafb;
+}
+
+.productItem {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.productImg {
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.productDetails {
+  flex: 1;
+}
+
+.productName {
+  font-size: 15px;
+  font-weight: 500;
+  color: #292929;
+  margin-bottom: 4px;
+}
+
+.productPriceQty {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.price {
+  font-weight: 700;
+  color: #292929;
+}
+
+.qty {
+  color: #767676;
+  font-size: 14px;
+}
+
+/* Message */
+.messageInput {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  font-size: 14px;
+  background-color: #f9fafb;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.messageInput:focus {
+  border-color: #008585;
+  background-color: white;
+}
+
+/* Options (Delivery & Payment) */
+.optionList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.optionCard {
+  padding: 16px;
+  border-radius: 12px;
+  border: 1.5px solid #E6E6E6;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.optionCardActive {
+  border-color: #008585;
+  background-color: #EEFFFC;
+}
+
+.radioCircle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #D6D6D6;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.optionCardActive .radioCircle {
+  border-color: #008585;
+}
+
+.radioInner {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #008585;
+}
+
+.optionInfo h4 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #292929;
+  margin-bottom: 4px;
+}
+
+.optionInfo p {
+  font-size: 13px;
+  color: #767676;
+  line-height: 1.4;
+}
+
+/* Summary Column */
+.summaryCard {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+  position: sticky;
+  top: 100px;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #767676;
+}
+
+.summaryDivider {
+  height: 1px;
+  background-color: #f0f0f0;
+  margin: 16px 0;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.totalLabel {
+  font-size: 16px;
+  font-weight: 600;
+  color: #292929;
+}
+
+.totalValue {
+  font-size: 22px;
+  font-weight: 800;
+  color: #008585;
+}
+
+/* Location Modal */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.modalContent {
+  background: white;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 500px;
+  padding: 32px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.modalTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #292929;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #767676;
+}
+
+.locationOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.locOption {
+  padding: 16px;
+  border-radius: 12px;
+  border: 1.5px solid #E6E6E6;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #434343;
+  transition: all 0.2s;
+}
+
+.locOptionActive {
+  border-color: #008585;
+  background-color: #EEFFFC;
+  color: #008585;
+}
+
+.customLocInput {
+  margin-top: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  font-size: 14px;
+  outline: none;
+}
+
+.customLocInput:focus {
+  border-color: #008585;
+}
+
+.saveBtn {
+  width: 100%;
+  margin-top: 24px;
+  height: 48px;
+  background-color: #008585;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.saveBtn:hover {
+  background-color: #007575;
+}
+
+.placeOrderBtn {
+  width: 100%;
+  height: 48px;
+  background-color: #008585;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.placeOrderBtn:hover {
+  background-color: #007575;
+  box-shadow: 0 4px 12px rgba(0, 133, 133, 0.25);
+}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Search, ShoppingCart, MapPin, ChevronDown } from 'lucide-react';
 import styles from './Header.module.css';
 
@@ -32,9 +33,9 @@ export default function Header() {
         </div>
 
         <div className={styles.rightSection}>
-          <button className={styles.cartButton} aria-label="Keranjang">
+          <Link href="/cart" className={styles.cartButton} aria-label="Keranjang">
             <ShoppingCart size={24} />
-          </button>
+          </Link>
 
           <div className={styles.locationPicker} onClick={() => setShowLocDropdown(!showLocDropdown)}>
             <MapPin size={20} className={styles.locIcon} />
