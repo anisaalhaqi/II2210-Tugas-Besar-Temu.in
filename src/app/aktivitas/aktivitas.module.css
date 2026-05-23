@@ -259,9 +259,146 @@
   min-width: 140px;
 }
 
-.primaryBtn:hover {
+.btnTerima:hover {
   background-color: #007575;
   box-shadow: 0 4px 12px rgba(0, 133, 133, 0.2);
+}
+
+/* Modal Styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(4px);
+}
+
+.counterModal {
+  background: white;
+  border-radius: 28px;
+  width: 100%;
+  max-width: 480px;
+  padding: 32px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.modalTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: #292929;
+}
+
+.navBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #767676;
+}
+
+.modalBody {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.priceChips {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.priceChip {
+  padding: 8px 16px;
+  border-radius: 100px;
+  border: 1.5px solid #E6E6E6;
+  background: white;
+  color: #767676;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.priceChipActive {
+  background-color: #EEFFFC;
+  border-color: #008585;
+  color: #008585;
+}
+
+.priceInputArea {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 2px solid #292929;
+}
+
+.rpLabel {
+  font-size: 32px;
+  font-weight: 700;
+  color: #292929;
+}
+
+.largeInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 42px;
+  font-weight: 700;
+  color: #292929;
+  background: none;
+}
+
+.modalFooter {
+  display: flex;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.modalBtn {
+  flex: 1;
+  height: 52px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btnBatalModal {
+  background: white;
+  border: 1px solid #d1d5db;
+  color: #767676;
+}
+
+.btnAjukanModal {
+  background: #008585;
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 133, 133, 0.2);
+}
+
+.btnAjukanModal:hover {
+  background-color: #007575;
 }
 
 /* Empty State */

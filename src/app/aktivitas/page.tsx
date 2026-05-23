@@ -1,16 +1,35 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Heart, MessageCircle, Check, Inbox } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, Check, Inbox, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import styles from './aktivitas.module.css';
+
+interface Activity {
+  id: number;
+  user: string;
+  role: string;
+  status: string;
+  title: string;
+  action: string;
+  price: string;
+  originalPrice: string;
+  note: string;
+  img: string;
+  transactionType: 'Jual' | 'Beli';
+}
 
 export default function AktivitasPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('Menunggu Konfirmasi');
   const [jualChecked, setJualChecked] = useState(true);
   const [beliChecked, setBeliChecked] = useState(true);
+
+  // Counter Modal States
+  const [showCounterModal, setShowCounterModal] = useState(false);
+  const [activeCounterId, setActiveCounterId] = useState<number | null>(null);
+  const [counterPrice, setCounterPrice] = useState('31.000');
 
   const tabs = [
     'Menunggu Konfirmasi',
@@ -20,7 +39,7 @@ export default function AktivitasPage() {
     'Selesai'
   ];
 
-  const activities = [
+  const [activities, setActivities] = useState<Activity[]>([
     {
       id: 1,
       user: 'zizadhrmaa',
@@ -60,7 +79,33 @@ export default function AktivitasPage() {
       img: 'https://placehold.co/100x110',
       transactionType: 'Beli'
     }
-  ];
+  ]);
+
+  const updateStatus = (id: number, newStatus: string) => {
+    setActivities(prev => prev.map(act => 
+      act.id === id ? { ...act, status: newStatus } : act
+    ));
+  };
+
+  const handleTawarBalik = (id: number) => {
+    setActiveCounterId(id);
+    const act = activities.find(a => a.id === id);
+    if (act) setCounterPrice(act.price.replace('Rp', ''));
+    setShowCounterModal(true);
+  };
+
+  const submitCounterOffer = () => {
+    if (activeCounterId !== null) {
+      setActivities(prev => prev.map(act => 
+        act.id === activeCounterId ? { 
+          ...act, 
+          price: `Rp${counterPrice}`,
+          note: `Penjual menawar balik ke Rp${counterPrice}`
+        } : act
+      ));
+      setShowCounterModal(false);
+    }
+  };
 
   const filteredActivities = activities.filter(item => {
     const matchesTab = item.status === activeTab;
@@ -149,11 +194,19 @@ export default function AktivitasPage() {
                   <p className={styles.priceNote}>{item.note}</p>
                 </div>
               </div>
-              <div className={styles.cardActions}>
-                <button className={`${styles.btnAction} ${styles.btnTolak}`}>Tolak</button>
-                <button className={`${styles.btnAction} ${styles.btnTawar}`}>Tawar Balik</button>
-                <button className={`${styles.btnAction} ${styles.btnTerima}`}>Terima</button>
-              </div>
+              {item.status === 'Menunggu Konfirmasi' && (
+                <div className={styles.cardActions}>
+                  <button className={`${styles.btnAction} ${styles.btnTolak}`} onClick={() => updateStatus(item.id, 'Dibatalkan')}>
+                    Tolak
+                  </button>
+                  <button className={`${styles.btnAction} ${styles.btnTawar}`} onClick={() => handleTawarBalik(item.id)}>
+                    Tawar Balik
+                  </button>
+                  <button className={`${styles.btnAction} ${styles.btnTerima}`} onClick={() => updateStatus(item.id, 'Belum Bayar')}>
+                    Terima
+                  </button>
+                </div>
+              )}
             </div>
           ))
         ) : (
@@ -168,6 +221,52 @@ export default function AktivitasPage() {
           </div>
         )}
       </div>
+
+      {/* Tawar Balik Modal */}
+      {showCounterModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.counterModal}>
+            <div className={styles.modalHeader}>
+              <h3 className={styles.modalTitle}>Tawar Balik</h3>
+              <button className={styles.navBtn} onClick={() => setShowCounterModal(false)}><X size={24} /></button>
+            </div>
+            
+            <div className={styles.modalBody}>
+              <div className={styles.priceChips}>
+                {['31.000', '29.000', '26.000', '24.000'].map(p => (
+                  <button 
+                    key={p} 
+                    className={`${styles.priceChip} ${counterPrice === p ? styles.priceChipActive : ''}`} 
+                    onClick={() => setCounterPrice(p)}
+                  >
+                    Rp{p}
+                  </button>
+                ))}
+              </div>
+              
+              <div className={styles.priceInputArea}>
+                <span className={styles.rpLabel}>Rp</span>
+                <input 
+                  type="text" 
+                  className={styles.largeInput} 
+                  value={counterPrice} 
+                  onChange={(e) => setCounterPrice(e.target.value)} 
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            <div className={styles.modalFooter}>
+              <button className={`${styles.modalBtn} ${styles.btnBatalModal}`} onClick={() => setShowCounterModal(false)}>
+                Batal
+              </button>
+              <button className={`${styles.modalBtn} ${styles.btnAjukanModal}`} onClick={submitCounterOffer}>
+                Ajukan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
