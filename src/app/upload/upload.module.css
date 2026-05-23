@@ -45,8 +45,20 @@
 /* Category Grid */
 .categorySection {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 24px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 32px;
+}
+
+@media (max-width: 1200px) {
+  .categorySection {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .categorySection {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .categoryItem {
@@ -163,13 +175,20 @@
 }
 
 .aiAnalysisCard {
-  background-color: #DBEAFE;
-  border: 1px solid #2563EB;
-  border-radius: 10px;
+  background-color: #EEFFFC;
+  border: 1.5px solid #008585;
+  border-radius: 16px;
   padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  max-height: 120px;
+}
+
+.aiExpanded {
+  max-height: 600px;
 }
 
 .aiHeader {
@@ -195,13 +214,51 @@
 
 .aiContent {
   font-size: 15px;
-  line-height: 1.5;
+  line-height: 1.6;
   color: #434343;
+}
+
+.aiFullContent {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 133, 133, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .aiBold {
   font-weight: 700;
   color: #292929;
+}
+
+.usagePeriodWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.monthYearPicker {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+}
+
+.toSeparator {
+  font-size: 14px;
+  font-weight: 600;
+  color: #767676;
+}
+
+.selectInput {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  color: #292929;
+  background-color: white;
+  cursor: pointer;
 }
 
 .formGroup {
