@@ -24,6 +24,24 @@
   gap: 20px;
 }
 
+.backButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #292929;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  margin-left: -8px; /* Offset padding */
+}
+
+.backButton:hover {
+  background-color: #f3f4f6;
+}
+
 .pageTitle {
   font-size: 32px;
   font-weight: 700;

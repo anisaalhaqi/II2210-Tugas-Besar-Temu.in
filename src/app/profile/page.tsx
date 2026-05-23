@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { 
   MapPin, 
   Star, 
@@ -10,36 +11,103 @@ import {
   ChevronDown, 
   Heart,
   TrendingUp,
-  MoreHorizontal
+  MoreHorizontal,
+  Loader2
 } from 'lucide-react';
 import styles from './profile.module.css';
+import { supabase } from '@/lib/supabase';
+
+interface Profile {
+  full_name: string;
+  avatar_url: string;
+  location: string;
+  rating: number;
+  review_count: number;
+  joined_at: string;
+}
+
+interface Product {
+  id: number;
+  title: string;
+  price: number;
+  images: string[];
+}
 
 export default function ProfilePage() {
-  const inventory = [
-    { id: 1, title: 'Jas Laboratorium Fisika ITB', price: 'Rp32.000', img: 'https://placehold.co/300x300' },
-    { id: 2, title: 'BMP280 Sensor Tekanan Udara Pressure Altimeter Thermometer', price: 'Rp23.000', img: 'https://placehold.co/300x300' },
-    { id: 3, title: 'Cat Poster Sakura Full Set (boleh nego)', price: 'Rp230.000', img: 'https://placehold.co/300x300' },
-    { id: 4, title: 'Buku Phiwiki Edisi lama banyak minus', price: 'Rp30.000', img: 'https://placehold.co/300x300' },
-  ];
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [inventory, setInventory] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Menggunakan ID Jae Hwan dari SEED.sql
+  const JAE_HWAN_ID = '00000000-0000-0000-0000-000000000001';
+
+  useEffect(() => {
+    async function fetchProfileData() {
+      try {
+        setLoading(true);
+        
+        // 1. Fetch Profile
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', JAE_HWAN_ID)
+          .single();
+
+        if (profileError) throw profileError;
+        setProfile(profileData);
+
+        // 2. Fetch Products
+        const { data: productsData, error: productsError } = await supabase
+          .from('products')
+          .select('*')
+          .eq('seller_id', JAE_HWAN_ID);
+
+        if (productsError) throw productsError;
+        setInventory(productsData || []);
+
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProfileData();
+  }, []);
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(price);
+  };
+
+  if (loading) {
+    return (
+      <div className={styles.container} style={{ justifyContent: 'center', alignItems: 'center' }}>
+        <Loader2 className="animate-spin" size={48} color="#008585" />
+        <p style={{ marginTop: '16px', color: '#767676', fontWeight: '600' }}>Memuat profil...</p>
+      </div>
+    );
+  }
+
+  if (!profile) return <div className={styles.container}>Profil tidak ditemukan.</div>;
 
   return (
     <div className={styles.container}>
-      {/* Teal Banner */}
       <div className={styles.banner}></div>
 
-      {/* Profile Content Area */}
       <main className={styles.content}>
-        
-        {/* Profile Info Card */}
         <section className={styles.profileCard}>
           <div className={styles.profileHeader}>
             <div className={styles.mainInfo}>
-              <img src="https://placehold.co/100x100" alt="Jae Hwan" className={styles.avatar} />
+              <img src={profile.avatar_url} alt={profile.full_name} className={styles.avatar} />
               <div className={styles.nameSection}>
-                <h1>Jae Hwan</h1>
+                <h1>{profile.full_name}</h1>
                 <div className={styles.locationInfo}>
                   <MapPin size={16} />
-                  <span>ITB Ganesha</span>
+                  <span>{profile.location}</span>
                 </div>
               </div>
             </div>
@@ -47,10 +115,10 @@ export default function ProfilePage() {
             <div className={styles.statsSection}>
               <div className={styles.statItem}>
                 <div className={styles.statValue}>
-                  <span>5.0</span>
+                  <span>{profile.rating.toFixed(1)}</span>
                   <Star size={16} fill="#008585" color="#008585" />
                 </div>
-                <span className={styles.statLabel}>20 reviews</span>
+                <span className={styles.statLabel}>{profile.review_count} reviews</span>
               </div>
               <div className={styles.divider}></div>
               <div className={styles.statItem}>
@@ -80,7 +148,6 @@ export default function ProfilePage() {
           </div>
         </section>
 
-        {/* Insight Card */}
         <section className={styles.insightsCard}>
           <div className={styles.insightIconBox}>
             <TrendingUp size={24} />
@@ -92,10 +159,9 @@ export default function ProfilePage() {
           <MoreHorizontal size={20} color="#767676" />
         </section>
 
-        {/* Inventory Section */}
         <section className={styles.inventorySection}>
           <div className={styles.inventoryHeader}>
-            <h2 className={styles.inventoryTitle}>4 barang</h2>
+            <h2 className={styles.inventoryTitle}>{inventory.length} barang</h2>
             <div className={styles.searchFilterRow}>
               <div className={styles.searchBox}>
                 <Search size={18} color="#A5A5A5" />
@@ -103,16 +169,13 @@ export default function ProfilePage() {
               </div>
               <div className={styles.filterGroup}>
                 <button className={styles.filterChip}>
-                  Filters
-                  <ChevronDown size={16} />
+                  Filters <ChevronDown size={16} />
                 </button>
                 <button className={styles.filterChip}>
-                  Ketersediaan: Semua
-                  <ChevronDown size={16} />
+                  Ketersediaan: Semua <ChevronDown size={16} />
                 </button>
                 <button className={styles.filterChip}>
-                  Kategori: Semua
-                  <ChevronDown size={16} />
+                  Kategori: Semua <ChevronDown size={16} />
                 </button>
               </div>
             </div>
@@ -121,14 +184,14 @@ export default function ProfilePage() {
           <div className={styles.productGrid}>
             {inventory.map((item) => (
               <div key={item.id} className={styles.productCard}>
-                <img src={item.img} alt={item.title} className={styles.productImg} />
+                <img src={item.images[0] || 'https://placehold.co/300x300'} alt={item.title} className={styles.productImg} />
                 <div className={styles.productInfo}>
                   <div className={styles.productTitleRow}>
                     <h3 className={styles.productTitle}>{item.title}</h3>
                     <Heart size={20} className={styles.favIcon} />
                   </div>
                   <div className={styles.productPriceRow}>
-                    <span className={styles.productPrice}>{item.price}</span>
+                    <span className={styles.productPrice}>{formatPrice(item.price)}</span>
                     <MoreVertical size={18} className={styles.moreBtn} />
                   </div>
                 </div>
@@ -136,7 +199,6 @@ export default function ProfilePage() {
             ))}
           </div>
         </section>
-
       </main>
     </div>
   );

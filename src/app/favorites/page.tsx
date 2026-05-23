@@ -1,57 +1,107 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Search, Inbox } from 'lucide-react';
+import { ArrowLeft, Search, Inbox, Loader2 } from 'lucide-react';
 import styles from './favorites.module.css';
+import { supabase } from '@/lib/supabase';
 
-const MOCK_FAVORITES = [
-  { id: 1, title: 'Pulpen Tanda Tangan Signobal', price: 'Rp50.000', location: 'Ganesha', img: 'https://placehold.co/300x200', available: true, category: 'Alat Tulis' },
-  { id: 2, title: 'Penggaris besi 30cm', price: 'Rp15.000', location: 'Jatinangor', img: 'https://placehold.co/300x200', available: true, category: 'Alat Tulis' },
-  { id: 3, title: 'Jas Laboratorium TPB', price: 'Rp32.000', location: 'Cirebon', img: 'https://placehold.co/300x200', available: true, category: 'Jas Lab' },
-  { id: 4, title: 'BMP280 Sensor Tekanan Udara Pressure Altimeter Thermometer', price: 'Rp10.000', location: 'Cirebon', img: 'https://placehold.co/300x200', available: true, category: 'Elektronika' },
-  { id: 5, title: 'Kacamata Lab', price: 'Rp50.000', location: 'Cirebon', img: 'https://placehold.co/300x200', available: true, category: 'Alat Lab' },
-  { id: 6, title: 'Buku Mathco bekas', price: 'Rp50.000', location: 'Cirebon', img: 'https://placehold.co/300x200', available: false, category: 'Buku' },
-  { id: 7, title: 'Buku Chempro BARUUU', price: 'Rp50.000', location: 'Cirebon', img: 'https://placehold.co/300x200', available: false, category: 'Buku' },
-  { id: 8, title: 'Buku catatan kalkulus I lengkap dengan rumus catatan', price: 'Rp50.000', location: 'Cirebon', img: 'https://placehold.co/300x200', available: false, category: 'Buku' },
-];
-
-const CATEGORIES = ['Alat Tulis', 'Jas Lab', 'Elektronika', 'Alat Lab', 'Buku'];
+interface FavoriteItem {
+  id: number;
+  product: {
+    id: number;
+    title: string;
+    price: number;
+    location: string;
+    images: string[];
+    category: string;
+  }
+}
 
 export default function FavoritesPage() {
   const router = useRouter();
+  const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [localQuery, setLocalQuery] = useState('');
   const [availabilityFilter, setAvailabilityFilter] = useState<'Semua' | 'Tersedia' | 'Tidak Tersedia'>('Semua');
   const [categoryFilter, setCategoryFilter] = useState<string>('Semua');
   const [openDropdown, setOpenDropdown] = useState<'availability' | 'category' | null>(null);
 
+  const JAE_HWAN_ID = '00000000-0000-0000-0000-000000000001';
+
+  async function fetchFavorites() {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('favorites')
+        .select(`
+          id,
+          product:product_id (
+            id, title, price, location, images, category
+          )
+        `)
+        .eq('user_id', JAE_HWAN_ID);
+
+      if (error) throw error;
+      setFavorites(data as any || []);
+    } catch (err) {
+      console.error('Error fetching favorites:', err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchFavorites();
+  }, []);
+
   const filteredFavorites = useMemo(() => {
-    return MOCK_FAVORITES.filter(item => {
-      const matchesQuery = item.title.toLowerCase().includes(localQuery.toLowerCase());
+    return favorites.filter(item => {
+      if (!item.product) return false;
+      const matchesQuery = item.product.title.toLowerCase().includes(localQuery.toLowerCase());
+      
+      // Since mock doesn't have availability in DB yet, we assume true for now
       let matchesAvailability = true;
-      if (availabilityFilter === 'Tersedia') matchesAvailability = item.available;
-      if (availabilityFilter === 'Tidak Tersedia') matchesAvailability = !item.available;
+      
       let matchesCategory = true;
-      if (categoryFilter !== 'Semua') matchesCategory = item.category === categoryFilter;
+      if (categoryFilter !== 'Semua') matchesCategory = item.product.category === categoryFilter;
+      
       return matchesQuery && matchesAvailability && matchesCategory;
     });
-  }, [localQuery, availabilityFilter, categoryFilter]);
+  }, [localQuery, availabilityFilter, categoryFilter, favorites]);
+
+  const categories = useMemo(() => {
+    const cats = favorites.map(f => f.product?.category).filter(Boolean);
+    return Array.from(new Set(cats));
+  }, [favorites]);
 
   const toggleDropdown = (type: 'availability' | 'category') => {
     setOpenDropdown(openDropdown === type ? null : type);
   };
 
-  const handleBack = () => {
-    router.back();
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(price);
   };
+
+  if (loading) {
+    return (
+      <div className={styles.container} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+        <Loader2 className="animate-spin" size={48} color="#008585" />
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
       <main className={styles.main}>
         <section className={styles.pageHeader}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <button onClick={handleBack} className={styles.backButton} style={{ padding: '10px', borderRadius: '12px', background: 'white', border: '1px solid #e5e7eb', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#292929' }} title="Kembali">
+            <button onClick={() => router.back()} className={styles.backButton} title="Kembali">
               <ArrowLeft size={20} />
             </button>
             <h1 className={styles.pageTitle}>Favorit</h1>
@@ -87,8 +137,8 @@ export default function FavoritesPage() {
              {openDropdown === 'category' && (
                <div className={styles.dropdownMenu}>
                  <div className={`${styles.dropdownItem} ${categoryFilter === 'Semua' ? styles.dropdownItemActive : ''}`} onClick={() => { setCategoryFilter('Semua'); setOpenDropdown(null); }}>Semua Kategori</div>
-                 {CATEGORIES.map(cat => (
-                   <div key={cat} className={`${styles.dropdownItem} ${categoryFilter === cat ? styles.dropdownItemActive : ''}`} onClick={() => { setCategoryFilter(cat); setOpenDropdown(null); }}>{cat}</div>
+                 {categories.map(cat => (
+                   <div key={cat} className={`${styles.dropdownItem} ${categoryFilter === cat ? styles.dropdownItemActive : ''}`} onClick={() => { setCategoryFilter(cat!); setOpenDropdown(null); }}>{cat}</div>
                  ))}
                </div>
              )}
@@ -102,15 +152,14 @@ export default function FavoritesPage() {
         <section className={styles.productGrid}>
           {filteredFavorites.length > 0 ? (
             filteredFavorites.map((item) => (
-              <Link href={`/product/${item.id}`} key={item.id} className={styles.productCard}>
+              <Link href={`/product/${item.product.id}`} key={item.id} className={styles.productCard}>
                 <div className={styles.imageContainer}>
-                  <img src={item.img} alt={item.title} className={styles.productImage} />
-                  {!item.available && <div className={styles.outOfStockOverlay}><div className={styles.outOfStockCircle}><span className={styles.outOfStockText}>Habis</span></div></div>}
+                  <img src={item.product.images[0] || 'https://placehold.co/300x200'} alt={item.product.title} className={styles.productImage} />
                 </div>
                 <div className={styles.productInfo}>
-                  <h3 className={styles.productTitle}>{item.title}</h3>
-                  <p className={styles.productPrice}>{item.price}</p>
-                  <div className={styles.productFooter}><div className={styles.productLocation}><img src="/img/icons/location.png" alt="" className={styles.locIcon} /><span>{item.location}</span></div></div>
+                  <h3 className={styles.productTitle}>{item.product.title}</h3>
+                  <p className={styles.productPrice}>{formatPrice(item.product.price)}</p>
+                  <div className={styles.productFooter}><div className={styles.productLocation}><img src="/img/icons/location.png" alt="" className={styles.locIcon} /><span>{item.product.location}</span></div></div>
                 </div>
               </Link>
             ))

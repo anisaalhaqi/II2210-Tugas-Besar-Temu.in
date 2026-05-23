@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import styles from './page.module.css';
 import Link from 'next/link';
@@ -16,73 +16,114 @@ import {
   Star,
   BarChart3,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Loader2
 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+
+interface Seller {
+  full_name: string;
+  avatar_url: string;
+  rating: number;
+  review_count: number;
+}
+
+interface Product {
+  id: number;
+  title: string;
+  price: number;
+  location: string;
+  description: string;
+  category: string;
+  originality: string;
+  usage_period: string;
+  delivery_dates: string;
+  images: string[];
+  created_at: string;
+  seller_id: string;
+  profiles?: Seller; // Joined from Supabase
+}
 
 export default function ProductDetail() {
   const params = useParams();
   const router = useRouter();
   const id = params?.id;
+  
+  const [product, setProduct] = useState<Product | null>(null);
+  const [recommended, setRecommended] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isAiExpanded, setIsAiExpanded] = useState(false);
-  const [isFavorited, setIsFavorited] = useState(true);
+  const [isFavorited, setIsFavorited] = useState(false);
 
-  // Mock database
-  const allProducts: Record<number, any> = {
-    1: { title: 'Jas lab fisika bekas', price: 'Rp50.000', location: 'Ganesha', img: 'https://placehold.co/600x600' },
-    2: { title: 'Penggaris besi 30cm', price: 'Rp15.000', location: 'Jatinangor', img: 'https://placehold.co/600x600' },
-    3: { title: 'Jas Laboratorium TPB', price: 'Rp32.000', location: 'Cirebon', img: 'https://placehold.co/600x600' },
-    4: { title: 'BMP280 Sensor Tekanan Udara Pressure Altimeter', price: 'Rp10.000', location: 'Cirebon', img: 'https://placehold.co/600x600' },
-    5: { title: 'Buku Chempro Edisi 2025 masih bersih', price: 'Rp50.000', location: 'Cirebon', img: 'https://placehold.co/600x600' },
-    6: { title: 'Jas Laboratorium Fisika TPB', price: 'Rp32.000', location: 'Ganesha', img: 'https://placehold.co/600x600' },
-    7: { title: 'Phiwiki FISIKA DASAR II Soal dan Pembahasan', price: 'Rp50.000', location: 'Cirebon', img: 'https://placehold.co/600x600' },
-    8: { title: 'ESP32 Bekas Micro USB', price: 'Rp50.000', location: 'Cirebon', img: 'https://placehold.co/600x600' },
-  };
+  useEffect(() => {
+    if (!id) return;
 
-  const productData = allProducts[Number(id)] || {
-    title: 'Produk Tidak Ditemukan',
-    price: 'Rp0',
-    location: '-',
-    img: 'https://placehold.co/600x600'
-  };
+    async function fetchProductData() {
+      try {
+        setLoading(true);
+        // 1. Fetch Product with Seller Profile
+        const { data, error } = await supabase
+          .from('products')
+          .select(`
+            *,
+            profiles:seller_id (
+              full_name,
+              avatar_url,
+              rating,
+              review_count
+            )
+          `)
+          .eq('id', id)
+          .single();
 
-  const product = {
-    ...productData,
-    likes: 12,
-    postedTime: '5 hari lalu',
-    sellerName: 'Jae Hwan',
-    usagePeriod: 'Pemakaian Sept 2024-Juli 2025',
-    originality: 'Tidak original',
-    category: 'Alat Laboratorium',
-    description: 'Barang ini masih dalam kondisi prima. Alasan jual: Sudah tidak digunakan lagi dan ingin membantu sesama mahasiswa mendapatkan barang berkualitas dengan harga terjangkau.',
-    deliveryMethods: [
-      { type: 'Jasa Pengiriman', detail: '29 Maret - 5 April 2026', icon: ShoppingBag },
-      { type: 'Ketemuan', detail: 'Kampus Ganesha', icon: MapPin }
-    ],
-    seller: {
-      name: 'Jae Hwan',
-      lastActive: '1 jam yang lalu',
-      rating: '5.0',
-      totalRatings: 70
-    },
-    review: {
-      buyer: 'zizadhrmaaa (Pembeli)',
-      date: '27 April 2026',
-      content: 'Barangnya mantap! Seller juga gercep, ramah, dan enak diajak chat. Kondisi masih oke, sesuai ekspektasi. Makasih ya kak! 🫶😂'
+        if (error) throw error;
+        setProduct(data);
+
+        // 2. Fetch Recommended (same category)
+        const { data: recData } = await supabase
+          .from('products')
+          .select('*')
+          .eq('category', data.category)
+          .neq('id', id)
+          .limit(4);
+        
+        setRecommended(recData || []);
+
+      } catch (err) {
+        console.error('Error:', err);
+      } finally {
+        setLoading(false);
+      }
     }
+
+    fetchProductData();
+  }, [id]);
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(price);
   };
 
-  const recommended = [
-    { id: 1, title: 'Buku Chempro Edisi 2025 masih bersih', price: 'Rp50.000', location: 'Cirebon', img: 'https://placehold.co/300x200' },
-    { id: 2, title: 'Jas Laboratorium Fisika TPB', price: 'Rp75.000', location: 'Ganesha', img: 'https://placehold.co/300x200' },
-    { id: 3, title: 'Phiwiki FISIKA DASAR II Soal dan Pembahasan', price: 'Rp50.000', location: 'Cirebon', img: 'https://placehold.co/300x200' },
-    { id: 4, title: 'ESP32 Bekas Micro USB', price: 'Rp50.000', location: 'Cirebon', img: 'https://placehold.co/300x200' },
-  ];
+  if (loading) {
+    return (
+      <div className={styles.container} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+        <Loader2 className="animate-spin" size={48} color="#008585" />
+      </div>
+    );
+  }
+
+  if (!product) return <div className={styles.container} style={{ padding: '100px', textAlign: 'center' }}>Produk tidak ditemukan.</div>;
+
+  const seller = product.profiles;
 
   return (
     <div className={styles.container}>
       <main className={styles.main}>
         <div className={styles.navigationRow}>
-          <button onClick={() => router.back()} className={styles.backButton} style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: '#767676' }}>
+          <button onClick={() => router.back()} className={styles.backButton}>
              <ArrowLeft size={20} />
              Kembali
           </button>
@@ -91,11 +132,12 @@ export default function ProductDetail() {
         <div className={styles.productLayout}>
           <div className={styles.imageGallery}>
             <div className={styles.mainImageWrapper}>
-              <img src={product.img} alt={product.title} className={styles.mainImage} />
+              <img src={product.images[0] || 'https://placehold.co/600x600'} alt={product.title} className={styles.mainImage} />
             </div>
             <div className={styles.thumbnailList}>
-              <img src={product.img} className={styles.thumbnail} alt="thumb" />
-              <img src="https://placehold.co/100x100" className={styles.thumbnail} alt="thumb" />
+              {product.images.map((img, i) => (
+                <img key={i} src={img} className={styles.thumbnail} alt="thumb" />
+              ))}
             </div>
           </div>
 
@@ -105,40 +147,36 @@ export default function ProductDetail() {
               <div 
                 className={styles.likes} 
                 onClick={() => setIsFavorited(!isFavorited)}
-                style={{ cursor: 'pointer', transition: 'all 0.2s' }}
+                style={{ cursor: 'pointer' }}
               >
                 <Heart 
                   size={24} 
-                  className={styles.likeIcon} 
                   fill={isFavorited ? "#FF4B4B" : "none"} 
                   color={isFavorited ? "#FF4B4B" : "#767676"} 
                 />
-                <span style={{ color: isFavorited ? '#292929' : '#767676' }}>
-                  {isFavorited ? product.likes : product.likes - 1}
-                </span>
               </div>
             </div>
-            <p className={styles.productPrice}>{product.price}</p>
+            <p className={styles.productPrice}>{formatPrice(product.price)}</p>
 
             <ul className={styles.specList}>
               <li>
                 <Clock size={18} className={styles.specIcon} color="#008585" />
-                <span className={styles.specLabel}>{product.postedTime} oleh</span>
-                <span className={styles.specValueBold}>{product.sellerName}</span>
+                <span className={styles.specLabel}>Diposting oleh</span>
+                <Link href="/profile" className={styles.specValueBold}>{seller?.full_name || 'Penjual'}</Link>
               </li>
               <li>
                 <Hourglass size={18} className={styles.specIcon} color="#008585" />
                 <span className={styles.specLabel}>Pemakaian</span>
-                <span className={styles.specValue}>{product.usagePeriod}</span>
+                <span className={styles.specValue}>{product.usage_period || 'Tidak disebutkan'}</span>
               </li>
               <li>
                 <ShieldCheck size={18} className={styles.specIcon} color="#008585" />
                 <span className={styles.specLabel}>Status</span>
-                <span className={styles.specValue}>{product.originality}</span>
+                <span className={styles.specValue}>{product.originality || 'Original'}</span>
               </li>
               <li>
                 <Tag size={18} className={styles.specIcon} color="#008585" />
-                <span className={styles.specLabel}>Di Kategori</span>
+                <span className={styles.specLabel}>Kategori</span>
                 <span className={styles.specValueBold}>{product.category}</span>
               </li>
             </ul>
@@ -154,14 +192,11 @@ export default function ProductDetail() {
               <div className={styles.aiContent}>
                 <div className={styles.aiBrief}>
                   <p>Berdasarkan analisis visual cerdas kami terhadap foto produk ini:</p>
-                  <p><strong>Warna:</strong> {productData.title.includes('Jas') ? 'Putih' : 'Sesuai Foto'} (terlihat masih cukup cerah, tetapi ada sedikit bayangan lipatan atau kerutan karena penyimpanan)</p>
                   <p>✅ Bentuk masih simetris dan jahitan terlihat kokoh.</p>
                 </div>
                 {isAiExpanded && (
                   <div className={styles.aiFullContent}>
-                    <p><strong>Material:</strong> {productData.title.includes('Jas') ? 'Kain katun tebal' : 'Material standar berkualitas'}</p>
-                    <p>⚠️ Barang terlihat sedikit kusut, disarankan setrika ulang agar daya tarik visualnya meningkat.</p>
-                    <p>🔍 Tidak ditemukan noda permanen atau sobekan pada bagian lengan dan kerah.</p>
+                    <p>⚠️ Barang mungkin memiliki sedikit kusut karena penyimpanan.</p>
                     <p>📊 <strong>Kualitas Material:</strong> High Grade (Sangat Awet)</p>
                   </div>
                 )}
@@ -175,15 +210,14 @@ export default function ProductDetail() {
             <div className={styles.deliverySection}>
               <h3>Metode Pengambilan</h3>
               <ul className={styles.deliveryList}>
-                {product.deliveryMethods.map((m, idx) => {
-                  const Icon = m.icon;
-                  return (
-                    <li key={idx}>
-                      <Icon size={20} color="#008585" />
-                      <span>{m.type} ({m.detail})</span>
-                    </li>
-                  );
-                })}
+                <li>
+                  <MapPin size={20} color="#008585" />
+                  <span>Ketemuan (Kampus {product.location})</span>
+                </li>
+                <li>
+                  <ShoppingBag size={20} color="#008585" />
+                  <span>Jasa Pengiriman ({product.delivery_dates || 'Sesuai kesepakatan'})</span>
+                </li>
               </ul>
             </div>
 
@@ -195,82 +229,42 @@ export default function ProductDetail() {
 
         <div className={styles.secondaryContent}>
           <section className={styles.sellerProfile}>
-            <img src="https://placehold.co/90x90" alt={product.seller.name} className={styles.sellerAvatar} />
+            <img src={seller?.avatar_url || 'https://placehold.co/90x90'} alt={seller?.full_name} className={styles.sellerAvatar} />
             <div className={styles.sellerInfo}>
               <div className={styles.sellerNameRow}>
-                <h3>{product.seller.name}</h3>
+                <h3>{seller?.full_name}</h3>
                 <span className={styles.verifiedBadge}>✓</span>
               </div>
-              <p className={styles.activeTime}>{product.seller.lastActive}</p>
+              <p className={styles.activeTime}>Aktif 1 jam yang lalu</p>
               <div className={styles.ratingBox}>
-                <span className={styles.ratingScore}>{product.seller.rating}</span>
-                <span className={styles.ratingTotal}>/{product.seller.totalRatings} Penilaian</span>
+                <span className={styles.ratingScore}>{seller?.rating?.toFixed(1) || '5.0'}</span>
+                <span className={styles.ratingTotal}>/{seller?.review_count || 0} Penilaian</span>
               </div>
             </div>
           </section>
 
-          <section className={styles.reviewsSection}>
-            <h2 className={styles.sectionTitle}>Ulasan</h2>
-            <div className={styles.reviewCard}>
-              <div className={styles.reviewHeader}>
-                <div className={styles.reviewerInfo}>
-                  <img src="https://placehold.co/48x48" alt="Reviewer" className={styles.reviewerAvatar} />
-                  <div>
-                    <p className={styles.reviewerName}>{product.review.buyer}</p>
-                    <div className={styles.stars}>⭐⭐⭐⭐⭐</div>
-                  </div>
-                </div>
-                <div className={styles.reviewMeta}>
-                  <a href="#" className={styles.reportLink}>Laporkan</a>
-                  <span className={styles.reviewDate}>{product.review.date}</span>
-                </div>
-              </div>
-              <p className={styles.reviewText}>{product.review.content}</p>
-              <div className={styles.reviewPhotos}>
-                 <img src="https://placehold.co/171x126" alt="Review Photo 1" />
-                 <img src="https://placehold.co/171x126" alt="Review Photo 2" />
-              </div>
-              <div 
-                className={styles.readAllLink}
-                style={{ 
-                  cursor: 'pointer', 
-                  color: '#008585', 
-                  fontWeight: '700',
-                  padding: '10px',
-                  backgroundColor: 'rgba(0, 133, 133, 0.05)',
-                  borderRadius: '8px',
-                  display: 'inline-block',
-                  textAlign: 'right',
-                  position: 'relative',
-                  zIndex: 999
-                }}
-                onClick={() => router.push('/reviews')}
-              >
-                Baca Semua &rarr;
-              </div>
-            </div>
-          </section>
-
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Pilihan produk lain untuk kamu</h2>
-            <div className={styles.productGrid}>
-              {recommended.map((item) => (
-                <Link href={`/product/${item.id}`} key={item.id} className={styles.productCard}>
-                  <img src={item.img} alt={item.title} className={styles.productImage} />
-                  <div className={styles.productInfoMini}>
-                    <h3 className={styles.productTitleMini}>{item.title}</h3>
-                    <p className={styles.productPriceMini}>{item.price}</p>
-                    <div className={styles.productFooterMini}>
-                      <div className={styles.productLocationMini}>
-                        <MapPin size={14} color="#767676" />
-                        <span>{item.location}</span>
+          {recommended.length > 0 && (
+            <section className={styles.section}>
+              <h2 className={styles.sectionTitle}>Pilihan produk lain untuk kamu</h2>
+              <div className={styles.productGrid}>
+                {recommended.map((item) => (
+                  <Link href={`/product/${item.id}`} key={item.id} className={styles.productCard}>
+                    <img src={item.images[0] || 'https://placehold.co/300x200'} alt={item.title} className={styles.productImage} />
+                    <div className={styles.productInfoMini}>
+                      <h3 className={styles.productTitleMini}>{item.title}</h3>
+                      <p className={styles.productPriceMini}>{formatPrice(item.price)}</p>
+                      <div className={styles.productFooterMini}>
+                        <div className={styles.productLocationMini}>
+                          <MapPin size={14} color="#767676" />
+                          <span>{item.location}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
       </main>
     </div>

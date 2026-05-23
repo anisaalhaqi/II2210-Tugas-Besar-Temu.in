@@ -20,6 +20,24 @@
   margin-bottom: 32px;
 }
 
+.backBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #292929;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  margin-left: -8px;
+}
+
+.backBtn:hover {
+  background-color: #f3f4f6;
+}
+
 .headerLeft {
   display: flex;
   align-items: center;

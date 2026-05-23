@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import styles from './page.module.css';
 import Link from 'next/link';
 import { 
@@ -10,10 +11,24 @@ import {
   Zap, 
   Palette, 
   Package, 
-  Layers 
+  Layers,
+  Loader2
 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+
+interface Product {
+  id: number;
+  title: string;
+  price: number;
+  location: string;
+  images: string[];
+  category: string;
+}
 
 export default function DesktopHome() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const categories = [
     { name: 'Alat Hitung', icon: Calculator },
     { name: 'Alat Lab', icon: FlaskConical },
@@ -25,19 +40,41 @@ export default function DesktopHome() {
     { name: 'Lainnya', icon: Layers },
   ];
 
-  const favorites = [
-    { id: 1, title: 'Jas lab fisika bekas', price: 'Rp50.000', location: 'Ganesha', img: 'https://placehold.co/300x200' },
-    { id: 2, title: 'Penggaris besi 30cm', price: 'Rp15.000', location: 'Jatinangor', img: 'https://placehold.co/300x200' },
-    { id: 3, title: 'Jas Laboratorium TPB', price: 'Rp32.000', location: 'Cirebon', img: 'https://placehold.co/300x200' },
-    { id: 4, title: 'BMP280 Sensor Tekanan Udara Pressure Altimeter', price: 'Rp10.000', location: 'Cirebon', img: 'https://placehold.co/300x200' },
-  ];
+  useEffect(() => {
+    async function fetchHomeData() {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-  const recommended = [
-    { id: 5, title: 'Buku Chempro Edisi 2025 masih bersih', price: 'Rp50.000', location: 'Cirebon', img: 'https://placehold.co/300x200' },
-    { id: 6, title: 'Jas Laboratorium Fisika TPB', price: 'Rp32.000', location: 'Ganesha', img: 'https://placehold.co/300x200' },
-    { id: 7, title: 'Phiwiki FISIKA DASAR II Soal dan Pembahasan', price: 'Rp50.000', location: 'Cirebon', img: 'https://placehold.co/300x200' },
-    { id: 8, title: 'ESP32 Bekas Micro USB', price: 'Rp50.000', location: 'Cirebon', img: 'https://placehold.co/300x200' },
-  ];
+        if (error) throw error;
+        setProducts(data || []);
+      } catch (err) {
+        console.error('Error:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchHomeData();
+  }, []);
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(price);
+  };
+
+  if (loading) {
+    return (
+      <div className={styles.container} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+        <Loader2 className="animate-spin" size={48} color="#008585" />
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
@@ -60,19 +97,19 @@ export default function DesktopHome() {
           </div>
         </section>
 
-        {/* Barang Favorit */}
+        {/* Barang Terbaru / Favorit Mock */}
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Cek barang favoritmu di sini!</h2>
-            <Link href="/favorites" className={styles.seeAll}>Lihat Semua &rarr;</Link>
+            <h2 className={styles.sectionTitle}>Terbaru di Temu.in</h2>
+            <Link href="/search" className={styles.seeAll}>Lihat Semua &rarr;</Link>
           </div>
           <div className={styles.productGrid}>
-            {favorites.map((item) => (
+            {products.slice(0, 4).map((item) => (
               <Link href={`/product/${item.id}`} key={item.id} className={styles.productCard}>
-                <img src={item.img} alt={item.title} className={styles.productImage} />
+                <img src={item.images[0] || 'https://placehold.co/300x200'} alt={item.title} className={styles.productImage} />
                 <div className={styles.productInfo}>
                   <h3 className={styles.productTitle}>{item.title}</h3>
-                  <p className={styles.productPrice}>{item.price}</p>
+                  <p className={styles.productPrice}>{formatPrice(item.price)}</p>
                   <div className={styles.productFooter}>
                     <div className={styles.productLocation}>
                       <img src="/img/icons/location.png" alt="" className={styles.locIcon} />
@@ -85,16 +122,16 @@ export default function DesktopHome() {
           </div>
         </section>
 
-        {/* Pilihan Produk */}
+        {/* Rekomendasi */}
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Pilihan produk untuk kamu</h2>
+          <h2 className={styles.sectionTitle}>Mungkin Kamu Butuh</h2>
           <div className={styles.productGrid}>
-            {recommended.map((item) => (
+            {products.slice(4, 8).map((item) => (
               <Link href={`/product/${item.id}`} key={item.id} className={styles.productCard}>
-                <img src={item.img} alt={item.title} className={styles.productImage} />
+                <img src={item.images[0] || 'https://placehold.co/300x200'} alt={item.title} className={styles.productImage} />
                 <div className={styles.productInfo}>
                   <h3 className={styles.productTitle}>{item.title}</h3>
-                  <p className={styles.productPrice}>{item.price}</p>
+                  <p className={styles.productPrice}>{formatPrice(item.price)}</p>
                   <div className={styles.productFooter}>
                     <div className={styles.productLocation}>
                       <img src="/img/icons/location.png" alt="" className={styles.locIcon} />
@@ -105,6 +142,9 @@ export default function DesktopHome() {
               </Link>
             ))}
           </div>
+          {products.length === 0 && (
+            <p style={{ textAlign: 'center', color: '#767676' }}>Belum ada barang tersedia.</p>
+          )}
         </section>
       </main>
     </div>

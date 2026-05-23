@@ -1,40 +1,60 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Heart, MessageCircle, Check, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, Check, MessageSquare, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import styles from './cart.module.css';
+import { supabase } from '@/lib/supabase';
 
 interface CartItem {
   id: number;
-  seller: string;
-  title: string;
-  price: number;
-  img: string;
+  product: {
+    id: number;
+    title: string;
+    price: number;
+    images: string[];
+    profiles: {
+      full_name: string;
+      id: string;
+    }
+  }
 }
 
 export default function CartPage() {
   const router = useRouter();
-  
-  const [items, setItems] = useState<CartItem[]>([
-    {
-      id: 1,
-      seller: 'Jessica',
-      title: 'Jas Laboratorium Fisika TPB',
-      price: 32000,
-      img: 'https://placehold.co/110x110'
-    },
-    {
-      id: 2,
-      seller: 'Lily',
-      title: 'sensor barometric pressure masih baru bgt',
-      price: 32000,
-      img: 'https://placehold.co/110x110'
-    }
-  ]);
-
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
+  const JAE_HWAN_ID = '00000000-0000-0000-0000-000000000001';
+
+  async function fetchCart() {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('cart_items')
+        .select(`
+          id,
+          product:product_id (
+            id, title, price, images,
+            profiles:seller_id (id, full_name)
+          )
+        `)
+        .eq('user_id', JAE_HWAN_ID);
+
+      if (error) throw error;
+      setItems(data as any || []);
+    } catch (err) {
+      console.error('Error fetching cart:', err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchCart();
+  }, []);
 
   const toggleItem = (id: number) => {
     if (selectedIds.includes(id)) {
@@ -44,8 +64,8 @@ export default function CartPage() {
     }
   };
 
-  const toggleSeller = (seller: string) => {
-    const sellerItemIds = items.filter(item => item.seller === seller).map(item => item.id);
+  const toggleSeller = (sellerId: string) => {
+    const sellerItemIds = items.filter(item => item.product.profiles.id === sellerId).map(item => item.id);
     const allSelected = sellerItemIds.every(id => selectedIds.includes(id));
 
     if (allSelected) {
@@ -57,36 +77,57 @@ export default function CartPage() {
   };
 
   const toggleAll = () => {
-    if (selectedIds.length === items.length) {
+    if (selectedIds.length === items.length && items.length > 0) {
       setSelectedIds([]);
     } else {
       setSelectedIds(items.map(item => item.id));
     }
   };
 
-  const deleteItem = (id: number) => {
-    setItems(items.filter(item => item.id !== id));
-    setSelectedIds(selectedIds.filter(selectedId => selectedId !== id));
+  const deleteItem = async (id: number) => {
+    try {
+      const { error } = await supabase
+        .from('cart_items')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      setItems(items.filter(item => item.id !== id));
+      setSelectedIds(selectedIds.filter(selectedId => selectedId !== id));
+    } catch (err) {
+      console.error('Error deleting item:', err);
+    }
   };
 
   const totalPrice = items
     .filter(item => selectedIds.includes(item.id))
-    .reduce((sum, item) => sum + item.price, 0);
+    .reduce((sum, item) => sum + (item.product?.price || 0), 0);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
       currency: 'IDR',
       minimumFractionDigits: 0
-    }).format(price).replace('Rp', 'Rp');
+    }).format(price);
   };
 
   // Group items by seller
   const groupedItems = items.reduce((acc, item) => {
-    if (!acc[item.seller]) acc[item.seller] = [];
-    acc[item.seller].push(item);
+    if (!item.product) return acc;
+    const sellerName = item.product.profiles.full_name;
+    const sellerId = item.product.profiles.id;
+    if (!acc[sellerId]) acc[sellerId] = { name: sellerName, items: [] };
+    acc[sellerId].items.push(item);
     return acc;
-  }, {} as Record<string, CartItem[]>);
+  }, {} as Record<string, { name: string, items: CartItem[] }>);
+
+  if (loading) {
+    return (
+      <div className={styles.container} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+        <Loader2 className="animate-spin" size={48} color="#008585" />
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
@@ -122,17 +163,17 @@ export default function CartPage() {
         </header>
 
         <div className={styles.cartList}>
-          {Object.entries(groupedItems).map(([seller, sellerItems]) => {
-            const allSellerSelected = sellerItems.every(item => selectedIds.includes(item.id));
+          {Object.entries(groupedItems).map(([sellerId, group]) => {
+            const allSellerSelected = group.items.every(item => selectedIds.includes(item.id));
             return (
-              <div key={seller} className={styles.sellerGroup}>
+              <div key={sellerId} className={styles.sellerGroup}>
                 <div className={styles.sellerHeader}>
-                  <div className={styles.sellerTitleArea} onClick={() => toggleSeller(seller)} style={{ cursor: 'pointer' }}>
+                  <div className={styles.sellerTitleArea} onClick={() => toggleSeller(sellerId)} style={{ cursor: 'pointer' }}>
                     <div className={`${styles.checkbox} ${allSellerSelected ? styles.checkboxChecked : ''}`}>
                       {allSellerSelected && <Check size={16} color="white" strokeWidth={3} />}
                     </div>
                     <Link href="/profile" className={styles.sellerNameLink} onClick={(e) => e.stopPropagation()}>
-                      <span className={styles.sellerName}>{seller}</span>
+                      <span className={styles.sellerName}>{group.name}</span>
                     </Link>
                   </div>
                   <Link href="/chat" className={styles.sellerChatBtn}>
@@ -141,7 +182,7 @@ export default function CartPage() {
                   </Link>
                 </div>
                 
-                {sellerItems.map((item) => {
+                {group.items.map((item) => {
                   const isSelected = selectedIds.includes(item.id);
                   return (
                     <div key={item.id} className={styles.cartItem}>
@@ -151,10 +192,10 @@ export default function CartPage() {
                       >
                         {isSelected && <Check size={16} color="white" strokeWidth={3} />}
                       </div>
-                      <img src={item.img} alt={item.title} className={styles.productImg} />
+                      <img src={item.product.images[0] || 'https://placehold.co/110x110'} alt={item.product.title} className={styles.productImg} />
                       <div className={styles.productInfo}>
-                        <h3 className={styles.productTitle}>{item.title}</h3>
-                        <span className={styles.productPrice}>{formatPrice(item.price)}</span>
+                        <h3 className={styles.productTitle}>{item.product.title}</h3>
+                        <span className={styles.productPrice}>{formatPrice(item.product.price)}</span>
                       </div>
                       <button className={styles.deleteBtn} onClick={() => deleteItem(item.id)}>
                         Hapus
@@ -174,7 +215,6 @@ export default function CartPage() {
         </div>
       </main>
 
-      {/* Fixed Bottom Bar */}
       <footer className={styles.bottomBar}>
         <div className={styles.bottomBarContent}>
           <div className={styles.selectAllArea} onClick={toggleAll}>

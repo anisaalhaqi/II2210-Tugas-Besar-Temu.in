@@ -14,18 +14,21 @@
 }
 
 .backButton {
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: none;
+  border: none;
   cursor: pointer;
-  padding: 10px;
+  color: #292929;
+  padding: 8px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
-  border-radius: 12px;
-  transition: transform 0.2s;
+  justify-content: center;
+  transition: background 0.2s;
+  margin-left: -8px;
 }
 
 .backButton:hover {
-  transform: scale(1.05);
+  background-color: #f3f4f6;
 }
 
 .pageTitle {
@@ -546,14 +549,18 @@
   margin-top: 16px;
 }
 
-.cancelBtn, .applyBtn {
-  flex: 1; /* Make both buttons equal width */
+.modalBtn {
+  flex: 1;
+  min-width: 140px; /* Prevent being 'mini' */
   height: 52px;
   border-radius: 12px;
   font-weight: 700;
   font-size: 16px;
   cursor: pointer;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .cancelBtn {

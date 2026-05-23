@@ -21,9 +21,11 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 
 type Step = 'category' | 'detail';
 
@@ -33,11 +35,17 @@ export default function UploadPage() {
   
   const [step, setStep] = useState<Step>('category');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [title, setTitle] = useState('');
+  const [price, setPrice] = useState('');
+  const [description, setDescription] = useState('');
   const [originality, setOriginality] = useState<'original' | 'non-original'>('original');
   const [isAiExpanded, setIsAiExpanded] = useState(false);
   
-  const [images, setImages] = useState<string[]>([]);
+  // Image Upload State
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [showPhotoWarning, setShowPhotoPhotoWarning] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   
@@ -47,14 +55,15 @@ export default function UploadPage() {
   const [usageEndYear, setUsageEndYear] = useState('2025');
   const [codLocation, setCodLocation] = useState('ITB Ganesha');
   
-  // Dynamic Calendar States
   const [showCalendar, setShowCalendar] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date(2026, 3, 1)); // April 2026
   const [rangeStart, setRangeStart] = useState<number | null>(27);
   const [rangeEnd, setRangeEnd] = useState<number | null>(30);
 
+  const JAE_HWAN_ID = '00000000-0000-0000-0000-000000000001';
+
   const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-  const years = ['2021', '2022', '2023', '2024', '2025', '2026'];
+  const years = ['2021', '2022', '2023', '2024', '2025', '2026', '2027'];
   const campusLocations = ['ITB Ganesha', 'ITB Jatinangor', 'ITB Cirebon'];
 
   const formattedRange = useMemo(() => {
@@ -63,7 +72,7 @@ export default function UploadPage() {
     const year = currentDate.getFullYear();
     if (!rangeEnd) return `${rangeStart} ${monthName} ${year}`;
     return `${rangeStart} ${monthName} - ${rangeEnd} ${monthName} ${year}`;
-  }, [rangeStart, rangeEnd, currentDate]);
+  }, [rangeStart, rangeEnd, currentDate, months]);
 
   const handleDayClick = (day: number) => {
     if (!rangeStart || (rangeStart && rangeEnd)) {
@@ -84,37 +93,90 @@ export default function UploadPage() {
     setRangeEnd(null);
   };
 
-  const categories = [
-    { name: 'Alat Hitung', icon: Calculator },
-    { name: 'Alat Lab', icon: FlaskConical },
-    { name: 'Buku', icon: BookOpen },
-    { name: 'Alat Tulis', icon: PencilLine },
-    { name: 'Elektronika', icon: Zap },
-    { name: 'Alat Studio', icon: Palette },
-    { name: 'Penyimpanan', icon: Package },
-    { name: 'Lainnya', icon: Layers },
-  ];
-
   const handleCategorySelect = (category: string) => {
     setSelectedCategory(category);
     setStep('detail');
   };
 
-  const handleBack = () => {
-    if (step === 'detail') setStep('category');
-    else router.back();
-  };
-
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      const remainingSlots = 4 - images.length;
+      const remainingSlots = 4 - imageFiles.length;
       if (files.length > remainingSlots) {
         setShowPhotoPhotoWarning(true);
         setTimeout(() => setShowPhotoPhotoWarning(false), 5000);
       }
-      const newImages = Array.from(files).slice(0, remainingSlots).map(file => URL.createObjectURL(file));
-      setImages([...images, ...newImages]);
+      
+      const newFiles = Array.from(files).slice(0, remainingSlots);
+      const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+      
+      setImageFiles([...imageFiles, ...newFiles]);
+      setImagePreviews([...imagePreviews, ...newPreviews]);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setImageFiles(imageFiles.filter((_, i) => i !== index));
+    setImagePreviews(imagePreviews.filter((_, i) => i !== index));
+  };
+
+  const handleFormSubmit = async () => {
+    try {
+      setIsSubmitting(true);
+      
+      // 1. Upload Images to Supabase Storage
+      const uploadedImageUrls: string[] = [];
+      
+      for (const file of imageFiles) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `${JAE_HWAN_ID}/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('product-images')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(filePath);
+        
+        uploadedImageUrls.push(publicUrl);
+      }
+
+      // 2. Insert into Database
+      const usage_period = `${usageStartMonth} ${usageStartYear} - ${usageEndMonth} ${usageEndYear}`;
+      const numericPrice = parseInt(price.replace(/[^0-9]/g, '')) || 0;
+
+      const { error } = await supabase
+        .from('products')
+        .insert([{
+          seller_id: JAE_HWAN_ID,
+          title: title,
+          price: numericPrice,
+          location: codLocation,
+          description: description,
+          category: selectedCategory,
+          originality: originality,
+          usage_period: usage_period,
+          delivery_dates: formattedRange, // New column
+          images: uploadedImageUrls.length > 0 ? uploadedImageUrls : ['https://placehold.co/600x600'],
+          ai_analysis: {
+            color: "Putih",
+            condition: "Baik",
+            recommendation: "Rp65k - Rp85k"
+          }
+        }]);
+
+      if (error) throw error;
+      
+      router.push('/'); // Success redirect
+    } catch (err) {
+      console.error('Error uploading product:', err);
+      alert('Gagal mengunggah barang. Pastikan bucket "product-images" sudah dibuat di Supabase.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -136,11 +198,22 @@ export default function UploadPage() {
     </div>
   );
 
+  const categories = [
+    { name: 'Alat Hitung', icon: Calculator },
+    { name: 'Alat Lab', icon: FlaskConical },
+    { name: 'Buku', icon: BookOpen },
+    { name: 'Alat Tulis', icon: PencilLine },
+    { name: 'Elektronika', icon: Zap },
+    { name: 'Alat Studio', icon: Palette },
+    { name: 'Penyimpanan', icon: Package },
+    { name: 'Lainnya', icon: Layers },
+  ];
+
   return (
     <div className={styles.container}>
       <header className={styles.pageHeader}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <button onClick={handleBack} className={styles.backButton}>
+          <button onClick={() => step === 'detail' ? setStep('category') : router.back()} className={styles.backButton}>
             <ArrowLeft size={20} />
           </button>
           <h1 className={styles.pageTitle}>{step === 'category' ? 'Pilih Kategori' : `Detail Barang (${selectedCategory})`}</h1>
@@ -174,15 +247,15 @@ export default function UploadPage() {
                   </div>
                 )}
                 <div className={styles.photoGrid}>
-                  {images.map((src, idx) => (
+                  {imagePreviews.map((src, idx) => (
                     <div key={idx} className={styles.photoImageWrapper}>
                       <img src={src} alt="Upload" className={styles.photoImage} />
-                      <button onClick={() => setImages(images.filter((_, i) => i !== idx))} style={{ position: 'absolute', top: -8, right: -8, background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: 24, height: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+                      <button onClick={() => removeImage(idx)} style={{ position: 'absolute', top: -8, right: -8, background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: 24, height: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
                         <X size={14} />
                       </button>
                     </div>
                   ))}
-                  {images.length < 4 && (
+                  {imagePreviews.length < 4 && (
                     <div className={styles.photoPlaceholder} onClick={() => fileInputRef.current?.click()}>
                       <Plus size={28} color="#A5A5A5" strokeWidth={3} />
                     </div>
@@ -194,7 +267,7 @@ export default function UploadPage() {
 
               <div className={styles.formGroup}>
                 <label className={styles.label}>Nama Barang</label>
-                <input type="text" placeholder="Contoh: Jas Lab Kimia Ukuran M" className={styles.input} />
+                <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Contoh: Jas Lab Kimia Ukuran M" className={styles.input} />
               </div>
 
               <div className={styles.formGroup}>
@@ -215,23 +288,46 @@ export default function UploadPage() {
               <div className={styles.formGroup}>
                 <label className={styles.label}>Harga</label>
                 <div className={styles.inputWrapper}>
-                  <input type="text" placeholder="Masukkan harga" className={styles.input} style={{ paddingLeft: '45px' }} />
+                  <input type="text" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Masukkan harga" className={styles.input} style={{ paddingLeft: '45px' }} />
                   <span style={{ position: 'absolute', left: '20px', color: '#292929', fontWeight: '600' }}>Rp</span>
                 </div>
               </div>
 
               <div className={styles.formGroup}>
-                <label className={styles.label}>Tentukan rentang tanggal pengiriman yang Anda bersedia</label>
-                <div className={styles.inputWrapper} style={{ cursor: 'pointer' }} onClick={() => setShowCalendar(true)}>
-                  <div className={styles.input}>{formattedRange}</div>
-                  <Calendar size={20} className={styles.inputIcon} color="#008585" />
+                <label className={styles.label}>Pilih Originalitas</label>
+                <div className={styles.radioGroup}>
+                  <div className={`${styles.radioOption} ${originality === 'original' ? styles.radioOptionActive : ''}`} onClick={() => setOriginality('original')}>
+                    <div className={styles.radioCircle}></div>
+                    <span>Original</span>
+                  </div>
+                  <div className={`${styles.radioOption} ${originality === 'non-original' ? styles.radioOptionActive : ''}`} onClick={() => setOriginality('non-original')}>
+                    <div className={styles.radioCircle}></div>
+                    <span>Non-original</span>
+                  </div>
                 </div>
               </div>
 
               <div className={styles.formGroup}>
-                <label className={styles.label}>Lokasi Ketemuan (COD)</label>
-                <CustomDropdown id="cod" value={codLocation} options={campusLocations} onSelect={setCodLocation} />
+                <label className={styles.label}>Deskripsi</label>
+                <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Ceritakan kondisi barangmu lebih detail..." className={`${styles.input} ${styles.textarea}`}></textarea>
               </div>
+
+              <section>
+                <h3 className={styles.sectionTitle}>Metode Pengambilan</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Tentukan rentang tanggal pengiriman yang Anda bersedia</label>
+                    <div className={styles.inputWrapper} style={{ cursor: 'pointer' }} onClick={() => setShowCalendar(true)}>
+                      <div className={styles.input}>{formattedRange}</div>
+                      <Calendar size={20} className={styles.inputIcon} color="#008585" />
+                    </div>
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Lokasi Ketemuan (COD)</label>
+                    <CustomDropdown id="cod" value={codLocation} options={campusLocations} onSelect={setCodLocation} />
+                  </div>
+                </div>
+              </section>
             </div>
 
             <aside className={styles.rightColumn}>
@@ -247,21 +343,29 @@ export default function UploadPage() {
                    <p>Berdasarkan foto yang kamu unggah, berikut analisis kami:</p>
                    <p><span className={styles.aiBold}>Warna</span>: Putih (Cukup cerah)</p>
                    <p>✅ Bentuk masih simetris dan jahitan terlihat kokoh.</p>
-                   <p>🔍 Tidak ditemukan noda permanen atau sobekan pada bagian lengan dan kerah.</p>
                    {isAiExpanded && (
                      <div className={styles.aiFullContent}>
-                        <p>⚠️ Barang terlihat sedikit kusut, disarankan untuk disetrika sebelum difoto ulang atau dikirim.</p>
-                        <p>📊 <strong>Kualitas Material:</strong> Katun 100% (High Grade)</p>
-                        <p>✨ <strong>Rekomendasi Foto:</strong> Gunakan latar belakang polos agar detail kancing lebih terlihat jelas.</p>
+                        <p>⚠️ Barang mungkin sedikit kusut karena penyimpanan.</p>
+                        <p>📊 <strong>Kualitas Material:</strong> High Grade (Sangat Awet)</p>
                         <br/>
                         <span className={styles.aiBold}>Rekomendasi Harga:</span><br/>
-                        • Kondisi Baik: <span className={styles.aiBold}>Rp65k – Rp85k</span><br/>
-                        • Kondisi Sangat Baik: <span className={styles.aiBold}>Rp85k – Rp100k</span>
+                        • Kondisi Baik: <span className={styles.aiBold}>Rp65k – Rp85k</span>
                      </div>
                    )}
                 </div>
               </div>
-              <button className={styles.submitButton}>Mulai Jual Sekarang</button>
+              <button 
+                className={`${styles.submitButton} ${isSubmitting ? styles.btnDisabled : ''}`}
+                onClick={handleFormSubmit}
+                disabled={isSubmitting || !title || !price || !selectedCategory}
+              >
+                {isSubmitting ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
+                    <Loader2 className="animate-spin" size={20} />
+                    <span>Mengunggah...</span>
+                  </div>
+                ) : 'Mulai Jual Sekarang'}
+              </button>
             </aside>
           </div>
         )}
@@ -290,8 +394,8 @@ export default function UploadPage() {
               ))}
             </div>
             <div className={styles.modalFooter}>
-              <button className={styles.cancelBtn} onClick={() => setShowCalendar(false)}>Batal</button>
-              <button className={styles.applyBtn} onClick={() => setShowCalendar(false)}>Terapkan</button>
+              <button className={styles.modalBtn} style={{ border: '1px solid #d1d5db', background: 'white', color: '#767676' }} onClick={() => setShowCalendar(false)}>Batal</button>
+              <button className={styles.modalBtn} style={{ border: 'none', background: '#008585', color: 'white' }} onClick={() => setShowCalendar(false)}>Terapkan</button>
             </div>
           </div>
         </div>

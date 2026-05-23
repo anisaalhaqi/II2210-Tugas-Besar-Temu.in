@@ -13,87 +13,110 @@ import {
   MoreVertical,
   X
 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 interface ChatMessage {
   id: number;
-  type: 'text' | 'offer-me' | 'offer-them' | 'image';
+  type: 'text' | 'offer' | 'image';
   content?: string;
-  sender: 'me' | 'them';
-  title?: string;
-  label?: string;
-  price?: string;
-  images?: string[];
-  status?: 'pending' | 'accepted' | 'rejected';
+  sender_id: string;
+  metadata?: any;
+  created_at: string;
 }
 
 export default function ChatDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const conversationId = params?.id;
   const [message, setMessage] = useState('');
   const [pendingImages, setPendingImages] = useState<string[]>([]);
   const chatBodyRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isFull, setIsFull] = useState(false);
 
-  // Counter Modal State
-  const [showCounterModal, setShowCounterModal] = useState(false);
-  const [counterPrice, setCounterPrice] = useState('31.000');
-  const [modalMode, setModalTab] = useState<'counter' | 'reject'>('counter');
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+  const [opponent, setOpponent] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const chatData = {
-    user: 'Jessica',
-    avatar: 'https://placehold.co/75x75',
-    lastActive: '10 jam yang lalu',
-    location: 'Ganesha',
-    rating: '5.0',
-    totalRatings: 5,
-    product: {
-      title: 'Jas Laboratorium TPB',
-      price: 'Rp32.000',
-      img: 'https://placehold.co/125x125'
+  const JAE_HWAN_ID = '00000000-0000-0000-0000-000000000001';
+
+  useEffect(() => {
+    if (!conversationId) return;
+
+    async function fetchChatDetails() {
+      try {
+        setLoading(true);
+        
+        // 1. Fetch conversation to find the opponent
+        const { data: convData, error: convError } = await supabase
+          .from('conversations')
+          .select(`
+            participant1:participant1_id (*),
+            participant2:participant2_id (*)
+          `)
+          .eq('id', conversationId)
+          .single();
+
+        if (convError) throw convError;
+        const opponentData = convData.participant1_id === JAE_HWAN_ID ? convData.participant2 : convData.participant1;
+        setOpponent(opponentData);
+
+        // 2. Fetch messages
+        const { data: msgData, error: msgError } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('conversation_id', conversationId)
+          .order('created_at', { ascending: true });
+
+        if (msgError) throw msgError;
+        setChatHistory(msgData || []);
+
+      } catch (err) {
+        console.error('Error:', err);
+      } finally {
+        setLoading(false);
+      }
     }
-  };
 
-  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([
-    { id: 1, type: 'text', content: 'Halo kak, jas labnya masih ada?', sender: 'me' },
-    { id: 2, type: 'text', content: 'Masih ada kak, minat?', sender: 'them' },
-    { id: 3, type: 'offer-me', title: 'Jas Laboratorium TPB', label: 'Tawaranmu', price: 'Rp30.000', sender: 'me', status: 'pending' },
-    { id: 4, type: 'text', content: 'Wah, boleh naik dikit gak kak? 31rb deh bungkus.', sender: 'them' },
-    { id: 5, type: 'offer-them', title: 'Jas Laboratorium TPB', label: 'Tawaran Penjual', price: 'Rp31.000', sender: 'them', status: 'pending' },
-  ]);
+    fetchChatDetails();
 
-  const handleSend = () => {
-    if (!message && pendingImages.length === 0) return;
-    const newMessages: ChatMessage[] = [];
-    if (pendingImages.length > 0) {
-      newMessages.push({ id: Date.now(), type: 'image', sender: 'me', images: [...pendingImages] });
-      setPendingImages([]);
-    }
-    if (message.trim()) {
-      newMessages.push({ id: Date.now() + 1, type: 'text', content: message, sender: 'me' });
-      setMessage('');
-    }
-    setChatHistory([...chatHistory, ...newMessages]);
-  };
+    // Subscribe to new messages
+    const channel = supabase
+      .channel(`chat_${conversationId}`)
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'messages',
+        filter: `conversation_id=eq.${conversationId}`
+      }, (payload) => {
+        setChatHistory(prev => [...prev, payload.new as ChatMessage]);
+      })
+      .subscribe();
 
-  const updateOfferStatus = (msgId: number, newStatus: 'accepted' | 'rejected') => {
-    setChatHistory(chatHistory.map(msg => 
-      msg.id === msgId ? { ...msg, status: newStatus } : msg
-    ));
-  };
-
-  const handleApplyCounter = () => {
-    const newOffer: ChatMessage = {
-      id: Date.now(),
-      type: 'offer-me',
-      title: 'Jas Laboratorium TPB',
-      label: 'Tawaranmu',
-      price: `Rp${counterPrice}`,
-      sender: 'me',
-      status: 'pending'
+    return () => {
+      supabase.removeChannel(channel);
     };
-    setChatHistory([...chatHistory, newOffer]);
-    setShowCounterModal(false);
+  }, [conversationId]);
+
+  const handleSend = async () => {
+    if (!message.trim() && pendingImages.length === 0) return;
+
+    try {
+      // For now, simplicity: just text
+      const { error } = await supabase
+        .from('messages')
+        .insert([{
+          conversation_id: conversationId,
+          sender_id: JAE_HWAN_ID,
+          type: 'text',
+          content: message
+        }]);
+
+      if (error) throw error;
+      setMessage('');
+    } catch (err) {
+      console.error('Send error:', err);
+    }
   };
 
   useEffect(() => {
@@ -102,180 +125,58 @@ export default function ChatDetailPage() {
     }
   }, [chatHistory]);
 
-  useEffect(() => {
-    const checkOverflow = () => {
-      if (chatBodyRef.current) {
-        const hasOverflow = chatBodyRef.current.scrollHeight > chatBodyRef.current.clientHeight;
-        setIsFull(hasOverflow);
-      }
-    };
-    checkOverflow();
-    window.addEventListener('resize', checkOverflow);
-    return () => window.removeEventListener('resize', checkOverflow);
-  }, [chatHistory]);
+  if (loading) return <div className={styles.container}>Memuat pesan...</div>;
 
   return (
     <div className={styles.container}>
       <header className={styles.chatHeader}>
         <div className={styles.headerLeft}>
           <button className={styles.backBtn} onClick={() => router.back()}><ArrowLeft size={24} /></button>
-          <img src={chatData.avatar} alt="" className={styles.opponentAvatar} />
+          <img src={opponent?.avatar_url || 'https://placehold.co/75x75'} alt="" className={styles.opponentAvatar} />
           <div className={styles.opponentInfo}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span className={styles.opponentName}>{chatData.user}</span>
-              <CheckCircle2 size={16} className={styles.verifiedBadge} fill="#2563EB" color="white" />
+              <span className={styles.opponentName}>{opponent?.full_name}</span>
+              <CheckCircle2 size={16} fill="#2563EB" color="white" />
             </div>
-            <span className={styles.lastSeen}>{chatData.lastActive}</span>
+            <span className={styles.lastSeen}>Aktif sekarang</span>
           </div>
         </div>
         <button className={styles.backBtn}><MoreVertical size={20} /></button>
       </header>
 
       <div className={styles.chatBody} ref={chatBodyRef}>
-        <div className={styles.timeDivider}>1 hari yang lalu</div>
-
         {chatHistory.map((msg) => (
-          <div key={msg.id} className={`${styles.messageRow} ${msg.sender === 'me' ? styles.senderRow : styles.recipientRow}`}>
-            {msg.type.startsWith('offer') ? (
+          <div key={msg.id} className={`${styles.messageRow} ${msg.sender_id === JAE_HWAN_ID ? styles.senderRow : styles.recipientRow}`}>
+            {msg.type === 'offer' ? (
               <div className={styles.offerCard}>
-                <div className={styles.offerProduct}>
-                  <img src={chatData.product.img} alt="" className={styles.productThumb} />
-                  <div className={styles.offerDetails}>
-                    <p className={styles.productNameSmall}>{msg.title}</p>
-                    <h4 className={styles.offerLabel}>{msg.label}</h4>
-                    <p className={styles.offerPrice}>{msg.price}</p>
-                  </div>
+                <div className={styles.offerDetails}>
+                  <p className={styles.offerLabel}>{msg.metadata?.product_title}</p>
+                  <h4 className={styles.offerPrice}>{msg.metadata?.price}</h4>
                 </div>
-                {msg.sender === 'them' && msg.status === 'pending' && (
-                  <div className={styles.offerActions}>
-                    <button className={`${styles.btnOffer} ${styles.btnTerima}`} onClick={() => updateOfferStatus(msg.id, 'accepted')}>
-                      Terima
-                    </button>
-                    <div className={styles.offerActionsRow}>
-                      <button className={`${styles.btnOffer} ${styles.btnTolak}`} onClick={() => updateOfferStatus(msg.id, 'rejected')}>
-                        Tolak
-                      </button>
-                      <button className={`${styles.btnOffer} ${styles.btnTawar}`} onClick={() => setShowCounterModal(true)}>
-                        Tawar Balik
-                      </button>
-                    </div>
-                  </div>
-                )}
-                {msg.status === 'accepted' && (
-                  <div className={`${styles.statusBadge} ${styles.statusAccepted}`}>Tawaran diterima</div>
-                )}
-                {msg.status === 'rejected' && (
-                  <div className={`${styles.statusBadge} ${styles.statusRejected}`}>Tawaran ditolak</div>
-                )}
-              </div>
-            ) : msg.type === 'image' ? (
-              <div className={styles.imageBubble}>
-                {msg.images?.map((src, i) => <img key={i} src={src} alt="Sent" className={styles.sentImage} />)}
               </div>
             ) : (
-              <div className={`${styles.bubble} ${msg.sender === 'me' ? styles.senderBubble : styles.recipientBubble}`}>
+              <div className={`${styles.bubble} ${msg.sender_id === JAE_HWAN_ID ? styles.senderBubble : styles.recipientBubble}`}>
                 {msg.content}
               </div>
             )}
           </div>
         ))}
-
-        {!isFull && (
-          <div className={styles.bottomOpponentCard}>
-            <img src={chatData.avatar} alt="" className={styles.cardAvatar} />
-            <div className={styles.cardContent}>
-              <div className={styles.cardNameRow}>
-                <span className={styles.opponentName}>{chatData.user}</span>
-                <CheckCircle2 size={18} className={styles.verifiedBadge} fill="#2563EB" color="white" />
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#434343', marginBottom: '4px' }}>
-                <MapPin size={14} /><span style={{ fontSize: '14px' }}>{chatData.location}</span>
-              </div>
-              <div className={styles.cardStats}>
-                <div className={styles.ratingRow}>
-                  <span>{chatData.rating}</span>
-                  <div className={styles.stars}>{[1,2,3,4,5].map(i => <Star key={i} size={14} fill="currentColor" />)}</div>
-                </div>
-                <span>/5 ratings</span>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
-      <div className={styles.inputSection}>
-        {pendingImages.length > 0 && (
-          <div className={styles.previewsContainer}>
-            {pendingImages.map((src, idx) => (
-              <div key={idx} className={styles.previewWrapper}>
-                <img src={src} className={styles.previewImg} alt="Preview" />
-                <button className={styles.removeImgBtn} onClick={() => setPendingImages(pendingImages.filter((_, i) => i !== idx))}><X size={12} /></button>
-              </div>
-            ))}
-          </div>
-        )}
-        <div className={styles.quickReplies}>
-          {['Mau beli dong', 'Kondisi bagus?', 'Punya berapa?'].map(txt => (
-            <button key={txt} className={styles.replyChip} onClick={() => { setMessage(txt); handleSend(); }}>{txt}</button>
-          ))}
+      <footer className={styles.chatFooter}>
+        <button className={styles.attachBtn}><Plus size={24} /></button>
+        <div className={styles.inputWrapper}>
+          <input 
+            type="text" 
+            placeholder="Ketik pesanmu..." 
+            className={styles.messageInput}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+          />
         </div>
-        <footer className={styles.chatFooter}>
-          <input type="file" ref={fileInputRef} style={{ display: 'none' }} multiple accept="image/*" onChange={(e) => {
-            const files = e.target.files;
-            if (files) setPendingImages([...pendingImages, ...Array.from(files).map(f => URL.createObjectURL(f))]);
-          }} />
-          <button className={styles.attachBtn} onClick={() => fileInputRef.current?.click()}><Plus size={24} /></button>
-          <div className={styles.inputWrapper}>
-            <input type="text" placeholder="Ketik pesanmu..." className={styles.messageInput} value={message} onChange={(e) => setMessage(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSend()} />
-          </div>
-          <button className={styles.sendBtn} disabled={!message && pendingImages.length === 0} onClick={handleSend}><Send size={20} /></button>
-        </footer>
-      </div>
-
-      {showCounterModal && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.counterModal}>
-            <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>Tawar Balik</h3>
-              <button className={styles.navBtn} onClick={() => setShowCounterModal(false)}><X size={24} /></button>
-            </div>
-            
-            <div className={styles.modalBody}>
-              <div className={styles.priceChips}>
-                {['31.000', '29.000', '26.000', '24.000'].map(p => (
-                  <button 
-                    key={p} 
-                    className={`${styles.priceChip} ${counterPrice === p ? styles.priceChipActive : ''}`} 
-                    onClick={() => setCounterPrice(p)}
-                  >
-                    Rp{p}
-                  </button>
-                ))}
-              </div>
-              
-              <div className={styles.priceInputArea}>
-                <span className={styles.rpLabel}>Rp</span>
-                <input 
-                  type="text" 
-                  className={styles.largeInput} 
-                  value={counterPrice} 
-                  onChange={(e) => setCounterPrice(e.target.value)} 
-                  autoFocus
-                />
-              </div>
-            </div>
-
-            <div className={styles.modalFooter}>
-              <button className={`${styles.modalBtn} ${styles.btnBatal}`} onClick={() => setShowCounterModal(false)}>
-                Batal
-              </button>
-              <button className={`${styles.modalBtn} ${styles.btnAjukan}`} onClick={handleApplyCounter}>
-                Ajukan
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+        <button className={styles.sendBtn} onClick={handleSend}><Send size={20} /></button>
+      </footer>
     </div>
   );
 }
