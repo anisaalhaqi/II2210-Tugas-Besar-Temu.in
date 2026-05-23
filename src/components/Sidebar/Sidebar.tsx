@@ -60,11 +60,11 @@ export default function Sidebar() {
           </Link>
         </div>
 
-        <div className={styles.profileSection}>
+        <Link href="/profile" className={styles.profileSection}>
           <div className={styles.userInfo}>
             <img src="https://placehold.co/100x100" alt="User" className={styles.userAvatar} />
             <div className={styles.userDetails}>
-              <span className={styles.userName}>Fauzan Ghaza</span>
+              <span className={styles.userName}>Jae Hwan</span>
               <span className={styles.userRole}>Mahasiswa ITB</span>
             </div>
           </div>
@@ -76,7 +76,7 @@ export default function Sidebar() {
               <LogOut size={20} />
             </button>
           </div>
-        </div>
+        </Link>
       </div>
     </aside>
   );

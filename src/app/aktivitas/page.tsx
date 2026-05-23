@@ -1,60 +1,149 @@
 'use client';
 
-import { ArrowLeft } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowLeft, Heart, MessageCircle, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import styles from './aktivitas.module.css';
 
 export default function AktivitasPage() {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState('Menunggu Konfirmasi');
+  const [jualChecked, setJualChecked] = useState(true);
+  const [beliChecked, setBeliChecked] = useState(true);
+
+  const tabs = [
+    'Menunggu Konfirmasi',
+    'Belum Bayar',
+    'Diproses',
+    'Dibatalkan',
+    'Selesai'
+  ];
+
   const activities = [
-    { id: 1, type: 'Pembelian', title: 'Jas Laboratorium TPB', status: 'Selesai', date: '20 Mei 2026', price: 'Rp32.000', img: 'https://placehold.co/100x100' },
-    { id: 2, type: 'Penjualan', title: 'Buku Kalkulus Purcel', status: 'Dikirim', date: '19 Mei 2026', price: 'Rp50.000', img: 'https://placehold.co/100x100' },
-    { id: 3, type: 'Penawaran', title: 'ESP32 DevKit V1', status: 'Menunggu', date: '18 Mei 2026', price: 'Rp45.000', img: 'https://placehold.co/100x100' },
+    {
+      id: 1,
+      user: 'zizadhrmaa',
+      role: 'Pembeli',
+      status: 'Menunggu Konfirmasi',
+      title: 'Jas Laboratorium Fisika ITB',
+      action: 'Mengajukan Tawaran',
+      price: 'Rp30.000',
+      originalPrice: 'Rp40.000',
+      note: 'Turun 10 ribu dari harga awal',
+      img: 'https://placehold.co/100x110'
+    },
+    {
+      id: 2,
+      user: 'Dino',
+      role: 'Penjual',
+      status: 'Menunggu Konfirmasi',
+      title: 'Buku Chempro Edisi IV',
+      action: 'Mengajukan Tawaran',
+      price: 'Rp26.000',
+      originalPrice: 'Rp40.000',
+      note: 'Turun 14 ribu dari harga awal',
+      img: 'https://placehold.co/100x110'
+    },
+    {
+      id: 3,
+      user: 'Bagas',
+      role: 'Penjual',
+      status: 'Menunggu Konfirmasi',
+      title: 'Buku Phiwiki Fisika',
+      action: 'Mengajukan Tawaran',
+      price: 'Rp26.000',
+      originalPrice: 'Rp40.000',
+      note: 'Turun 14 ribu dari harga awal',
+      img: 'https://placehold.co/100x110'
+    }
   ];
 
   return (
     <div className={styles.container}>
       <header className={styles.pageHeader}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-          <button 
-            onClick={() => router.back()} 
-            style={{ 
-              padding: '10px', 
-              borderRadius: '12px', 
-              background: 'white', 
-              border: '1px solid #e5e7eb', 
-              cursor: 'pointer', 
-              display: 'flex', 
-              alignItems: 'center',
-              color: '#292929'
-            }}
-            title="Kembali"
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <h1 className={styles.pageTitle} style={{ marginBottom: 0 }}>Aktivitas Saya</h1>
+        <div className={styles.headerTop}>
+          <div className={styles.titleArea}>
+            <button 
+              onClick={() => router.back()} 
+              style={{ 
+                padding: '10px', 
+                borderRadius: '12px', 
+                background: 'white', 
+                border: '1px solid #e5e7eb', 
+                cursor: 'pointer', 
+                display: 'flex', 
+                alignItems: 'center',
+                color: '#292929'
+              }}
+              title="Kembali"
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <h1 className={styles.pageTitle}>Aktivitas</h1>
+          </div>
+          <div className={styles.headerIcons}>
+            <button className={styles.headerIconBtn} title="Favorit">
+              <Heart size={24} />
+            </button>
+            <button className={styles.headerIconBtn} title="Chat">
+              <MessageCircle size={24} />
+            </button>
+          </div>
         </div>
-        <div className={styles.tabs}>
-          <button className={`${styles.tab} ${styles.activeTab}`}>Semua</button>
-          <button className={styles.tab}>Pembelian</button>
-          <button className={styles.tab}>Penjualan</button>
-        </div>
+
+        <nav className={styles.tabs}>
+          {tabs.map((tab) => (
+            <button
+              key={tab}
+              className={`${styles.tab} ${activeTab === tab ? styles.activeTab : ''}`}
+              onClick={() => setActiveTab(tab)}
+            >
+              {tab}
+            </button>
+          ))}
+        </nav>
+
+        <section className={styles.filterRow}>
+          <p className={styles.filterLabel}>Filter berdasarkan jenis transaksi</p>
+          <div className={styles.checkboxGroup}>
+            <div className={styles.checkboxItem} onClick={() => setJualChecked(!jualChecked)}>
+              <div className={`${styles.checkbox} ${jualChecked ? styles.checkboxChecked : ''}`}>
+                {jualChecked && <Check size={14} color="white" strokeWidth={3} />}
+              </div>
+              <span className={styles.checkboxLabel}>Transaksi Jual</span>
+            </div>
+            <div className={styles.checkboxItem} onClick={() => setBeliChecked(!beliChecked)}>
+              <div className={`${styles.checkbox} ${beliChecked ? styles.checkboxChecked : ''}`}>
+                {beliChecked && <Check size={14} color="white" strokeWidth={3} />}
+              </div>
+              <span className={styles.checkboxLabel}>Transaksi Beli</span>
+            </div>
+          </div>
+        </section>
       </header>
 
       <div className={styles.activityList}>
         {activities.map((item) => (
-          <div key={item.id} className={styles.activityItem}>
-            <img src={item.img} alt={item.title} className={styles.itemImg} />
-            <div className={styles.itemInfo}>
-              <div className={styles.itemType}>{item.type}</div>
-              <h3 className={styles.itemTitle}>{item.title}</h3>
-              <div className={styles.itemDate}>{item.date}</div>
+          <div key={item.id} className={styles.transactionCard}>
+            <div className={styles.cardHeader}>
+              <span className={styles.counterparty}>{item.user} ({item.role})</span>
+              <span className={styles.statusText}>{item.status}</span>
             </div>
-            <div className={styles.itemStatus}>
-              <span className={`${styles.statusBadge} ${styles[item.status.toLowerCase()]}`}>
-                {item.status}
-              </span>
-              <div className={styles.itemPrice}>{item.price}</div>
+            <div className={styles.cardBody}>
+              <img src={item.img} alt={item.title} className={styles.productImg} />
+              <div className={styles.productDetails}>
+                <h3 className={styles.productTitle}>{item.title}</h3>
+                <p className={styles.actionType}>{item.action}</p>
+                <p className={styles.priceInfo}>{item.price} <span style={{ fontWeight: 400, color: '#A5A5A5', fontSize: '14px' }}>dari {item.originalPrice}</span></p>
+                <p className={styles.priceNote}>{item.note}</p>
+              </div>
+            </div>
+            <div className={styles.cardActions}>
+              <div className={styles.actionCol}>
+                <button className={styles.outlineBtn}>Tawar Balik</button>
+                <button className={styles.outlineBtn}>Tolak</button>
+              </div>
+              <button className={styles.primaryBtn}>Terima</button>
             </div>
           </div>
         ))}
