@@ -47,8 +47,8 @@
 /* Category Grid */
 .categoryGrid {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 16px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 24px;
 }
 
 .categoryItem {
@@ -65,15 +65,14 @@
 }
 
 .categoryIcon {
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
   background-color: #EEFFFC;
   border: 1.5px solid #008585;
   border-radius: 16px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 32px;
   box-shadow: 0 4px 10px rgba(0, 133, 133, 0.1);
 }
 

@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Search } from 'lucide-react';
+import { ArrowLeft, Search, Inbox } from 'lucide-react';
 import styles from './favorites.module.css';
 
 const MOCK_FAVORITES = [
@@ -97,23 +97,32 @@ export default function FavoritesPage() {
 
         <div className={styles.statusRow}>
           <div className={styles.itemCount}><span>{filteredFavorites.length}</span> barang</div>
-          <button className={styles.editButton}>Ubah</button>
         </div>
 
         <section className={styles.productGrid}>
-          {filteredFavorites.map((item) => (
-            <Link href={`/product/${item.id}`} key={item.id} className={styles.productCard}>
-              <div className={styles.imageContainer}>
-                <img src={item.img} alt={item.title} className={styles.productImage} />
-                {!item.available && <div className={styles.outOfStockOverlay}><div className={styles.outOfStockCircle}><span className={styles.outOfStockText}>Habis</span></div></div>}
+          {filteredFavorites.length > 0 ? (
+            filteredFavorites.map((item) => (
+              <Link href={`/product/${item.id}`} key={item.id} className={styles.productCard}>
+                <div className={styles.imageContainer}>
+                  <img src={item.img} alt={item.title} className={styles.productImage} />
+                  {!item.available && <div className={styles.outOfStockOverlay}><div className={styles.outOfStockCircle}><span className={styles.outOfStockText}>Habis</span></div></div>}
+                </div>
+                <div className={styles.productInfo}>
+                  <h3 className={styles.productTitle}>{item.title}</h3>
+                  <p className={styles.productPrice}>{item.price}</p>
+                  <div className={styles.productFooter}><div className={styles.productLocation}><img src="/img/icons/location.png" alt="" className={styles.locIcon} /><span>{item.location}</span></div></div>
+                </div>
+              </Link>
+            ))
+          ) : (
+            <div className={styles.emptyState}>
+              <div className={styles.emptyIconBox}>
+                <Inbox size={64} strokeWidth={1} color="#A5A5A5" />
               </div>
-              <div className={styles.productInfo}>
-                <h3 className={styles.productTitle}>{item.title}</h3>
-                <p className={styles.productPrice}>{item.price}</p>
-                <div className={styles.productFooter}><div className={styles.productLocation}><img src="/img/icons/location.png" alt="" className={styles.locIcon} /><span>{item.location}</span></div></div>
-              </div>
-            </Link>
-          ))}
+              <h3 className={styles.emptyTitle}>Tidak ada barang ditemukan</h3>
+              <p className={styles.emptySub}>Coba ubah kata kunci atau filter untuk menemukan barang favoritmu.</p>
+            </div>
+          )}
         </section>
       </main>
     </div>

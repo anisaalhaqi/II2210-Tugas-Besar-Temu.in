@@ -259,7 +259,49 @@
   min-width: 140px;
 }
 
-.btnTerima:hover {
+.primaryBtn:hover {
   background-color: #007575;
   box-shadow: 0 4px 12px rgba(0, 133, 133, 0.2);
+}
+
+/* Empty State */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+  background: white;
+  border-radius: 24px;
+  border: 1px dashed #E6E6E6;
+}
+
+.emptyIconBox {
+  width: 120px;
+  height: 120px;
+  background-color: #f9fafb;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.emptyTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #292929;
+  margin-bottom: 8px;
+}
+
+.emptySub {
+  font-size: 15px;
+  color: #767676;
+  max-width: 400px;
+  line-height: 1.6;
+}
+
+.emptySub strong {
+  color: #008585;
 }

@@ -166,8 +166,8 @@
 .actionBtn {
   background: none;
   border: none;
-  padding: 6px;
-  border-radius: 8px;
+  padding: 8px;
+  border-radius: 10px;
   cursor: pointer;
   color: #767676;
   display: flex;
@@ -176,7 +176,7 @@
   transition: all 0.2s;
 }
 
-.actionBtn:hover {
-  background-color: #f0f0f0;
-  color: #008585;
+.logoutBtn:hover {
+  background-color: #fef2f2;
+  color: #ef4444;
 }

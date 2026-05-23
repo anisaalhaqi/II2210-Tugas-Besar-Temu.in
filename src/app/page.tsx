@@ -2,17 +2,27 @@
 
 import styles from './page.module.css';
 import Link from 'next/link';
+import { 
+  Calculator, 
+  FlaskConical, 
+  BookOpen, 
+  PencilLine, 
+  Zap, 
+  Palette, 
+  Package, 
+  Layers 
+} from 'lucide-react';
 
 export default function DesktopHome() {
   const categories = [
-    { name: 'Alat Hitung', icon: '🧮' },
-    { name: 'Alat Lab', icon: '🔬' },
-    { name: 'Buku', icon: '📚' },
-    { name: 'Alat Tulis', icon: '✏️' },
-    { name: 'Elektronika', icon: '🔌' },
-    { name: 'Alat Studio', icon: '🎨' },
-    { name: 'Penyimpanan', icon: '📦' },
-    { name: 'Lainnya', icon: '⋯' },
+    { name: 'Alat Hitung', icon: Calculator },
+    { name: 'Alat Lab', icon: FlaskConical },
+    { name: 'Buku', icon: BookOpen },
+    { name: 'Alat Tulis', icon: PencilLine },
+    { name: 'Elektronika', icon: Zap },
+    { name: 'Alat Studio', icon: Palette },
+    { name: 'Penyimpanan', icon: Package },
+    { name: 'Lainnya', icon: Layers },
   ];
 
   const favorites = [
@@ -36,12 +46,17 @@ export default function DesktopHome() {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Lagi cari barang apa?</h2>
           <div className={styles.categoryGrid}>
-            {categories.map((cat, idx) => (
-              <div key={idx} className={styles.categoryItem}>
-                <div className={styles.categoryIcon}>{cat.icon}</div>
-                <span className={styles.categoryName}>{cat.name}</span>
-              </div>
-            ))}
+            {categories.map((cat, idx) => {
+              const Icon = cat.icon;
+              return (
+                <div key={idx} className={styles.categoryItem}>
+                  <div className={styles.categoryIcon}>
+                    <Icon size={40} color="#008585" strokeWidth={1.5} />
+                  </div>
+                  <span className={styles.categoryName}>{cat.name}</span>
+                </div>
+              );
+            })}
           </div>
         </section>
 

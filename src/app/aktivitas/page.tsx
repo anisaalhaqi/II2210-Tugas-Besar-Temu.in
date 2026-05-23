@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Heart, MessageCircle, Check } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, Check, Inbox } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import styles from './aktivitas.module.css';
 
@@ -31,7 +31,8 @@ export default function AktivitasPage() {
       price: 'Rp30.000',
       originalPrice: 'Rp40.000',
       note: 'Turun 10 ribu dari harga awal',
-      img: 'https://placehold.co/100x110'
+      img: 'https://placehold.co/100x110',
+      transactionType: 'Jual'
     },
     {
       id: 2,
@@ -43,7 +44,8 @@ export default function AktivitasPage() {
       price: 'Rp26.000',
       originalPrice: 'Rp40.000',
       note: 'Turun 14 ribu dari harga awal',
-      img: 'https://placehold.co/100x110'
+      img: 'https://placehold.co/100x110',
+      transactionType: 'Beli'
     },
     {
       id: 3,
@@ -55,9 +57,16 @@ export default function AktivitasPage() {
       price: 'Rp26.000',
       originalPrice: 'Rp40.000',
       note: 'Turun 14 ribu dari harga awal',
-      img: 'https://placehold.co/100x110'
+      img: 'https://placehold.co/100x110',
+      transactionType: 'Beli'
     }
   ];
+
+  const filteredActivities = activities.filter(item => {
+    const matchesTab = item.status === activeTab;
+    const matchesType = (item.transactionType === 'Jual' && jualChecked) || (item.transactionType === 'Beli' && beliChecked);
+    return matchesTab && matchesType;
+  });
 
   return (
     <div className={styles.container}>
@@ -124,28 +133,40 @@ export default function AktivitasPage() {
       </header>
 
       <div className={styles.activityList}>
-        {activities.map((item) => (
-          <div key={item.id} className={styles.transactionCard}>
-            <div className={styles.cardHeader}>
-              <span className={styles.counterparty}>{item.user} ({item.role})</span>
-              <span className={styles.statusText}>{item.status}</span>
-            </div>
-            <div className={styles.cardBody}>
-              <img src={item.img} alt={item.title} className={styles.productImg} />
-              <div className={styles.productDetails}>
-                <h3 className={styles.productTitle}>{item.title}</h3>
-                <p className={styles.actionType}>{item.action}</p>
-                <p className={styles.priceInfo}>{item.price} <span style={{ fontWeight: 400, color: '#A5A5A5', fontSize: '14px' }}>dari {item.originalPrice}</span></p>
-                <p className={styles.priceNote}>{item.note}</p>
+        {filteredActivities.length > 0 ? (
+          filteredActivities.map((item) => (
+            <div key={item.id} className={styles.transactionCard}>
+              <div className={styles.cardHeader}>
+                <span className={styles.counterparty}>{item.user} ({item.role})</span>
+                <span className={styles.statusText}>{item.status}</span>
+              </div>
+              <div className={styles.cardBody}>
+                <img src={item.img} alt={item.title} className={styles.productImg} />
+                <div className={styles.productDetails}>
+                  <h3 className={styles.productTitle}>{item.title}</h3>
+                  <p className={styles.actionType}>{item.action}</p>
+                  <p className={styles.priceInfo}>{item.price} <span style={{ fontWeight: 400, color: '#A5A5A5', fontSize: '14px' }}>dari {item.originalPrice}</span></p>
+                  <p className={styles.priceNote}>{item.note}</p>
+                </div>
+              </div>
+              <div className={styles.cardActions}>
+                <button className={`${styles.btnAction} ${styles.btnTolak}`}>Tolak</button>
+                <button className={`${styles.btnAction} ${styles.btnTawar}`}>Tawar Balik</button>
+                <button className={`${styles.btnAction} ${styles.btnTerima}`}>Terima</button>
               </div>
             </div>
-            <div className={styles.cardActions}>
-              <button className={`${styles.btnAction} ${styles.btnTolak}`}>Tolak</button>
-              <button className={`${styles.btnAction} ${styles.btnTawar}`}>Tawar Balik</button>
-              <button className={`${styles.btnAction} ${styles.btnTerima}`}>Terima</button>
+          ))
+        ) : (
+          <div className={styles.emptyState}>
+            <div className={styles.emptyIconBox}>
+              <Inbox size={64} strokeWidth={1} color="#A5A5A5" />
             </div>
+            <h3 className={styles.emptyTitle}>Belum ada aktivitas</h3>
+            <p className={styles.emptySub}>
+              Aktivitas transaksi untuk status <strong>{activeTab}</strong> akan muncul di sini.
+            </p>
           </div>
-        ))}
+        )}
       </div>
     </div>
   );

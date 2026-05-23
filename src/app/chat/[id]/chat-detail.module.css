@@ -3,317 +3,592 @@
   background-color: #f8fcfb;
   display: flex;
   flex-direction: column;
-  width: 100%;
-  font-family: 'Inter', sans-serif;
+  height: 100vh; /* Fixed height for chat container */
 }
 
-/* Focused Conversation Header - Teal & Standard Height */
-.header {
-  background-color: #008585;
-  padding: 12px 100px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  z-index: 1000;
-  min-height: 84px; /* Matching homepage height */
-}
-
-.headerContent {
-  width: 100%;
-  max-width: 1400px;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-}
-
-.conversationInfo {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.backButton {
+/* Chat Header */
+.chatHeader {
+  height: 80px;
   background: white;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
+  border-bottom: 1px solid #f0f0f0;
   display: flex;
   align-items: center;
-  border-radius: 8px;
-  transition: transform 0.2s;
-}
-
-.backButton:hover {
-  transform: scale(1.05);
-}
-
-.backIcon {
-  filter: invert(34%) sepia(85%) saturate(1352%) hue-rotate(145deg) brightness(95%) contrast(101%); /* #008585 color */
-  width: 20px;
-  height: 20px;
-}
-
-.avatarCircle {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  border: 2px solid white;
-  object-fit: cover;
-}
-
-.userDetails {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.userNameRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.userName {
-  font-size: 19px;
-  font-weight: 700;
-  color: white;
-}
-
-.verifiedBadge {
-  width: 18px;
-  height: 18px;
-  background: #171717;
-  border-radius: 4px;
-}
-
-.statusText {
-  font-size: 15px;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-/* Main Chat Area */
-.main {
-  max-width: 900px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 120px 24px 200px 24px; /* Space for fixed header/footer */
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
-
-.dateSeparator {
-  text-align: center;
-  font-size: 14px;
-  color: #000;
-  margin: 10px 0;
-  font-weight: 400;
-}
-
-/* Product Message Card */
-.productMessageWrapper {
-  align-self: flex-end;
-  width: 100%;
-  max-width: 450px;
-}
-
-.productCard {
-  background: #EEFFFC;
-  padding: 20px;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 133, 133, 0.1);
-  display: flex;
-  gap: 20px;
-  border: 1px solid #c5fff7;
-}
-
-.prodImg {
-  width: 125px;
-  height: 125px;
-  border-radius: 12px;
-  object-fit: cover;
-}
-
-.prodInfo {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.prodTitle {
-  font-size: 16px;
-  color: rgba(0, 0, 0, 0.4); /* Faded color as per user spec */
-  font-weight: 400;
-}
-
-.prodPrice {
-  font-size: 17px;
-  font-weight: 700;
-  color: rgba(0, 0, 0, 0.6);
-}
-
-.tawarButton {
-  margin-top: auto;
-  background: #008585;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 12px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.tawarButton:hover {
-  background: #006b6b;
-}
-
-/* Bottom Seller Info Box */
-.sellerSection {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  padding: 32px;
-  background: white;
-  border-radius: 16px;
-  border: 1px solid #f0f0f0;
-  margin-top: 40px;
-}
-
-.sellerAvatarLarge {
-  width: 75px;
-  height: 75px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.sellerDetails {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.sellerName {
-  font-size: 17px;
-  font-weight: 600;
-  color: #000;
-}
-
-.blueBadge {
-  width: 24px;
-  height: 24px;
-  background: #2563EB;
-  border-radius: 4px;
-  display: inline-block;
-  vertical-align: middle;
-  margin-left: 8px;
-}
-
-.locRow, .ratingRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 16px;
-  color: #434343;
-}
-
-.iconSmall {
-  width: 18px;
-  height: auto;
-}
-
-.ratingValue {
-  font-weight: 600;
-  color: #575757;
-}
-
-/* Footer Input Area */
-.footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: white;
-  padding: 24px 0 40px 0;
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
-  z-index: 1000;
-}
-
-.footerContent {
-  max-width: 900px;
-  margin: 0 auto;
+  justify-content: space-between;
   padding: 0 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-.chipsRow {
-  display: flex;
-  gap: 12px;
-  overflow-x: auto;
-}
-
-.chip {
-  padding: 10px 24px;
-  border-radius: 100px;
-  border: 1px solid #767676;
-  color: #767676;
-  font-size: 17px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s;
-}
-
-.chip:hover {
-  border-color: #008585;
-  color: #008585;
-  background: #EEFFFC;
-}
-
-.inputBar {
+.headerLeft {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-.plusButton {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  border: 1.5px solid #008585;
+.backBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #292929;
+  padding: 8px;
+  border-radius: 50%;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.backBtn:hover {
+  background-color: #f3f4f6;
+}
+
+.opponentAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.opponentInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.opponentName {
+  font-size: 17px;
+  font-weight: 700;
+  color: #292929;
+}
+
+.lastSeen {
+  font-size: 13px;
+  color: #767676;
+}
+
+/* Chat Messages Area */
+.chatBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
+
+.chatBody::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chatBody::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 10px;
+}
+
+.timeDivider {
+  text-align: center;
+  font-size: 13px;
+  color: #767676;
+  margin: 16px 0;
+}
+
+/* Bubbles */
+.messageRow {
+  display: flex;
+  width: 100%;
+}
+
+.senderRow {
+  justify-content: flex-end;
+}
+
+.recipientRow {
+  justify-content: flex-start;
+}
+
+.bubble {
+  max-width: 60%;
+  padding: 14px 20px;
+  border-radius: 20px;
+  font-size: 15px;
+  line-height: 1.5;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  position: relative;
+}
+
+.senderBubble {
+  background-color: #EEFFFC;
+  color: #292929;
+  border-bottom-right-radius: 4px;
+}
+
+.recipientBubble {
+  background-color: white;
+  color: #292929;
+  border-bottom-left-radius: 4px;
+  border: 1px solid #f0f0f0;
+}
+
+/* Offer Cards */
+.offerCard {
+  width: 320px;
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: 1px solid #f0f0f0;
+}
+
+.senderRow .offerCard {
+  background-color: #EEFFFC;
+  border-color: #008585;
+}
+
+.offerProduct {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.productThumb {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.offerDetails {
+  flex: 1;
+}
+
+.productNameSmall {
+  font-size: 13px;
+  color: #767676;
+  margin-bottom: 4px;
+}
+
+.offerLabel {
+  font-size: 15px;
+  font-weight: 700;
+  color: #292929;
+  margin-bottom: 2px;
+}
+
+.offerPrice {
+  font-size: 17px;
+  font-weight: 800;
+  color: #008585;
+}
+
+.offerActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.offerActionsRow {
+  display: flex;
+  gap: 10px;
+}
+
+.btnOffer {
+  height: 38px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btnTerima {
+  width: 100%;
+  background-color: #008585;
+  color: white;
+  border: none;
+}
+
+.btnTerima:hover {
+  background-color: #007575;
+  box-shadow: 0 4px 12px rgba(0, 133, 133, 0.2);
+}
+
+.btnTolak {
+  flex: 1;
+  background: white;
+  border: 1px solid #E6E6E6;
+  color: #767676;
+}
+
+.btnTolak:hover {
+  background-color: #f9fafb;
+  color: #ef4444;
+  border-color: #d6d6d6;
+}
+
+.btnTawar {
+  flex: 1;
+  background: white;
+  border: 1px solid #008585;
+  color: #008585;
+}
+
+.btnTawar:hover {
+  background-color: #EEFFFC;
+}
+
+/* Quick Replies */
+.quickReplies {
+  display: flex;
+  gap: 12px;
+  padding: 16px 24px;
+  overflow-x: auto;
+  flex-shrink: 0;
+  background: #f8fcfb;
+  scrollbar-width: none;
+}
+
+.quickReplies::-webkit-scrollbar {
+  display: none;
+}
+
+.replyChip {
+  padding: 8px 20px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 100px;
+  font-size: 14px;
+  color: #434343;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.replyChip:hover {
+  border-color: #008585;
+  color: #008585;
+  background-color: #EEFFFC;
+}
+
+/* Opponent Profile Card */
+.bottomOpponentCard {
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  margin: 0 24px 24px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border: 1px solid #f0f0f0;
+}
+
+.cardAvatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.cardContent {
+  flex: 1;
+}
+
+.cardNameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.verifiedBadge {
+  color: #2563EB;
+}
+
+.cardStats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #575757;
+  font-size: 14px;
+}
+
+.ratingRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+}
+
+.stars {
+  display: flex;
+  gap: 2px;
+}
+
+/* Chat Input Footer */
+/* Image Message Bubble */
+.imageBubble {
+  background: white;
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sentImage {
+  width: 240px;
+  height: 240px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+/* Footer Image Previews */
+/* Offer Card Statuses */
+.statusBadge {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  margin-top: 8px;
+}
+
+.statusAccepted {
+  background-color: #DCFCE7;
+  color: #16A34A;
+}
+
+.statusRejected {
+  background-color: #FEE2E2;
+  color: #DC2626;
+}
+
+/* Counter Offer Modal (Centered Design) */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(4px);
+}
+
+.counterModal {
+  background: white;
+  border-radius: 28px;
+  width: 100%;
+  max-width: 480px;
+  padding: 32px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.modalTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: #292929;
+}
+
+.modalBody {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.modalFooter {
+  display: flex;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.modalBtn {
+  flex: 1;
+  height: 52px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btnBatal {
+  background: white;
+  border: 1px solid #d1d5db;
+  color: #767676;
+}
+
+.btnBatal:hover {
+  background-color: #f9fafb;
+}
+
+.btnAjukan {
+  background: #008585;
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 133, 133, 0.2);
+}
+
+.btnAjukan:hover {
+  background-color: #007575;
+}
+
+.priceChips {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.priceChip {
+  padding: 8px 16px;
+  border-radius: 100px;
+  border: 1.5px solid #E6E6E6;
+  background: white;
+  color: #767676;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.priceChipActive {
+  background-color: #EEFFFC;
+  border-color: #008585;
+  color: #008585;
+}
+
+.priceInputArea {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 2px solid #292929;
+}
+
+.rpLabel {
+  font-size: 32px;
+  font-weight: 700;
+  color: #292929;
+}
+
+.largeInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 42px;
+  font-weight: 700;
+  color: #292929;
+  background: none;
+}
+
+.navBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #767676;
+}
+
+
+.previewsContainer {
+  display: flex;
+  gap: 12px;
+  padding: 0 24px 12px;
+  background: white;
+}
+
+.previewWrapper {
+  width: 60px;
+  height: 60px;
+  position: relative;
+}
+
+.previewImg {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid #e5e7eb;
+}
+
+.removeImgBtn {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 5;
+}
+
+.chatFooter {
+  background: white;
+  padding: 16px 24px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.attachBtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1.5px solid #008585;
+  background: white;
+  color: #008585;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
 
-.plusIcon {
-  width: 18px;
-  height: 18px;
-  background-color: #008585;
-  mask: url('/img/icons/plus.png') no-repeat center / contain;
-  -webkit-mask: url('/img/icons/plus.png') no-repeat center / contain;
-}
-
-.textFieldWrapper {
+.inputWrapper {
   flex: 1;
-  background: white;
+  background: #f3f4f6;
   border-radius: 100px;
-  padding: 16px 28px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
-  border: 1px solid #eee;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  height: 48px;
 }
 
-.textField {
+.messageInput {
   width: 100%;
+  background: none;
   border: none;
   outline: none;
   font-size: 15px;
@@ -321,21 +596,20 @@
 }
 
 .sendBtn {
-  width: 60px;
-  height: 60px;
-  background: #008585;
+  width: 48px;
+  height: 48px;
+  background-color: #008585;
+  color: white;
+  border: none;
   border-radius: 50%;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   cursor: pointer;
+  transition: transform 0.2s;
 }
 
-.sendIcon {
-  width: 32px;
-  height: 32px;
-  background-color: #EEFFFC;
-  mask: url('/img/icons/arrow-right.png') no-repeat center / contain;
-  -webkit-mask: url('/img/icons/arrow-right.png') no-repeat center / contain;
-  transform: rotate(-45deg);
+.sendBtn:hover {
+  transform: scale(1.05);
+  background-color: #007575;
 }

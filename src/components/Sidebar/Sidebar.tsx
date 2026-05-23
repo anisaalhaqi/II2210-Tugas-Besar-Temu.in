@@ -69,11 +69,8 @@ export default function Sidebar() {
             </div>
           </div>
           <div className={styles.profileActions}>
-            <button className={styles.actionBtn} aria-label="Settings">
-              <Settings size={20} />
-            </button>
-            <button className={styles.actionBtn} aria-label="Logout">
-              <LogOut size={20} />
+            <button className={`${styles.actionBtn} ${styles.logoutBtn}`} aria-label="Logout">
+              <LogOut size={22} />
             </button>
           </div>
         </Link>

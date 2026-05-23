@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import styles from './chat.module.css';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, MessageSquareOff } from 'lucide-react';
 
 export default function ChatPage() {
   const router = useRouter();
@@ -12,11 +12,18 @@ export default function ChatPage() {
   const tabs = ['Semua', 'Ketemuan', 'Belum dibaca'];
 
   const chats = [
-    { id: 1, name: 'zizadhrmaa', time: '1 hari yang lalu', message: 'Tawar Harga', img: 'https://placehold.co/58x58' },
-    { id: 2, name: 'Kevin', time: '2 hari yang lalu', message: 'Okk makasih banyak', img: 'https://placehold.co/58x58' },
-    { id: 3, name: 'Bagas', time: '5 hari yang lalu', message: 'Iyaaaa', img: 'https://placehold.co/58x58' },
-    { id: 4, name: 'Jessica', time: '6 hari yang lalu', message: 'Iyah bubb', img: 'https://placehold.co/58x58' }
+    { id: 1, name: 'zizadhrmaa', time: '1 hari yang lalu', message: 'Tawar Harga', img: 'https://placehold.co/58x58', unread: true, type: 'Ketemuan' },
+    { id: 2, name: 'Kevin', time: '2 hari yang lalu', message: 'Okk makasih banyak', img: 'https://placehold.co/58x58', unread: false, type: 'Reguler' },
+    { id: 3, name: 'Bagas', time: '5 hari yang lalu', message: 'Iyaaaa', img: 'https://placehold.co/58x58', unread: true, type: 'Ketemuan' },
+    { id: 4, name: 'Jessica', time: '6 hari yang lalu', message: 'Iyah bubb', img: 'https://placehold.co/58x58', unread: false, type: 'Reguler' }
   ];
+
+  const filteredChats = useMemo(() => {
+    if (activeTab === 'Semua') return chats;
+    if (activeTab === 'Ketemuan') return chats.filter(c => c.type === 'Ketemuan');
+    if (activeTab === 'Belum dibaca') return chats.filter(c => c.unread);
+    return chats;
+  }, [activeTab]);
 
   return (
     <div className={styles.container}>
@@ -56,18 +63,29 @@ export default function ChatPage() {
         </div>
 
         <div className={styles.chatList}>
-          {chats.map((chat) => (
-            <Link href={`/chat/${chat.id}`} key={chat.id} className={styles.chatItem} style={{ textDecoration: 'none' }}>
-              <img src={chat.img} alt={chat.name} className={styles.avatar} />
-              <div className={styles.chatContent}>
-                <div className={styles.chatHeader}>
-                  <span className={styles.userName}>{chat.name}</span>
-                  <span className={styles.timestamp}>{chat.time}</span>
+          {filteredChats.length > 0 ? (
+            filteredChats.map((chat) => (
+              <Link href={`/chat/${chat.id}`} key={chat.id} className={styles.chatItem} style={{ textDecoration: 'none' }}>
+                <img src={chat.img} alt={chat.name} className={styles.avatar} />
+                <div className={styles.chatContent}>
+                  <div className={styles.chatHeader}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className={styles.userName}>{chat.name}</span>
+                      {chat.unread && <div className={styles.unreadBadge}></div>}
+                    </div>
+                    <span className={styles.timestamp}>{chat.time}</span>
+                  </div>
+                  <p className={styles.lastMessage}>{chat.message}</p>
                 </div>
-                <p className={styles.lastMessage}>{chat.message}</p>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            ))
+          ) : (
+            <div className={styles.emptyState}>
+              <MessageSquareOff size={64} strokeWidth={1} color="#A5A5A5" />
+              <h3 className={styles.emptyTitle}>Chat tidak ditemukan</h3>
+              <p className={styles.emptySub}>Tidak ada pesan di kategori <strong>{activeTab}</strong>.</p>
+            </div>
+          )}
         </div>
       </main>
     </div>

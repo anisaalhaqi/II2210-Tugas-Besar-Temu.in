@@ -1,14 +1,30 @@
 'use client';
 
+import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import styles from './page.module.css';
 import Link from 'next/link';
-import { ArrowLeft, Heart, Clock, Hourglass, ShieldCheck, Tag, ShoppingBag, MapPin, Star } from 'lucide-react';
+import { 
+  ArrowLeft, 
+  Heart, 
+  Clock, 
+  Hourglass, 
+  ShieldCheck, 
+  Tag, 
+  ShoppingBag, 
+  MapPin, 
+  Star,
+  BarChart3,
+  ChevronDown,
+  ChevronUp
+} from 'lucide-react';
 
 export default function ProductDetail() {
   const params = useParams();
   const router = useRouter();
   const id = params?.id;
+  const [isAiExpanded, setIsAiExpanded] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(true);
 
   // Mock database
   const allProducts: Record<number, any> = {
@@ -86,9 +102,20 @@ export default function ProductDetail() {
           <div className={styles.productInfo}>
             <div className={styles.titleRow}>
               <h1 className={styles.productTitle}>{product.title}</h1>
-              <div className={styles.likes}>
-                <Heart size={20} className={styles.likeIcon} fill="#FF4B4B" color="#FF4B4B" />
-                <span>{product.likes}</span>
+              <div 
+                className={styles.likes} 
+                onClick={() => setIsFavorited(!isFavorited)}
+                style={{ cursor: 'pointer', transition: 'all 0.2s' }}
+              >
+                <Heart 
+                  size={24} 
+                  className={styles.likeIcon} 
+                  fill={isFavorited ? "#FF4B4B" : "none"} 
+                  color={isFavorited ? "#FF4B4B" : "#767676"} 
+                />
+                <span style={{ color: isFavorited ? '#292929' : '#767676' }}>
+                  {isFavorited ? product.likes : product.likes - 1}
+                </span>
               </div>
             </div>
             <p className={styles.productPrice}>{product.price}</p>
@@ -116,16 +143,28 @@ export default function ProductDetail() {
               </li>
             </ul>
 
-            <div className={styles.conditionBox}>
-              <div className={styles.conditionHeader}>
-                <h3>Ringkasan Kondisi Barang</h3>
-                <Star size={20} className={styles.sparkleIcon} color="#008585" />
+            <div className={`${styles.aiAnalysisCard} ${isAiExpanded ? styles.aiExpanded : ''}`}>
+              <div className={styles.aiHeader} onClick={() => setIsAiExpanded(!isAiExpanded)} style={{ cursor: 'pointer' }}>
+                <div className={styles.aiTitle}>
+                  <BarChart3 size={20} className={styles.aiIcon} color="#2563EB" />
+                  <span>Analisis AI Temu.in</span>
+                </div>
+                {isAiExpanded ? <ChevronUp size={24} style={{ opacity: 0.5 }} /> : <ChevronDown size={24} style={{ opacity: 0.5 }} />}
               </div>
-              <div className={styles.conditionDetails}>
-                <p><strong>Warna:</strong> {productData.title.includes('Jas') ? 'Putih' : 'Sesuai Foto'} (terlihat masih cukup cerah, tetapi ada sedikit bayangan lipatan atau kerutan karena penyimpanan)</p>
-                <p><strong>Material:</strong> {productData.title.includes('Jas') ? 'Kain katun tebal' : 'Material standar berkualitas'}</p>
-                <p>✅ Bentuk masih simetris, kancing lengkap (jika ada), dan tidak terlihat menguning secara signifikan</p>
-                <p>⚠️ Barang terlihat sedikit kusut, disarankan setrika ulang agar daya tarik visualnya meningkat.</p>
+              <div className={styles.aiContent}>
+                <div className={styles.aiBrief}>
+                  <p>Berdasarkan analisis visual cerdas kami terhadap foto produk ini:</p>
+                  <p><strong>Warna:</strong> {productData.title.includes('Jas') ? 'Putih' : 'Sesuai Foto'} (terlihat masih cukup cerah, tetapi ada sedikit bayangan lipatan atau kerutan karena penyimpanan)</p>
+                  <p>✅ Bentuk masih simetris dan jahitan terlihat kokoh.</p>
+                </div>
+                {isAiExpanded && (
+                  <div className={styles.aiFullContent}>
+                    <p><strong>Material:</strong> {productData.title.includes('Jas') ? 'Kain katun tebal' : 'Material standar berkualitas'}</p>
+                    <p>⚠️ Barang terlihat sedikit kusut, disarankan setrika ulang agar daya tarik visualnya meningkat.</p>
+                    <p>🔍 Tidak ditemukan noda permanen atau sobekan pada bagian lengan dan kerah.</p>
+                    <p>📊 <strong>Kualitas Material:</strong> High Grade (Sangat Awet)</p>
+                  </div>
+                )}
               </div>
             </div>
 
