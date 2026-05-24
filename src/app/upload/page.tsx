@@ -56,9 +56,17 @@ export default function UploadPage() {
   const [codLocation, setCodLocation] = useState('ITB Ganesha');
   
   const [showCalendar, setShowCalendar] = useState(false);
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 3, 1)); // April 2026
-  const [rangeStart, setRangeStart] = useState<number | null>(27);
-  const [rangeEnd, setRangeEnd] = useState<number | null>(30);
+  const [currentDate, setCurrentDate] = useState(new Date()); 
+  const [rangeStart, setRangeStart] = useState<number | null>(new Date().getDate());
+  const [rangeEnd, setRangeEnd] = useState<number | null>(new Date().getDate() + 3);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const isDateDisabled = (day: number) => {
+    const checkDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    return checkDate < today;
+  };
 
   const JAE_HWAN_ID = '00000000-0000-0000-0000-000000000001';
 
@@ -75,6 +83,8 @@ export default function UploadPage() {
   }, [rangeStart, rangeEnd, currentDate, months]);
 
   const handleDayClick = (day: number) => {
+    if (isDateDisabled(day)) return;
+
     if (!rangeStart || (rangeStart && rangeEnd)) {
       setRangeStart(day);
       setRangeEnd(null);
@@ -87,8 +97,10 @@ export default function UploadPage() {
   };
 
   const changeMonth = (offset: number) => {
-    const newDate = new Date(currentDate.setMonth(currentDate.getMonth() + offset));
-    setCurrentDate(new Date(newDate));
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + offset, 1);
+    setCurrentDate(newDate);
+    // Don't reset range necessarily, but could lead to weird UI if range is in another month
+    // For simplicity of this task, keeping existing reset behavior but with better date handling
     setRangeStart(null);
     setRangeEnd(null);
   };
@@ -385,10 +397,10 @@ export default function UploadPage() {
             </div>
             <div className={styles.daysGrid}>
               {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(d => <div key={d} className={styles.weekdayLabel}>{d}</div>)}
-              {Array.from({length: 30}, (_, i) => i + 1).map(day => (
+              {Array.from({length: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()}, (_, i) => i + 1).map(day => (
                 <div 
                   key={day} 
-                  className={`${styles.dayCell} ${day === rangeStart || day === rangeEnd ? styles.dayActive : ''} ${rangeStart && rangeEnd && day > rangeStart && day < rangeEnd ? styles.dayInRange : ''}`}
+                  className={`${styles.dayCell} ${day === rangeStart || day === rangeEnd ? styles.dayActive : ''} ${rangeStart && rangeEnd && day > rangeStart && day < rangeEnd ? styles.dayInRange : ''} ${isDateDisabled(day) ? styles.dayDisabled : ''}`}
                   onClick={() => handleDayClick(day)}
                 >{day}</div>
               ))}

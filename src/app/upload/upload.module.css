@@ -544,6 +544,12 @@
   color: #008585;
 }
 
+.dayDisabled {
+  color: #d1d5db;
+  cursor: not-allowed;
+  background: none !important;
+}
+
 .modalFooter {
   display: flex;
   gap: 16px;
