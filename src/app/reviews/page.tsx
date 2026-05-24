@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import styles from './reviews.module.css';
+import { ArrowLeft } from 'lucide-react';
 
 export default function ReviewsPage() {
   const [activeTab, setActiveTab] = useState('Semua');
@@ -54,7 +55,7 @@ export default function ReviewsPage() {
       <main className={styles.main}>
         <div className={styles.pageTitleRow}>
           <button className={styles.backButton} onClick={handleBack} title="Kembali">
-            <img src="/img/icons/back-left.png" alt="Back" width={20} height={20} />
+            <ArrowLeft size={20} />
           </button>
           <h1 className={styles.pageTitle}>Penilaian dan Ulasan</h1>
         </div>

@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Heart, MessageCircle, Check, Inbox, X, Loader2 } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, Check, Inbox, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import styles from './aktivitas.module.css';
 import { supabase } from '@/lib/supabase';
+import Skeleton from '@/components/Skeleton/Skeleton';
 
 interface Activity {
   id: number;
@@ -22,6 +23,49 @@ interface Activity {
     full_name: string;
     role: string;
   };
+}
+
+function AktivitasSkeleton() {
+  return (
+    <div className={styles.container}>
+      <header className={styles.pageHeader}>
+        <div className={styles.headerTop}>
+          <div className={styles.titleArea}>
+            <Skeleton width={32} height={32} borderRadius="50%" />
+            <Skeleton width={120} height={32} style={{ marginLeft: '16px' }} />
+          </div>
+        </div>
+        <div className={styles.tabs} style={{ display: 'flex', gap: '20px', marginTop: '20px', overflow: 'hidden' }}>
+          {[...Array(5)].map((_, i) => (
+            <Skeleton key={i} width={120} height={40} borderRadius={12} />
+          ))}
+        </div>
+        <div className={styles.filterRow} style={{ marginTop: '20px', padding: '16px' }}>
+          <Skeleton width="100%" height={40} borderRadius={8} />
+        </div>
+      </header>
+
+      <div className={styles.activityList}>
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className={styles.transactionCard} style={{ padding: '20px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <Skeleton width={180} height={20} />
+              <Skeleton width={100} height={20} />
+            </div>
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <Skeleton width={100} height={110} borderRadius={12} />
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <Skeleton width="70%" height={24} />
+                <Skeleton width="40%" height={16} />
+                <Skeleton width="30%" height={20} />
+                <Skeleton width="50%" height={16} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export default function AktivitasPage() {
@@ -131,11 +175,7 @@ export default function AktivitasPage() {
   };
 
   if (loading) {
-    return (
-      <div className={styles.container} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-        <Loader2 className="animate-spin" size={48} color="#008585" />
-      </div>
-    );
+    return <AktivitasSkeleton />;
   }
 
   return (

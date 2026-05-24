@@ -20,16 +20,24 @@
 }
 
 .backButton {
-  background: none;
-  border: none;
-  font-size: 16px;
-  font-weight: 600;
-  color: #434343;
-  cursor: pointer;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 8px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #292929;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 600;
   gap: 8px;
-  text-decoration: none;
+}
+
+.backButton:hover {
+  background-color: #f9fafb;
+  border-color: #d1d5db;
 }
 
 .navIconSmall {

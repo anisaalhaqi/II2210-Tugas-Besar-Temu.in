@@ -21,6 +21,24 @@
   gap: 16px;
 }
 
+.backButton {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #292929;
+  transition: all 0.2s ease;
+}
+
+.backButton:hover {
+  background-color: #f9fafb;
+  border-color: #d1d5db;
+}
+
 .pageTitle {
   font-size: 28px;
   font-weight: 700;

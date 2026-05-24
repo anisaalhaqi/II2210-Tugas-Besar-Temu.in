@@ -3,9 +3,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Search, Inbox, Loader2 } from 'lucide-react';
+import { ArrowLeft, Search, Inbox } from 'lucide-react';
 import styles from './favorites.module.css';
 import { supabase } from '@/lib/supabase';
+import Skeleton from '@/components/Skeleton/Skeleton';
 
 interface FavoriteItem {
   id: number;
@@ -17,6 +18,51 @@ interface FavoriteItem {
     images: string[];
     category: string;
   }
+}
+
+function FavoritesSkeleton() {
+  return (
+    <div className={styles.container}>
+      <main className={styles.main}>
+        <section className={styles.pageHeader}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <Skeleton width={32} height={32} borderRadius="50%" />
+            <Skeleton width={120} height={32} />
+          </div>
+          <div className={styles.localSearchWrapper}>
+            <Skeleton width="100%" height={48} borderRadius={24} />
+          </div>
+        </section>
+
+        <section className={styles.filterSection} style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+          {[...Array(3)].map((_, i) => (
+            <Skeleton key={i} width={100} height={40} borderRadius={20} />
+          ))}
+        </section>
+
+        <div className={styles.statusRow} style={{ marginTop: '24px', marginBottom: '16px' }}>
+          <Skeleton width={100} height={20} />
+        </div>
+
+        <section className={styles.productGrid}>
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className={styles.productCard}>
+              <div className={styles.imageContainer}>
+                <Skeleton width="100%" height="100%" borderRadius={0} />
+              </div>
+              <div className={styles.productInfo}>
+                <Skeleton width="90%" height={16} style={{ marginBottom: '8px' }} />
+                <Skeleton width="60%" height={22} style={{ marginBottom: '12px' }} />
+                <div className={styles.productFooter}>
+                  <Skeleton width={80} height={14} />
+                </div>
+              </div>
+            </div>
+          ))}
+        </section>
+      </main>
+    </div>
+  );
 }
 
 export default function FavoritesPage() {
@@ -89,11 +135,7 @@ export default function FavoritesPage() {
   };
 
   if (loading) {
-    return (
-      <div className={styles.container} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-        <Loader2 className="animate-spin" size={48} color="#008585" />
-      </div>
-    );
+    return <FavoritesSkeleton />;
   }
 
   return (

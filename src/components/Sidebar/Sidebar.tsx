@@ -33,23 +33,25 @@ export default function Sidebar() {
         </Link>
       </div>
 
-      <div className={styles.scrollableContent}>
-        <nav className={styles.navLinks}>
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = pathname === item.href;
-            return (
-              <Link 
-                key={item.name} 
-                href={item.href} 
-                className={`${styles.navItem} ${isActive ? styles.activeNavItem : ''}`}
-              >
-                <Icon size={24} className={styles.navIcon} />
-                {item.name}
-              </Link>
-            );
-          })}
-        </nav>
+      <div className={styles.scrollableWrapper}>
+        <div className={styles.scrollableContent}>
+          <nav className={styles.navLinks}>
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
+              return (
+                <Link 
+                  key={item.name} 
+                  href={item.href} 
+                  className={`${styles.navItem} ${isActive ? styles.activeNavItem : ''}`}
+                >
+                  <Icon size={24} className={styles.navIcon} />
+                  {item.name}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
       </div>
 
       <div className={styles.bottomSection}>

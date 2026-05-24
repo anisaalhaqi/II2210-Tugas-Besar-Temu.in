@@ -84,10 +84,7 @@ export default function NotificationsPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <button 
               onClick={handleBack} 
-              style={{
-                background: 'white', border: '1px solid #e5e7eb', cursor: 'pointer', padding: '10px',
-                display: 'flex', alignItems: 'center', borderRadius: '12px', color: '#292929'
-              }}
+              className={styles.backButton}
               title="Kembali"
             >
               <ArrowLeft size={20} />

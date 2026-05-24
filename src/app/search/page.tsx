@@ -60,8 +60,8 @@ export default function SearchPage() {
       <header className={styles.header}>
         <div className={styles.headerContent}>
           <div className={styles.headerLeft}>
-            <button onClick={() => router.back()} className={styles.backButton} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', marginRight: '16px' }}>
-              <ArrowLeft size={24} />
+            <button onClick={() => router.back()} className={styles.backButton}>
+              <ArrowLeft size={20} />
             </button>
             <form onSubmit={handleSearch} className={styles.searchBarWrapper}>
               <Search size={20} className={styles.searchIcon} color="#767676" />

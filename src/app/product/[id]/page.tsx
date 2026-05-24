@@ -16,10 +16,10 @@ import {
   Star,
   BarChart3,
   ChevronDown,
-  ChevronUp,
-  Loader2
+  ChevronUp
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import Skeleton from '@/components/Skeleton/Skeleton';
 
 interface Seller {
   full_name: string;
@@ -42,6 +42,53 @@ interface Product {
   created_at: string;
   seller_id: string;
   profiles?: Seller; // Joined from Supabase
+}
+
+function ProductSkeleton() {
+  return (
+    <div className={styles.container}>
+      <main className={styles.main}>
+        <div className={styles.navigationRow}>
+          <Skeleton width={100} height={24} />
+        </div>
+
+        <div className={styles.productLayout}>
+          <div className={styles.imageGallery}>
+            <div className={styles.mainImageWrapper}>
+              <Skeleton width="100%" height="100%" borderRadius={0} />
+            </div>
+            <div className={styles.thumbnailList}>
+              {[...Array(4)].map((_, i) => (
+                <Skeleton key={i} width={80} height={80} borderRadius={8} />
+              ))}
+            </div>
+          </div>
+
+          <div className={styles.productInfo}>
+            <div className={styles.titleRow}>
+              <Skeleton width="80%" height={36} />
+              <Skeleton width={24} height={24} borderRadius="50%" />
+            </div>
+            <Skeleton width="40%" height={40} style={{ marginBottom: '10px' }} />
+
+            <div className={styles.specList}>
+              {[...Array(4)].map((_, i) => (
+                <div key={i} style={{ display: 'flex', gap: '12px', marginBottom: '8px', alignItems: 'center' }}>
+                  <Skeleton width={20} height={20} borderRadius="50%" />
+                  <Skeleton width={80} height={16} />
+                  <Skeleton width={120} height={16} />
+                </div>
+              ))}
+            </div>
+
+            <Skeleton width="100%" height={140} borderRadius={16} />
+            <Skeleton width="100%" height={80} />
+            <Skeleton width="100%" height={56} borderRadius={8} />
+          </div>
+        </div>
+      </main>
+    </div>
+  );
 }
 
 export default function ProductDetail() {
@@ -108,11 +155,7 @@ export default function ProductDetail() {
   };
 
   if (loading) {
-    return (
-      <div className={styles.container} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-        <Loader2 className="animate-spin" size={48} color="#008585" />
-      </div>
-    );
+    return <ProductSkeleton />;
   }
 
   if (!product) return <div className={styles.container} style={{ padding: '100px', textAlign: 'center' }}>Produk tidak ditemukan.</div>;

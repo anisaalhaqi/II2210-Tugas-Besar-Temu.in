@@ -131,7 +131,7 @@ export default function ChatDetailPage() {
     <div className={styles.container}>
       <header className={styles.chatHeader}>
         <div className={styles.headerLeft}>
-          <button className={styles.backBtn} onClick={() => router.back()}><ArrowLeft size={24} /></button>
+          <button className={styles.backBtn} onClick={() => router.back()}><ArrowLeft size={20} /></button>
           <img src={opponent?.avatar_url || 'https://placehold.co/75x75'} alt="" className={styles.opponentAvatar} />
           <div className={styles.opponentInfo}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>

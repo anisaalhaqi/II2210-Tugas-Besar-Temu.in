@@ -4,8 +4,9 @@ import { useState, useEffect, useMemo } from 'react';
 import styles from './chat.module.css';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, MessageSquareOff, Loader2 } from 'lucide-react';
+import { ArrowLeft, MessageSquareOff } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import Skeleton from '@/components/Skeleton/Skeleton';
 
 interface Conversation {
   id: number;
@@ -15,6 +16,40 @@ interface Conversation {
     full_name: string;
     avatar_url: string;
   };
+}
+
+function ChatSkeleton() {
+  return (
+    <div className={styles.container}>
+      <main className={styles.main}>
+        <div className={styles.pageHeader}>
+          <Skeleton width={40} height={40} borderRadius={12} />
+          <Skeleton width={100} height={32} />
+        </div>
+
+        <div className={styles.tabRow} style={{ marginTop: '32px' }}>
+          {[...Array(3)].map((_, i) => (
+            <Skeleton key={i} width={100} height={42} borderRadius={21} />
+          ))}
+        </div>
+
+        <div className={styles.chatList} style={{ marginTop: '32px' }}>
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className={styles.chatItem} style={{ padding: '24px' }}>
+              <Skeleton width={64} height={64} borderRadius="50%" />
+              <div className={styles.chatContent}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <Skeleton width={120} height={20} />
+                  <Skeleton width={80} height={16} />
+                </div>
+                <Skeleton width="80%" height={24} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </main>
+    </div>
+  );
 }
 
 export default function ChatPage() {
@@ -73,11 +108,7 @@ export default function ChatPage() {
   }, [activeTab, conversations]);
 
   if (loading) {
-    return (
-      <div className={styles.container} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-        <Loader2 className="animate-spin" size={48} color="#008585" />
-      </div>
-    );
+    return <ChatSkeleton />;
   }
 
   return (
@@ -88,19 +119,8 @@ export default function ChatPage() {
             className={styles.backButton} 
             onClick={() => router.back()} 
             title="Kembali"
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              color: '#292929',
-              background: 'white',
-              border: '1px solid #e5e7eb',
-              borderRadius: '12px',
-              padding: '10px',
-              cursor: 'pointer'
-            }}
           >
-            <ArrowLeft size={24} />
+            <ArrowLeft size={20} />
           </button>
           <h1 className={styles.pageTitle}>Chat</h1>
         </div>

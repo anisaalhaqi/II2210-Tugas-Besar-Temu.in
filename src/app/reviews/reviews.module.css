@@ -26,16 +26,19 @@
 .backButton {
   background: white;
   border: 1px solid #e5e7eb;
-  cursor: pointer;
-  padding: 10px;
+  border-radius: 12px;
+  padding: 8px;
   display: flex;
   align-items: center;
-  border-radius: 12px;
-  transition: background-color 0.2s;
+  justify-content: center;
+  cursor: pointer;
+  color: #292929;
+  transition: all 0.2s ease;
 }
 
 .backButton:hover {
   background-color: #f9fafb;
+  border-color: #d1d5db;
 }
 
 .pageTitle {

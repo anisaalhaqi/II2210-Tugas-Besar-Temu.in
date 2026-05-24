@@ -11,10 +11,10 @@ import {
   Zap, 
   Palette, 
   Package, 
-  Layers,
-  Loader2
+  Layers
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import Skeleton from '@/components/Skeleton/Skeleton';
 
 interface Product {
   id: number;
@@ -23,6 +23,47 @@ interface Product {
   location: string;
   images: string[];
   category: string;
+}
+
+function HomeSkeleton() {
+  return (
+    <div className={styles.container}>
+      <main className={styles.main}>
+        <section className={styles.section}>
+          <Skeleton width={200} height={28} style={{ marginBottom: '24px' }} />
+          <div className={styles.categoryGrid}>
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className={styles.categoryItem}>
+                <Skeleton width={100} height={100} borderRadius={16} />
+                <Skeleton width={60} height={14} style={{ marginTop: '12px' }} />
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <Skeleton width={180} height={28} />
+            <Skeleton width={80} height={14} />
+          </div>
+          <div className={styles.productGrid}>
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className={styles.productCard}>
+                <Skeleton width="100%" height={220} borderRadius={0} />
+                <div className={styles.productInfo}>
+                  <Skeleton width="90%" height={16} style={{ marginBottom: '8px' }} />
+                  <Skeleton width="60%" height={22} style={{ marginBottom: '12px' }} />
+                  <div className={styles.productFooter}>
+                    <Skeleton width={80} height={14} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
+    </div>
+  );
 }
 
 export default function DesktopHome() {
@@ -69,11 +110,7 @@ export default function DesktopHome() {
   };
 
   if (loading) {
-    return (
-      <div className={styles.container} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-        <Loader2 className="animate-spin" size={48} color="#008585" />
-      </div>
-    );
+    return <HomeSkeleton />;
   }
 
   return (
