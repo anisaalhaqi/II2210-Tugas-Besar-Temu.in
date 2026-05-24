@@ -101,6 +101,7 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [isAiExpanded, setIsAiExpanded] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   useEffect(() => {
     if (!id) return;
@@ -125,6 +126,7 @@ export default function ProductDetail() {
 
         if (error) throw error;
         setProduct(data);
+        setActiveImageIndex(0);
 
         // 2. Fetch Recommended (same category)
         const { data: recData } = await supabase
@@ -175,11 +177,21 @@ export default function ProductDetail() {
         <div className={styles.productLayout}>
           <div className={styles.imageGallery}>
             <div className={styles.mainImageWrapper}>
-              <img src={product.images[0] || 'https://placehold.co/600x600'} alt={product.title} className={styles.mainImage} />
+              <img 
+                src={product.images[activeImageIndex] || 'https://placehold.co/600x600'} 
+                alt={product.title} 
+                className={styles.mainImage} 
+              />
             </div>
             <div className={styles.thumbnailList}>
               {product.images.map((img, i) => (
-                <img key={i} src={img} className={styles.thumbnail} alt="thumb" />
+                <img 
+                  key={i} 
+                  src={img} 
+                  className={`${styles.thumbnail} ${activeImageIndex === i ? styles.activeThumbnail : ''}`} 
+                  alt="thumb" 
+                  onClick={() => setActiveImageIndex(i)}
+                />
               ))}
             </div>
           </div>

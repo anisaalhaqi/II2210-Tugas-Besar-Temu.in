@@ -94,6 +94,11 @@
   border-color: #008585;
 }
 
+.activeThumbnail {
+  border-color: #008585 !important;
+  opacity: 1;
+}
+
 /* Product Info */
 .productInfo {
   display: flex;
