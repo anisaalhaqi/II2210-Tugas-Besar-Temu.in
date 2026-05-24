@@ -20,6 +20,13 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import Skeleton from '@/components/Skeleton/Skeleton';
+import MapDisplay from '@/components/Map/MapDisplay';
+
+const campusCoords: Record<string, [number, number]> = {
+  'ITB Ganesha': [-6.8909, 107.6104],
+  'ITB Jatinangor': [-6.9281, 107.7705],
+  'ITB Cirebon': [-6.6455, 108.4071],
+};
 
 interface Seller {
   full_name: string;
@@ -269,6 +276,14 @@ export default function ProductDetail() {
                   <MapPin size={20} color="#008585" />
                   <span>Ketemuan (Kampus {product.location})</span>
                 </li>
+                {campusCoords[product.location] && (
+                  <div style={{ height: '200px', width: '100%', marginTop: '8px', marginBottom: '16px' }}>
+                    <MapDisplay 
+                      center={campusCoords[product.location]} 
+                      markerPosition={campusCoords[product.location]} 
+                    />
+                  </div>
+                )}
                 <li>
                   <ShoppingBag size={20} color="#008585" />
                   <span>Jasa Pengiriman ({product.delivery_dates || 'Sesuai kesepakatan'})</span>

@@ -14,10 +14,12 @@ import {
   X
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import MapPicker from '@/components/Map/MapPicker';
+import MapDisplay from '@/components/Map/MapDisplay';
 
 interface ChatMessage {
   id: number;
-  type: 'text' | 'offer' | 'image';
+  type: 'text' | 'offer' | 'image' | 'location';
   content?: string;
   sender_id: string;
   metadata?: any;
@@ -37,6 +39,8 @@ export default function ChatDetailPage() {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [opponent, setOpponent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<[number, number]>([-6.8915, 107.6107]);
 
   const JAE_HWAN_ID = '00000000-0000-0000-0000-000000000001';
 
@@ -119,6 +123,27 @@ export default function ChatDetailPage() {
     }
   };
 
+  const shareLocation = async () => {
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .insert([{
+          conversation_id: conversationId,
+          sender_id: JAE_HWAN_ID,
+          type: 'location',
+          metadata: {
+            lat: selectedLocation[0],
+            lng: selectedLocation[1]
+          }
+        }]);
+
+      if (error) throw error;
+      setShowLocationModal(false);
+    } catch (err) {
+      console.error('Share location error:', err);
+    }
+  };
+
   useEffect(() => {
     if (chatBodyRef.current) {
       chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
@@ -154,6 +179,13 @@ export default function ChatDetailPage() {
                   <h4 className={styles.offerPrice}>{msg.metadata?.price}</h4>
                 </div>
               </div>
+            ) : msg.type === 'location' ? (
+              <div className={`${styles.bubble} ${msg.sender_id === JAE_HWAN_ID ? styles.senderBubble : styles.recipientBubble}`} style={{ width: '250px', height: '200px', padding: '8px' }}>
+                <MapDisplay 
+                  center={[msg.metadata.lat, msg.metadata.lng]} 
+                  markerPosition={[msg.metadata.lat, msg.metadata.lng]} 
+                />
+              </div>
             ) : (
               <div className={`${styles.bubble} ${msg.sender_id === JAE_HWAN_ID ? styles.senderBubble : styles.recipientBubble}`}>
                 {msg.content}
@@ -164,7 +196,9 @@ export default function ChatDetailPage() {
       </div>
 
       <footer className={styles.chatFooter}>
-        <button className={styles.attachBtn}><Plus size={24} /></button>
+        <button className={styles.attachBtn} onClick={() => setShowLocationModal(true)} title="Bagikan Lokasi">
+          <MapPin size={22} />
+        </button>
         <div className={styles.inputWrapper}>
           <input 
             type="text" 
@@ -177,6 +211,28 @@ export default function ChatDetailPage() {
         </div>
         <button className={styles.sendBtn} onClick={handleSend}><Send size={20} /></button>
       </footer>
+
+      {showLocationModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.counterModal} style={{ maxWidth: '600px', width: '90%' }}>
+            <div className={styles.modalHeader}>
+              <h3 className={styles.modalTitle}>Pilih Titik Temu</h3>
+              <button className={styles.navBtn} onClick={() => setShowLocationModal(false)}><X size={24} /></button>
+            </div>
+            <div style={{ height: '350px', marginBottom: '24px' }}>
+              <MapPicker 
+                center={selectedLocation} 
+                markerPosition={selectedLocation}
+                onLocationSelect={(lat, lng) => setSelectedLocation([lat, lng])}
+              />
+            </div>
+            <div className={styles.modalFooter}>
+              <button className={`${styles.modalBtn} ${styles.btnBatal}`} onClick={() => setShowLocationModal(false)}>Batal</button>
+              <button className={`${styles.modalBtn} ${styles.btnAjukan}`} onClick={shareLocation}>Kirim Lokasi</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

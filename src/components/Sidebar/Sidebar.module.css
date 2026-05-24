@@ -30,54 +30,18 @@
 .scrollableWrapper {
   flex: 1;
   position: relative;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
 .scrollableContent {
   flex: 1;
-  overflow-y: auto;
-  margin-bottom: 8px;
-  padding-right: 4px;
-}
-
-/* Custom scrollbar for better visibility */
-.scrollableContent::-webkit-scrollbar {
-  width: 4px;
-}
-
-.scrollableContent::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.scrollableContent::-webkit-scrollbar-thumb {
-  background: #f0f0f0;
-  border-radius: 10px;
-}
-
-.scrollableContent::-webkit-scrollbar-thumb:hover {
-  background: #e0e0e0;
-}
-
-/* Gradient indicator for scrollability */
-.scrollableWrapper::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 40px;
-  background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0));
-  pointer-events: none;
-  z-index: 1;
 }
 
 .navLinks {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding-bottom: 40px; /* Space for gradient */
 }
 
 .navItem {

@@ -26,8 +26,16 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import MapPicker from '@/components/Map/MapPicker';
+import MapDisplay from '@/components/Map/MapDisplay';
 
 type Step = 'category' | 'detail';
+
+const campusCoords: Record<string, [number, number]> = {
+  'ITB Ganesha': [-6.8909, 107.6104],
+  'ITB Jatinangor': [-6.9281, 107.7705],
+  'ITB Cirebon': [-6.6455, 108.4071],
+};
 
 export default function UploadPage() {
   const router = useRouter();
@@ -54,6 +62,10 @@ export default function UploadPage() {
   const [usageEndMonth, setUsageEndMonth] = useState('Juli');
   const [usageEndYear, setUsageEndYear] = useState('2025');
   const [codLocation, setCodLocation] = useState('ITB Ganesha');
+  const [selectedCoords, setSelectedCoords] = useState<[number, number]>(campusCoords['ITB Ganesha']);
+  const [showMapModal, setShowMapModal] = useState(false);
+  const [isLocationMarked, setIsLocationMarked] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
   
   const [showCalendar, setShowCalendar] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date()); 
@@ -108,6 +120,45 @@ export default function UploadPage() {
   const handleCategorySelect = (category: string) => {
     setSelectedCategory(category);
     setStep('detail');
+  };
+
+  const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * 
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distance in km
+  };
+
+  const handleCodLocationChange = (loc: string) => {
+    setCodLocation(loc);
+    if (campusCoords[loc]) {
+      setSelectedCoords(campusCoords[loc]);
+      setIsLocationMarked(false); // Reset status saat ganti kampus
+      setLocationError(null);
+    }
+  };
+
+  const handleLocationSelect = (lat: number, lng: number) => {
+    const campusCenter = campusCoords[codLocation];
+    const distance = getDistance(lat, lng, campusCenter[0], campusCenter[1]);
+    
+    if (distance > 0.4) { // Optimal 0.4km (400 meters)
+      setLocationError(`Lokasi terlalu jauh dari area ${codLocation}. Silakan pilih titik di dalam area kampus.`);
+    } else {
+      setLocationError(null);
+    }
+    setSelectedCoords([lat, lng]);
+  };
+
+  const confirmLocation = () => {
+    if (locationError) return;
+    setIsLocationMarked(true);
+    setShowMapModal(false);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -336,7 +387,40 @@ export default function UploadPage() {
                   </div>
                   <div className={styles.formGroup}>
                     <label className={styles.label}>Lokasi Ketemuan (COD)</label>
-                    <CustomDropdown id="cod" value={codLocation} options={campusLocations} onSelect={setCodLocation} />
+                    <CustomDropdown id="cod" value={codLocation} options={campusLocations} onSelect={handleCodLocationChange} />
+                    
+                    {!isLocationMarked ? (
+                      <button 
+                        type="button"
+                        className={styles.mapMarkerBtn} 
+                        onClick={() => setShowMapModal(true)}
+                      >
+                        <MapPin size={18} />
+                        Tandai Titik Akurat di Peta
+                      </button>
+                    ) : (
+                      <div className={styles.mapPreviewContainer}>
+                        <div className={styles.mapPreviewHeader}>
+                          <div className={styles.mapPreviewTitle}>
+                            <MapPin size={16} color="#008585" />
+                            <span>Titik Lokasi Ditandai</span>
+                          </div>
+                          <button 
+                            type="button" 
+                            className={styles.changeLocationBtn}
+                            onClick={() => setShowMapModal(true)}
+                          >
+                            Ubah Lokasi
+                          </button>
+                        </div>
+                        <div className={styles.mapPreviewBody}>
+                          <MapDisplay 
+                            center={selectedCoords} 
+                            markerPosition={selectedCoords} 
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </section>
@@ -408,6 +492,48 @@ export default function UploadPage() {
             <div className={styles.modalFooter}>
               <button className={styles.modalBtn} style={{ border: '1px solid #d1d5db', background: 'white', color: '#767676' }} onClick={() => setShowCalendar(false)}>Batal</button>
               <button className={styles.modalBtn} style={{ border: 'none', background: '#008585', color: 'white' }} onClick={() => setShowCalendar(false)}>Terapkan</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showMapModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.mapModal}>
+            <div className={styles.modalHeader}>
+               <h3 className={styles.modalTitle}>Tandai Titik COD</h3>
+               <button className={styles.navBtn} onClick={() => setShowMapModal(false)}><X size={24} /></button>
+            </div>
+            <div style={{ height: '300px', marginBottom: '12px' }}>
+              <MapPicker 
+                center={selectedCoords} 
+                markerPosition={selectedCoords}
+                onLocationSelect={handleLocationSelect}
+              />
+            </div>
+            
+            {locationError && (
+              <div style={{ color: '#ef4444', fontSize: '13px', marginBottom: '16px', display: 'flex', gap: '6px', alignItems: 'flex-start', background: '#fef2f2', padding: '10px', borderRadius: '8px', border: '1px solid #fca5a5' }}>
+                <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
+                <span>{locationError}</span>
+              </div>
+            )}
+
+            <div className={styles.modalFooter}>
+              <button className={styles.modalBtn} style={{ border: '1px solid #d1d5db', background: 'white', color: '#767676' }} onClick={() => setShowMapModal(false)}>Batal</button>
+              <button 
+                className={styles.modalBtn} 
+                style={{ 
+                  border: 'none', 
+                  background: locationError ? '#d1d5db' : '#008585', 
+                  color: 'white',
+                  cursor: locationError ? 'not-allowed' : 'pointer'
+                }} 
+                onClick={confirmLocation}
+                disabled={!!locationError}
+              >
+                Gunakan Lokasi Ini
+              </button>
             </div>
           </div>
         </div>
