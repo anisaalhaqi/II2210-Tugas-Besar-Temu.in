@@ -58,14 +58,18 @@ export default function ChatPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const JAE_HWAN_ID = '7b27154b-884e-4a05-a89f-0654d0fed203';
-
   const tabs = ['Semua', 'Ketemuan', 'Belum dibaca'];
 
   useEffect(() => {
     async function fetchConversations() {
       try {
         setLoading(true);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          router.push('/auth');
+          return;
+        }
+
         // Fetch conversations where current user is participant1 or participant2
         const { data, error } = await supabase
           .from('conversations')
@@ -75,14 +79,14 @@ export default function ChatPage() {
             seller:users!conversations_seller_id_fkey (id, full_name, avatar_url),
             messages (content)
           `)
-          .or(`buyer_id.eq.${JAE_HWAN_ID},seller_id.eq.${JAE_HWAN_ID}`)
+          .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
           .order('last_message_at', { ascending: false });
 
         if (error) throw error;
 
         // Process data to identify the opponent
         const formatted = data?.map((con: any) => {
-          const isBuyerMe = con.buyer?.id === JAE_HWAN_ID;
+          const isBuyerMe = con.buyer?.id === user.id;
           const opponent = isBuyerMe ? con.seller : con.buyer;
           const messages = con.messages || [];
           const lastMsg = messages.length > 0 ? messages[messages.length - 1].content : '';

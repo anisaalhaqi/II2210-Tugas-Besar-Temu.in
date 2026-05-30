@@ -27,9 +27,7 @@ export default function CartPage() {
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  const JAE_HWAN_ID = '7b27154b-884e-4a05-a89f-0654d0fed203';
-
-  async function fetchCart() {
+  async function fetchCart(uid: string) {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -41,7 +39,7 @@ export default function CartPage() {
             users:seller_id (id, full_name)
           )
         `)
-        .eq('user_id', JAE_HWAN_ID);
+        .eq('user_id', uid);
 
       if (error) throw error;
       setItems(data as any || []);
@@ -53,7 +51,15 @@ export default function CartPage() {
   }
 
   useEffect(() => {
-    fetchCart();
+    async function init() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push('/auth');
+        return;
+      }
+      fetchCart(user.id);
+    }
+    init();
   }, []);
 
   const toggleItem = (id: string) => {

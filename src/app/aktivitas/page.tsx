@@ -76,13 +76,12 @@ export default function AktivitasPage() {
   
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
 
   // Modal States
   const [showCounterModal, setShowCounterModal] = useState(false);
   const [activeCounterId, setActiveCounterId] = useState<number | null>(null);
   const [counterPrice, setCounterPrice] = useState('31.000');
-
-  const JAE_HWAN_ID = '7b27154b-884e-4a05-a89f-0654d0fed203';
 
   const tabs = [
     'Menunggu Konfirmasi',
@@ -92,7 +91,7 @@ export default function AktivitasPage() {
     'Selesai'
   ];
 
-  async function fetchActivities() {
+  async function fetchActivities(uid: string) {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -102,7 +101,7 @@ export default function AktivitasPage() {
           product:product_id (title, images),
           counterparty:counterparty_id (full_name, role)
         `)
-        .eq('user_id', JAE_HWAN_ID)
+        .eq('user_id', uid)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -115,7 +114,16 @@ export default function AktivitasPage() {
   }
 
   useEffect(() => {
-    fetchActivities();
+    async function init() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push('/auth');
+        return;
+      }
+      setUserId(user.id);
+      fetchActivities(user.id);
+    }
+    init();
   }, []);
 
   const updateStatus = async (id: number, newStatus: string) => {
@@ -126,7 +134,7 @@ export default function AktivitasPage() {
         .eq('id', id);
 
       if (error) throw error;
-      fetchActivities(); // Refresh list
+      if (userId) fetchActivities(userId); // Refresh list
     } catch (err) {
       console.error('Update error:', err);
     }
@@ -153,7 +161,7 @@ export default function AktivitasPage() {
 
         if (error) throw error;
         setShowCounterModal(false);
-        fetchActivities();
+        if (userId) fetchActivities(userId);
       } catch (err) {
         console.error('Counter error:', err);
       }

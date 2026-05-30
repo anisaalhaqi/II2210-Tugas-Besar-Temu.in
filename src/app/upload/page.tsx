@@ -67,6 +67,7 @@ export default function UploadPage() {
   const [isLocationMarked, setIsLocationMarked] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
   
   const [showCalendar, setShowCalendar] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date()); 
@@ -80,6 +81,16 @@ export default function UploadPage() {
     end.setDate(end.getDate() + 3);
     setRangeStart(start);
     setRangeEnd(end);
+
+    async function checkUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push('/auth');
+        return;
+      }
+      setUserId(user.id);
+    }
+    checkUser();
   }, []);
 
   const today = new Date();
@@ -89,8 +100,6 @@ export default function UploadPage() {
     const checkDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
     return checkDate < today;
   };
-
-  const JAE_HWAN_ID = '7b27154b-884e-4a05-a89f-0654d0fed203';
 
   const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
   const years = ['2021', '2022', '2023', '2024', '2025', '2026', '2027'];
@@ -202,6 +211,7 @@ export default function UploadPage() {
   };
 
   const handleFormSubmit = async () => {
+    if (!userId) return;
     try {
       setIsSubmitting(true);
       
@@ -211,7 +221,7 @@ export default function UploadPage() {
       for (const file of imageFiles) {
         const fileExt = file.name.split('.').pop();
         const fileName = `${Math.random()}.${fileExt}`;
-        const filePath = `${JAE_HWAN_ID}/${fileName}`;
+        const filePath = `${userId}/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from('product-images')
@@ -233,21 +243,14 @@ export default function UploadPage() {
       const { error } = await supabase
         .from('products')
         .insert([{
-          seller_id: JAE_HWAN_ID,
+          seller_id: userId,
           title: title,
           price: numericPrice,
           location: codLocation,
           description: description,
-          category: selectedCategory,
-          originality: originality,
-          usage_period: usage_period,
-          delivery_dates: formattedRange, // New column
-          images: uploadedImageUrls.length > 0 ? uploadedImageUrls : ['https://placehold.co/600x600'],
-          ai_analysis: {
-            color: "Putih",
-            condition: "Baik",
-            recommendation: "Rp65k - Rp85k"
-          }
+          category_id: (await supabase.from('categories').select('id').eq('name', 'Lainnya').single()).data?.id, // Temporary fallback
+          condition: 'baru', // Temporary fallback
+          images: uploadedImageUrls.length > 0 ? uploadedImageUrls : ['https://placehold.co/600x600']
         }]);
 
       if (error) throw error;

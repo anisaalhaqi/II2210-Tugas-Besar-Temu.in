@@ -28,16 +28,20 @@ export default function Sidebar() {
   const router = useRouter();
   const [userProfile, setUserProfile] = useState<any>(null);
   const [mounted, setMounted] = useState(false);
-  
-  const ANISA_ID = '7b27154b-884e-4a05-a89f-0654d0fed203';
 
   useEffect(() => {
     setMounted(true);
     async function fetchUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        return; // Let the page layout handle redirect or keep it empty
+      }
+
       const { data } = await supabase
         .from('users')
         .select('full_name, avatar_url, campus_location')
-        .eq('id', ANISA_ID)
+        .eq('id', user.id)
         .single();
       if (data) setUserProfile(data);
     }

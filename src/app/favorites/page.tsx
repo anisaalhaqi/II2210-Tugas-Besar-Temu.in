@@ -76,9 +76,7 @@ export default function FavoritesPage() {
   const [categoryFilter, setCategoryFilter] = useState<string>('Semua');
   const [openDropdown, setOpenDropdown] = useState<'availability' | 'category' | null>(null);
 
-  const JAE_HWAN_ID = '7b27154b-884e-4a05-a89f-0654d0fed203';
-
-  async function fetchFavorites() {
+  async function fetchFavorites(uid: string) {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -90,7 +88,7 @@ export default function FavoritesPage() {
             categories:category_id (name)
           )
         `)
-        .eq('user_id', JAE_HWAN_ID);
+        .eq('user_id', uid);
 
       if (error) throw error;
       setFavorites(data as any || []);
@@ -102,7 +100,15 @@ export default function FavoritesPage() {
   }
 
   useEffect(() => {
-    fetchFavorites();
+    async function init() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push('/auth');
+        return;
+      }
+      fetchFavorites(user.id);
+    }
+    init();
   }, []);
 
   const filteredFavorites = useMemo(() => {

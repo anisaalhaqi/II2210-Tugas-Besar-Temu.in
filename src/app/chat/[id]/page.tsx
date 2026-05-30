@@ -41,13 +41,12 @@ export default function ChatDetailPage() {
   const [loading, setLoading] = useState(true);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<[number, number]>([-6.8915, 107.6107]);
-
-  const JAE_HWAN_ID = '7b27154b-884e-4a05-a89f-0654d0fed203';
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!conversationId) return;
 
-    async function fetchChatDetails() {
+    async function fetchChatDetails(uid: string) {
       try {
         setLoading(true);
         
@@ -55,6 +54,8 @@ export default function ChatDetailPage() {
         const { data: convData, error: convError } = await supabase
           .from('conversations')
           .select(`
+            buyer_id,
+            seller_id,
             buyer:users!conversations_buyer_id_fkey (*),
             seller:users!conversations_seller_id_fkey (*)
           `)
@@ -62,7 +63,7 @@ export default function ChatDetailPage() {
           .single();
 
         if (convError) throw convError;
-        const opponentData = convData.buyer?.id === JAE_HWAN_ID ? convData.seller : convData.buyer;
+        const opponentData = convData.buyer_id === uid ? convData.seller : convData.buyer;
         setOpponent(opponentData);
 
         // 2. Fetch messages
@@ -82,7 +83,17 @@ export default function ChatDetailPage() {
       }
     }
 
-    fetchChatDetails();
+    async function init() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push('/auth');
+        return;
+      }
+      setUserId(user.id);
+      fetchChatDetails(user.id);
+    }
+
+    init();
 
     // Subscribe to new messages
     const channel = supabase
@@ -103,7 +114,7 @@ export default function ChatDetailPage() {
   }, [conversationId]);
 
   const handleSend = async () => {
-    if (!message.trim() && pendingImages.length === 0) return;
+    if ((!message.trim() && pendingImages.length === 0) || !userId) return;
 
     try {
       // For now, simplicity: just text
@@ -111,7 +122,7 @@ export default function ChatDetailPage() {
         .from('messages')
         .insert([{
           conversation_id: conversationId,
-          sender_id: JAE_HWAN_ID,
+          sender_id: userId,
           type: 'text',
           content: message
         }]);
@@ -124,12 +135,13 @@ export default function ChatDetailPage() {
   };
 
   const shareLocation = async () => {
+    if (!userId) return;
     try {
       const { error } = await supabase
         .from('messages')
         .insert([{
           conversation_id: conversationId,
-          sender_id: JAE_HWAN_ID,
+          sender_id: userId,
           type: 'location',
           metadata: {
             lat: selectedLocation[0],
@@ -171,7 +183,7 @@ export default function ChatDetailPage() {
 
       <div className={styles.chatBody} ref={chatBodyRef}>
         {chatHistory.map((msg) => (
-          <div key={msg.id} className={`${styles.messageRow} ${msg.sender_id === JAE_HWAN_ID ? styles.senderRow : styles.recipientRow}`}>
+          <div key={msg.id} className={`${styles.messageRow} ${msg.sender_id === userId ? styles.senderRow : styles.recipientRow}`}>
             {msg.type === 'offer' ? (
               <div className={styles.offerCard}>
                 <div className={styles.offerDetails}>
@@ -180,14 +192,14 @@ export default function ChatDetailPage() {
                 </div>
               </div>
             ) : msg.type === 'location' ? (
-              <div className={`${styles.bubble} ${msg.sender_id === JAE_HWAN_ID ? styles.senderBubble : styles.recipientBubble}`} style={{ width: '250px', height: '200px', padding: '8px' }}>
+              <div className={`${styles.bubble} ${msg.sender_id === userId ? styles.senderBubble : styles.recipientBubble}`} style={{ width: '250px', height: '200px', padding: '8px' }}>
                 <MapDisplay 
                   center={[msg.metadata.lat, msg.metadata.lng]} 
                   markerPosition={[msg.metadata.lat, msg.metadata.lng]} 
                 />
               </div>
             ) : (
-              <div className={`${styles.bubble} ${msg.sender_id === JAE_HWAN_ID ? styles.senderBubble : styles.recipientBubble}`}>
+              <div className={`${styles.bubble} ${msg.sender_id === userId ? styles.senderBubble : styles.recipientBubble}`}>
                 {msg.content}
               </div>
             )}

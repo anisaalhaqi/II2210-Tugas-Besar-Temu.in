@@ -13,15 +13,17 @@ export default function Header() {
   const [mounted, setMounted] = useState(false);
   
   const locations = ['Semua Kampus', 'ITB Ganesha', 'ITB Jatinangor', 'ITB Cirebon'];
-  const ANISA_ID = '7b27154b-884e-4a05-a89f-0654d0fed203';
 
   useEffect(() => {
     setMounted(true);
     async function fetchUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
       const { data } = await supabase
         .from('users')
         .select('full_name, avatar_url')
-        .eq('id', ANISA_ID)
+        .eq('id', user.id)
         .single();
       if (data) setUserProfile(data);
     }

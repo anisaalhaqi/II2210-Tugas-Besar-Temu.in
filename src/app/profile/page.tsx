@@ -38,19 +38,22 @@ export default function ProfilePage() {
   const [inventory, setInventory] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Menggunakan ID Jae Hwan dari SEED.sql
-  const JAE_HWAN_ID = '7b27154b-884e-4a05-a89f-0654d0fed203';
-
   useEffect(() => {
     async function fetchProfileData() {
       try {
         setLoading(true);
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          window.location.href = '/auth';
+          return;
+        }
         
         // 1. Fetch Profile (using users table)
         const { data: profileData, error: profileError } = await supabase
           .from('users')
           .select('*')
-          .eq('id', JAE_HWAN_ID)
+          .eq('id', user.id)
           .single();
 
         if (profileError) throw profileError;
@@ -60,7 +63,7 @@ export default function ProfilePage() {
         const { data: productsData, error: productsError } = await supabase
           .from('products')
           .select('*')
-          .eq('seller_id', JAE_HWAN_ID);
+          .eq('seller_id', user.id);
 
         if (productsError) throw productsError;
         setInventory(productsData || []);
