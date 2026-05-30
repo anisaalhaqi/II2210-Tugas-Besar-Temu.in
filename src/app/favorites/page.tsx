@@ -16,6 +16,7 @@ interface FavoriteItem {
     price: number;
     location: string;
     images: string[];
+    status: string;
     categories: {
       name: string;
     };
@@ -75,23 +76,35 @@ export default function FavoritesPage() {
   const [availabilityFilter, setAvailabilityFilter] = useState<'Semua' | 'Tersedia' | 'Tidak Tersedia'>('Semua');
   const [categoryFilter, setCategoryFilter] = useState<string>('Semua');
   const [openDropdown, setOpenDropdown] = useState<'availability' | 'category' | null>(null);
+  const [allCategories, setAllCategories] = useState<string[]>([]);
 
   async function fetchFavorites(uid: string) {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      // Fetch user favorites
+      const { data: favData, error: favError } = await supabase
         .from('favorites')
         .select(`
           id,
           product:product_id (
-            id, title, price, location, images,
+            id, title, price, location, images, status,
             categories:category_id (name)
           )
         `)
         .eq('user_id', uid);
 
-      if (error) throw error;
-      setFavorites(data as any || []);
+      if (favError) throw favError;
+      setFavorites(favData as any || []);
+
+      // Fetch ALL categories for the filter
+      const { data: catData } = await supabase
+        .from('categories')
+        .select('name')
+        .order('name');
+      
+      if (catData) {
+        setAllCategories(catData.map(c => c.name));
+      }
     } catch (err) {
       console.error('Error fetching favorites:', err);
     } finally {
@@ -114,22 +127,27 @@ export default function FavoritesPage() {
   const filteredFavorites = useMemo(() => {
     return favorites.filter(item => {
       if (!item.product) return false;
+      
+      // 1. Search Filter
       const matchesQuery = item.product.title.toLowerCase().includes(localQuery.toLowerCase());
       
-      // Since mock doesn't have availability in DB yet, we assume true for now
+      // 2. Availability Filter
       let matchesAvailability = true;
+      if (availabilityFilter === 'Tersedia') {
+        matchesAvailability = item.product.status === 'available';
+      } else if (availabilityFilter === 'Tidak Tersedia') {
+        matchesAvailability = item.product.status !== 'available';
+      }
       
+      // 3. Category Filter
       let matchesCategory = true;
-      if (categoryFilter !== 'Semua') matchesCategory = item.product.categories?.name === categoryFilter;
+      if (categoryFilter !== 'Semua') {
+        matchesCategory = item.product.categories?.name === categoryFilter;
+      }
       
       return matchesQuery && matchesAvailability && matchesCategory;
     });
   }, [localQuery, availabilityFilter, categoryFilter, favorites]);
-
-  const categories = useMemo(() => {
-    const cats = favorites.map(f => f.product?.categories?.name).filter(Boolean);
-    return Array.from(new Set(cats));
-  }, [favorites]);
 
   const toggleDropdown = (type: 'availability' | 'category') => {
     setOpenDropdown(openDropdown === type ? null : type);
@@ -188,7 +206,7 @@ export default function FavoritesPage() {
              {openDropdown === 'category' && (
                <div className={styles.dropdownMenu}>
                  <div className={`${styles.dropdownItem} ${categoryFilter === 'Semua' ? styles.dropdownItemActive : ''}`} onClick={() => { setCategoryFilter('Semua'); setOpenDropdown(null); }}>Semua Kategori</div>
-                 {categories.map(cat => (
+                 {allCategories.map(cat => (
                    <div key={cat} className={`${styles.dropdownItem} ${categoryFilter === cat ? styles.dropdownItemActive : ''}`} onClick={() => { setCategoryFilter(cat!); setOpenDropdown(null); }}>{cat}</div>
                  ))}
                </div>
@@ -206,6 +224,11 @@ export default function FavoritesPage() {
               <Link href={`/product/${item.product.id}`} key={item.id} className={styles.productCard}>
                 <div className={styles.imageContainer}>
                   <img src={item.product.images[0] || 'https://placehold.co/300x200'} alt={item.product.title} className={styles.productImage} />
+                  {item.product.status !== 'available' && (
+                    <div style={{ position: 'absolute', top: '10px', left: '10px', background: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold' }}>
+                      {item.product.status.toUpperCase()}
+                    </div>
+                  )}
                 </div>
                 <div className={styles.productInfo}>
                   <h3 className={styles.productTitle}>{item.product.title}</h3>
