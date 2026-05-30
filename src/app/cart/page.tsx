@@ -235,7 +235,7 @@ export default function CartPage() {
               {formatPrice(totalPrice)}
             </div>
             <Link 
-              href="/order"
+              href={`/order?items=${selectedIds.join(',')}`}
               className={`${styles.buyBtn} ${selectedIds.length === 0 ? styles.buyBtnDisabled : ''}`}
               style={{ pointerEvents: selectedIds.length === 0 ? 'none' : 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}
             >
