@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { 
   Home, 
   Clock, 
@@ -10,7 +10,6 @@ import {
   MessageCircle, 
   Bell, 
   PlusCircle,
-  Settings,
   LogOut
 } from 'lucide-react';
 import styles from './Sidebar.module.css';
@@ -26,6 +25,7 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [userProfile, setUserProfile] = useState<any>(null);
   const [mounted, setMounted] = useState(false);
   
@@ -43,6 +43,16 @@ export default function Sidebar() {
     }
     fetchUser();
   }, []);
+
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (confirm('Apakah Anda yakin ingin keluar?')) {
+      await supabase.auth.signOut();
+      router.push('/auth');
+    }
+  };
 
   return (
     <aside className={styles.sidebar}>
@@ -81,22 +91,32 @@ export default function Sidebar() {
           </Link>
         </div>
 
-        <Link href="/profile" className={styles.profileSection}>
-          <div className={styles.userInfo}>
-            <img src={userProfile?.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=anisa'} alt="User" className={styles.userAvatar} />
-            {mounted && (
-              <div className={styles.userDetails}>
-                <span className={styles.userName}>{userProfile?.full_name || 'Anisa Alhaqi'}</span>
-                <span className={styles.userRole}>{userProfile?.campus_location || 'ITB Ganesha'}</span>
-              </div>
-            )}
-          </div>
+        <div className={styles.profileSectionWrapper}>
+          <Link href="/profile" className={styles.profileSection}>
+            <div className={styles.userInfo}>
+              <img 
+                src={userProfile?.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=anisa'} 
+                alt="User" 
+                className={styles.userAvatar} 
+              />
+              {mounted && (
+                <div className={styles.userDetails}>
+                  <span className={styles.userName}>{userProfile?.full_name || 'Anisa Alhaqi'}</span>
+                  <span className={styles.userRole}>{userProfile?.campus_location || 'ITB Ganesha'}</span>
+                </div>
+              )}
+            </div>
+          </Link>
           <div className={styles.profileActions}>
-            <button className={`${styles.actionBtn} ${styles.logoutBtn}`} aria-label="Logout">
+            <button 
+              className={`${styles.actionBtn} ${styles.logoutBtn}`} 
+              aria-label="Logout"
+              onClick={handleLogout}
+            >
               <LogOut size={22} />
             </button>
           </div>
-        </Link>
+        </div>
       </div>
     </aside>
   );
