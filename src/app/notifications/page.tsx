@@ -1,81 +1,147 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import styles from './notifications.module.css';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Inbox } from 'lucide-react';
+import { ArrowLeft, Inbox, Loader2 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+
+interface Notification {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  related_id: string;
+  related_type: string;
+  is_read: boolean;
+  created_at: string;
+}
 
 export default function NotificationsPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('Semua');
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
 
   const tabs = ['Semua', 'Sebagai Penjual', 'Sebagai Pembeli'];
 
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      type: 'Pengajuan Tawaran',
-      role: '(Pembeli)',
-      userRole: 'Sebagai Penjual', // User acts as Seller
-      message: '@zizadhrmaa mengajukan tawaran Rp31.000 untuk Jas Lab',
-      time: '29-03-2026 18:22',
-      status: 'pengajuan',
-      unread: true,
-      img: 'https://placehold.co/60x60'
-    },
-    {
-      id: 2,
-      type: 'Penawaran Ditolak',
-      role: '(Penjual)',
-      userRole: 'Sebagai Pembeli', // User acts as Buyer
-      message: '@parkjihoon menolak tawaranmu Rp35.000 untuk Cat Sakura masih banyak',
-      time: '26-03-2026 23:08',
-      status: 'ditolak',
-      unread: true,
-      img: 'https://placehold.co/60x60'
-    },
-    {
-      id: 3,
-      type: 'Penawaran Balik',
-      role: '(Penjual)',
-      userRole: 'Sebagai Pembeli', // User acts as Buyer
-      message: '@hayosiapa menawar balik sebesar Rp27.000 untuk Jas Lab',
-      time: '24-03-2026 21:08',
-      status: 'tawarbalik',
-      unread: false,
-      img: 'https://placehold.co/60x60'
-    },
-    {
-      id: 4,
-      type: 'Penawaran Diterima',
-      role: '(Penjual)',
-      userRole: 'Sebagai Pembeli', // User acts as Buyer
-      message: '@seonho menerima tawaranmu Rp15.000 untuk Sensor IoT',
-      time: '24-03-2026 19:08',
-      status: 'diterima',
-      unread: false,
-      img: 'https://placehold.co/60x60'
+  async function fetchNotifications(uid: string) {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', uid)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setNotifications(data || []);
+    } catch (err) {
+      console.error('Error fetching notifications:', err);
+    } finally {
+      setLoading(false);
     }
-  ]);
+  }
+
+  useEffect(() => {
+    async function init() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push('/auth');
+        return;
+      }
+      setUserId(user.id);
+      fetchNotifications(user.id);
+    }
+    init();
+  }, []);
 
   const filteredNotifications = useMemo(() => {
+    // Currently the DB doesn't have explicit seller/buyer role for notifications
+    // We can filter by type if they contain keywords or just show all in 'Semua'
     if (activeTab === 'Semua') return notifications;
-    return notifications.filter(n => n.userRole === activeTab);
+    
+    // Fallback: simple keyword matching if types are defined that way
+    if (activeTab === 'Sebagai Penjual') {
+      return notifications.filter(n => n.type.toLowerCase().includes('penjual') || n.title.toLowerCase().includes('tawaran masuk'));
+    }
+    if (activeTab === 'Sebagai Pembeli') {
+      return notifications.filter(n => n.type.toLowerCase().includes('pembeli') || n.title.toLowerCase().includes('tawaran diterima'));
+    }
+    
+    return notifications;
   }, [activeTab, notifications]);
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, unread: false })));
+  const markAllAsRead = async () => {
+    if (!userId) return;
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('user_id', userId)
+        .eq('is_read', false);
+
+      if (error) throw error;
+      setNotifications(notifications.map(n => ({ ...n, is_read: true })));
+    } catch (err) {
+      console.error('Error marking all as read:', err);
+    }
   };
 
-  const handleNotificationClick = (id: number) => {
-    setNotifications(notifications.map(n => 
-      n.id === id ? { ...n, unread: false } : n
-    ));
+  const handleNotificationClick = async (notif: Notification) => {
+    if (!notif.is_read) {
+      try {
+        await supabase
+          .from('notifications')
+          .update({ is_read: true })
+          .eq('id', notif.id);
+        
+        setNotifications(notifications.map(n => 
+          n.id === notif.id ? { ...n, is_read: true } : n
+        ));
+      } catch (err) {
+        console.error('Error marking as read:', err);
+      }
+    }
+
+    // Redirect logic based on related_type
+    if (notif.related_type === 'product') {
+      router.push(`/product/${notif.related_id}`);
+    } else if (notif.related_type === 'conversation') {
+      router.push(`/chat/${notif.related_id}`);
+    } else if (notif.related_type === 'order') {
+      router.push(`/aktivitas`);
+    }
   };
 
-  const handleBack = () => {
-    router.back();
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleString('id-ID', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).replace(/\//g, '-');
   };
+
+  const getStatusClass = (type: string) => {
+    const t = type.toLowerCase();
+    if (t.includes('pengajuan')) return 'status_pengajuan';
+    if (t.includes('ditolak')) return 'status_ditolak';
+    if (t.includes('balik')) return 'status_tawarbalik';
+    if (t.includes('terima')) return 'status_diterima';
+    return '';
+  };
+
+  if (loading) {
+    return (
+      <div className={styles.container} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+        <Loader2 className="animate-spin" size={48} color="#008585" />
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
@@ -83,7 +149,7 @@ export default function NotificationsPage() {
         <div className={styles.topRow}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <button 
-              onClick={handleBack} 
+              onClick={() => router.back()} 
               className={styles.backButton}
               title="Kembali"
             >
@@ -111,19 +177,20 @@ export default function NotificationsPage() {
             filteredNotifications.map((n) => (
               <div 
                 key={n.id} 
-                className={`${styles.notifItem} ${n.unread ? styles.unread : ''}`}
-                onClick={() => handleNotificationClick(n.id)}
+                className={`${styles.notifItem} ${!n.is_read ? styles.unread : ''}`}
+                onClick={() => handleNotificationClick(n)}
               >
-                <img src={n.img} alt="Product" className={styles.itemImage} />
+                <div className={styles.itemImagePlaceholder}>
+                  <Inbox size={24} color="#A5A5A5" />
+                </div>
                 <div className={styles.itemContent}>
                   <div className={styles.contentHeader}>
-                    <span className={`${styles.statusText} ${styles[`status_${n.status}`]}`}>
-                      {n.type}
+                    <span className={`${styles.statusText} ${styles[getStatusClass(n.title)]}`}>
+                      {n.title}
                     </span>
-                    <span className={styles.roleText}>{n.role}</span>
                   </div>
-                  <p className={styles.message}>{n.message}</p>
-                  <span className={styles.timestamp}>{n.time}</span>
+                  <p className={styles.message}>{n.body}</p>
+                  <span className={styles.timestamp}>{formatDate(n.created_at)}</span>
                 </div>
               </div>
             ))
