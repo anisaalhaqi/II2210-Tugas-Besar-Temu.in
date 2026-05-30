@@ -10,11 +10,13 @@ export default function Header() {
   const [showLocDropdown, setShowLocDropdown] = useState(false);
   const [selectedLoc, setSelectedLoc] = useState('Semua Kampus');
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [mounted, setMounted] = useState(false);
   
   const locations = ['Semua Kampus', 'ITB Ganesha', 'ITB Jatinangor', 'ITB Cirebon'];
   const ANISA_ID = '7b27154b-884e-4a05-a89f-0654d0fed203';
 
   useEffect(() => {
+    setMounted(true);
     async function fetchUser() {
       const { data } = await supabase
         .from('users')
@@ -87,10 +89,12 @@ export default function Header() {
           </div>
 
           <Link href="/profile" className={styles.userProfile}>
-            <div className={styles.userInfo} style={{ textAlign: 'right', marginRight: '12px' }}>
-              <span className={styles.userNameHeader} style={{ fontWeight: '600', color: '#292929', display: 'block' }}>{userProfile?.full_name?.split(' ')[0] || 'Anisa'}</span>
-              <span style={{ fontSize: '11px', color: '#767676' }}>Mahasiswa</span>
-            </div>
+            {mounted && (
+              <div className={styles.userInfo} style={{ textAlign: 'right', marginRight: '12px' }}>
+                <span className={styles.userNameHeader} style={{ fontWeight: '600', color: '#292929', display: 'block' }}>{userProfile?.full_name?.split(' ')[0] || 'Anisa'}</span>
+                <span style={{ fontSize: '11px', color: '#767676' }}>Mahasiswa</span>
+              </div>
+            )}
             <img src={userProfile?.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=anisa'} alt="User" className={styles.avatar} />
           </Link>
         </div>

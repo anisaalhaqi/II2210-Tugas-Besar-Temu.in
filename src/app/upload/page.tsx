@@ -66,15 +66,21 @@ export default function UploadPage() {
   const [showMapModal, setShowMapModal] = useState(false);
   const [isLocationMarked, setIsLocationMarked] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
   
   const [showCalendar, setShowCalendar] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date()); 
-  const [rangeStart, setRangeStart] = useState<Date | null>(new Date());
-  const [rangeEnd, setRangeEnd] = useState<Date | null>(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 3);
-    return d;
-  });
+  const [rangeStart, setRangeStart] = useState<Date | null>(null);
+  const [rangeEnd, setRangeEnd] = useState<Date | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    const start = new Date();
+    const end = new Date();
+    end.setDate(end.getDate() + 3);
+    setRangeStart(start);
+    setRangeEnd(end);
+  }, []);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);

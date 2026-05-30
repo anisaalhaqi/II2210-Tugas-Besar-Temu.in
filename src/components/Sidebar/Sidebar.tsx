@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
@@ -13,6 +14,7 @@ import {
   LogOut
 } from 'lucide-react';
 import styles from './Sidebar.module.css';
+import { supabase } from '@/lib/supabase';
 
 const navItems = [
   { name: 'Beranda', href: '/', icon: Home },
@@ -24,6 +26,23 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [mounted, setMounted] = useState(false);
+  
+  const ANISA_ID = '7b27154b-884e-4a05-a89f-0654d0fed203';
+
+  useEffect(() => {
+    setMounted(true);
+    async function fetchUser() {
+      const { data } = await supabase
+        .from('users')
+        .select('full_name, avatar_url, campus_location')
+        .eq('id', ANISA_ID)
+        .single();
+      if (data) setUserProfile(data);
+    }
+    fetchUser();
+  }, []);
 
   return (
     <aside className={styles.sidebar}>
@@ -64,11 +83,13 @@ export default function Sidebar() {
 
         <Link href="/profile" className={styles.profileSection}>
           <div className={styles.userInfo}>
-            <img src="https://placehold.co/100x100" alt="User" className={styles.userAvatar} />
-            <div className={styles.userDetails}>
-              <span className={styles.userName}>Jae Hwan</span>
-              <span className={styles.userRole}>Mahasiswa ITB</span>
-            </div>
+            <img src={userProfile?.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=anisa'} alt="User" className={styles.userAvatar} />
+            {mounted && (
+              <div className={styles.userDetails}>
+                <span className={styles.userName}>{userProfile?.full_name || 'Anisa Alhaqi'}</span>
+                <span className={styles.userRole}>{userProfile?.campus_location || 'ITB Ganesha'}</span>
+              </div>
+            )}
           </div>
           <div className={styles.profileActions}>
             <button className={`${styles.actionBtn} ${styles.logoutBtn}`} aria-label="Logout">

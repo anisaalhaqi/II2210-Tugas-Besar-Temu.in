@@ -3,16 +3,103 @@
 import { useState } from 'react';
 import styles from './auth.module.css';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 
 export default function AuthPage() {
   const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
   const [isReset, setIsReset] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleAuth = (e: React.FormEvent) => {
+  // Form State
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+
+  // Error States
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState('');
+
+  const validatePassword = (pass: string) => {
+    // Min 8 chars, at least one number or symbol
+    const regex = /^(?=.*[0-9!@#$%^&*])(?=.{8,})/;
+    return regex.test(pass);
+  };
+
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate auth success and redirect to dashboard
-    router.push('/');
+    setErrors({});
+    setFormError('');
+    
+    const newErrors: Record<string, string> = {};
+
+    // 1. Basic Empty Validation
+    if (!email) newErrors.email = 'Email harus diisi';
+    if (!password) newErrors.password = 'Password harus diisi';
+    if (!isLogin && !fullName) newErrors.fullName = 'Nama lengkap harus diisi';
+
+    // 2. Password Complexity (Sign Up only)
+    if (!isLogin && password && !validatePassword(password)) {
+      newErrors.password = 'Password minimal 8 karakter dan mengandung angka atau tanda baca';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      if (isLogin) {
+        // --- LOGIN LOGIC ---
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) {
+          if (error.message.toLowerCase().includes('invalid login credentials')) {
+            setFormError('Email atau password salah');
+          } else {
+            setFormError(error.message);
+          }
+        } else {
+          router.push('/');
+        }
+      } else {
+        // --- SIGN UP LOGIC ---
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: fullName,
+            },
+          },
+        });
+
+        if (error) {
+          // Supabase often returns "User already registered" or similar
+          const errMsg = error.message.toLowerCase();
+          if (errMsg.includes('already registered') || errMsg.includes('already exists') || errMsg.includes('database error saving new user')) {
+            setErrors({ email: 'Akun sudah terdaftar' });
+          } else {
+            setFormError(error.message);
+          }
+        } else if (data.user && (!data.user.identities || data.user.identities.length === 0)) {
+          // In some Supabase configs, a successful call with 0 identities means user already exists
+          setErrors({ email: 'Akun sudah terdaftar' });
+        } else {
+          alert('Pendaftaran berhasil! Silakan cek email untuk verifikasi (jika diaktifkan) atau langsung masuk.');
+          setIsLogin(true);
+        }
+      }
+    } catch (err: any) {
+      setFormError('Terjadi kesalahan sistem. Silakan coba lagi.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const renderForm = () => {
@@ -26,7 +113,7 @@ export default function AuthPage() {
           <form className={styles.form} onSubmit={(e) => { e.preventDefault(); alert('Link reset password telah dikirim ke emailmu!'); setIsReset(false); }}>
             <div className={styles.inputGroup}>
               <label>Email</label>
-              <input type="email" placeholder="contoh@mahasiswa.itb.ac.id" required />
+              <input type="email" placeholder="email@gmail.com" required />
             </div>
             <button type="submit" className={styles.submitBtn}>
               Kirim Link Reset
@@ -46,26 +133,40 @@ export default function AuthPage() {
       <>
         <h2>{isLogin ? 'Selamat Datang!' : 'Daftar Akun'}</h2>
 
-        <form className={styles.form} onSubmit={handleAuth}>
+        {formError && <div className={styles.formError}>{formError}</div>}
+
+        <form className={styles.form} onSubmit={handleAuth} noValidate>
           {!isLogin && (
             <div className={styles.inputGroup}>
               <label>Nama Lengkap</label>
-              <input type="text" placeholder="Masukkan namamu" required />
+              <input 
+                type="text" 
+                placeholder="Masukkan namamu" 
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+              />
+              {errors.fullName && <span className={styles.errorText}>{errors.fullName}</span>}
             </div>
           )}
           <div className={styles.inputGroup}>
             <label>Email</label>
             <input 
               type="email" 
-              placeholder="contoh@gmail.com" 
-              pattern="^[a-zA-Z0-9._%+-]+@gmail\.com$"
-              title="Gunakan email dengan domain @gmail.com"
-              required 
+              placeholder="email@gmail.com" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
+            {errors.email && <span className={styles.errorText}>{errors.email}</span>}
           </div>
           <div className={styles.inputGroup}>
             <label>Password</label>
-            <input type="password" placeholder="Masukkan password" required />
+            <input 
+              type="password" 
+              placeholder="Masukkan password" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            {errors.password && <span className={styles.errorText}>{errors.password}</span>}
           </div>
           
           {isLogin && (
@@ -74,14 +175,18 @@ export default function AuthPage() {
             </div>
           )}
 
-          <button type="submit" className={styles.submitBtn}>
-            {isLogin ? 'Masuk' : 'Daftar'}
+          <button type="submit" className={styles.submitBtn} disabled={loading}>
+            {loading ? 'Memproses...' : (isLogin ? 'Masuk' : 'Daftar')}
           </button>
         </form>
 
         <div className={styles.switchMode}>
           {isLogin ? 'Belum punya akun? ' : 'Sudah punya akun? '}
-          <span onClick={() => setIsLogin(!isLogin)} className={styles.switchLink}>
+          <span onClick={() => {
+            setIsLogin(!isLogin);
+            setErrors({});
+            setFormError('');
+          }} className={styles.switchLink}>
             {isLogin ? 'Daftar Sekarang' : 'Masuk'}
           </span>
         </div>

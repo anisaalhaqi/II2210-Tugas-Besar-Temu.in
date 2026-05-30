@@ -6,7 +6,7 @@
   width: 100vw;
   height: 100vh;
   background-color: #f8fcfb;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-plus-jakarta-sans), sans-serif;
   z-index: 9999;
 }
 
@@ -76,11 +76,12 @@
   flex-direction: column;
   gap: 16px;
 }
-
 .inputGroup {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  position: relative;
+  padding-bottom: 20px;
 }
 
 .inputGroup label {
@@ -103,6 +104,23 @@
 
 .inputGroup input:focus {
   border-color: #008585;
+}
+
+.errorText {
+  color: #FF4B4B;
+  font-size: 12px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+.formError {
+  background-color: #FFF5F5;
+  color: #FF4B4B;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  text-align: center;
 }
 
 .forgotPassword {

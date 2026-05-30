@@ -304,7 +304,14 @@ export default function ProductDetail() {
 
         <div className={styles.secondaryContent}>
           <section className={styles.sellerProfile}>
-            <img src={seller?.avatar_url || 'https://placehold.co/90x90'} alt={seller?.full_name} className={styles.sellerAvatar} />
+            <img 
+              src={seller?.avatar_url || 'https://placehold.co/90x90'} 
+              alt={seller?.full_name} 
+              className={styles.sellerAvatar} 
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = 'https://placehold.co/90x90?text=User';
+              }}
+            />
             <div className={styles.sellerInfo}>
               <div className={styles.sellerNameRow}>
                 <h3>{seller?.full_name}</h3>
@@ -324,7 +331,14 @@ export default function ProductDetail() {
               <div className={styles.productGrid}>
                 {recommended.map((item) => (
                   <Link href={`/product/${item.id}`} key={item.id} className={styles.productCard}>
-                    <img src={item.images[0] || 'https://placehold.co/300x200'} alt={item.title} className={styles.productImage} />
+                    <img 
+                      src={item.images[0] || 'https://placehold.co/300x200'} 
+                      alt={item.title} 
+                      className={styles.productImage} 
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://placehold.co/300x200?text=No+Image';
+                      }}
+                    />
                     <div className={styles.productInfoMini}>
                       <h3 className={styles.productTitleMini}>{item.title}</h3>
                       <p className={styles.productPriceMini}>{formatPrice(item.price)}</p>

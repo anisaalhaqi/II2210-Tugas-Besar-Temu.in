@@ -72,6 +72,11 @@ export default function DesktopHome() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedLocation, setSelectedLocation] = useState('Semua Kampus');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const handleLocationChange = (e: any) => {
@@ -127,7 +132,7 @@ export default function DesktopHome() {
     }).format(price);
   };
 
-  if (loading) {
+  if (loading || !mounted) {
     return <HomeSkeleton />;
   }
 
@@ -188,7 +193,14 @@ export default function DesktopHome() {
           <div className={styles.productGrid}>
             {products.slice(4, 8).map((item) => (
               <Link href={`/product/${item.id}`} key={item.id} className={styles.productCard}>
-                <img src={item.images[0] || 'https://placehold.co/300x200'} alt={item.title} className={styles.productImage} />
+                <img 
+                  src={item.images[0] || 'https://placehold.co/300x200'} 
+                  alt={item.title} 
+                  className={styles.productImage} 
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://placehold.co/300x200?text=Gambar+Tidak+Tersedia';
+                  }}
+                />
                 <div className={styles.productInfo}>
                   <h3 className={styles.productTitle}>{item.title}</h3>
                   <p className={styles.productPrice}>{formatPrice(item.price)}</p>
