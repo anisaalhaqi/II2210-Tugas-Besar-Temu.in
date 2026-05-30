@@ -7,6 +7,15 @@ import Link from 'next/link';
 import { Search, Bell, MessageCircle, PlusCircle, ArrowLeft, MapPin, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
+const suggestions = [
+  'Calculus Purcell',
+  'Jas Lab',
+  'Casio Classwiz',
+  'Rotring Isograph'
+];
+
+const filters = ['Terkait', 'Terbaru', 'Harga Tertinggi', 'Harga Terendah'];
+
 interface Product {
   id: string;
   title: string;
@@ -19,39 +28,49 @@ export default function SearchPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialQuery = searchParams.get('q') || '';
+  const initialCategory = searchParams.get('cat') || '';
+  
   const [query, setQuery] = useState(initialQuery);
-  const [isSearching, setIsSearching] = useState(initialQuery.length > 0);
+  const [selectedCat, setSelectedCategory] = useState(initialCategory);
+  const [isSearching, setIsSearching] = useState(initialQuery.length > 0 || initialCategory.length > 0);
   const [activeFilter, setActiveFilter] = useState('Terkait');
   const [results, setResults] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const suggestions = [
-    'Calculus Purcell',
-    'Jas Lab',
-    'Casio Classwiz',
-    'Rotring Isograph'
-  ];
-
-  const filters = ['Terkait', 'Terbaru', 'Harga Tertinggi', 'Harga Terendah'];
-
   useEffect(() => {
-    if (initialQuery) {
-      setQuery(initialQuery);
+    const q = searchParams.get('q') || '';
+    const cat = searchParams.get('cat') || '';
+    
+    setQuery(q);
+    setSelectedCategory(cat);
+    
+    if (q || cat) {
       setIsSearching(true);
-      fetchResults(initialQuery);
+      fetchResults(q, cat);
     } else {
       setIsSearching(false);
       setResults([]);
     }
-  }, [initialQuery]);
+  }, [searchParams, activeFilter]);
 
-  async function fetchResults(q: string) {
+  async function fetchResults(q: string, cat: string) {
     try {
       setLoading(true);
       let queryBuilder = supabase
         .from('products')
-        .select('id, title, price, location, images')
-        .ilike('title', `%${q}%`);
+        .select(`
+          id, title, price, location, images,
+          categories:category_id (name, slug)
+        `);
+
+      if (q) {
+        queryBuilder = queryBuilder.ilike('title', `%${q}%`);
+      }
+
+      if (cat) {
+        // Filter by category slug
+        queryBuilder = queryBuilder.filter('categories.slug', 'eq', cat);
+      }
 
       if (activeFilter === 'Terbaru') {
         queryBuilder = queryBuilder.order('created_at', { ascending: false });
@@ -64,7 +83,18 @@ export default function SearchPage() {
       const { data, error } = await queryBuilder;
 
       if (error) throw error;
-      setResults(data || []);
+      
+      // Filter out items where join failed (if filtering by slug client-side was needed)
+      // Actually Supabase filter above on joined column might need a different syntax or specific join type
+      // Let's ensure it works. If 'filter' on joined table is tricky, we can use a more explicit query.
+      
+      // Alternative if join filter is complex:
+      let filteredData = data || [];
+      if (cat) {
+        filteredData = filteredData.filter((item: any) => item.categories?.slug === cat);
+      }
+      
+      setResults(filteredData);
     } catch (err) {
       console.error('Error searching:', err);
     } finally {
@@ -94,39 +124,35 @@ export default function SearchPage() {
     }).format(price);
   };
 
+  const categoryMap: Record<string, string> = {
+    'buku-modul': 'Buku & Modul',
+    'elektronik': 'Elektronika',
+    'alat-tulis': 'Alat Gambar & Tulis',
+    'fashion-lab': 'Fashion & Perlengkapan Lab',
+    'perlengkapan-asrama': 'Perlengkapan Asrama',
+    'hobi-olahraga': 'Hobi & Olahraga',
+    'jasa-rider': 'Jasa & Rider',
+    'lainnya': 'Lainnya'
+  };
+
+  const getPageTitle = () => {
+    if (selectedCat && categoryMap[selectedCat]) {
+      return categoryMap[selectedCat];
+    }
+    if (query) {
+      return `Hasil Pencarian: "${query}"`;
+    }
+    return 'Cari Barang';
+  };
+
   return (
     <div className={styles.container}>
-      <header className={styles.header}>
-        <div className={styles.headerContent}>
-          <div className={styles.headerLeft}>
-            <button onClick={() => router.back()} className={styles.backButton}>
-              <ArrowLeft size={20} />
-            </button>
-            <form onSubmit={handleSearch} className={styles.searchBarWrapper}>
-              <Search size={20} className={styles.searchIcon} color="#767676" />
-              <input 
-                type="text" 
-                placeholder="Cari barang kuliahmu..." 
-                className={styles.searchInput}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onFocus={() => { if(!query) setIsSearching(false); }}
-              />
-            </form>
-          </div>
-
-          <div style={{ display: 'flex', gap: '24px', alignItems: 'center', marginLeft: '32px' }}>
-             <Link href="/notifications">
-                <Bell size={24} color="white" />
-             </Link>
-             <Link href="/chat">
-                <MessageCircle size={24} color="white" />
-             </Link>
-             <Link href="/upload" style={{ color: 'white', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <PlusCircle size={20} />
-                Upload Barang
-             </Link>
-          </div>
+      <header className={styles.simpleHeader}>
+        <div className={styles.headerLeftSimple}>
+          <button onClick={() => router.back()} className={styles.backButtonSimple}>
+            <ArrowLeft size={20} color="#292929" />
+          </button>
+          <h1 className={styles.pageTitle}>{getPageTitle()}</h1>
         </div>
       </header>
 

@@ -7,8 +7,17 @@ import styles from './Header.module.css';
 
 export default function Header() {
   const [showLocDropdown, setShowLocDropdown] = useState(false);
-  const [selectedLoc, setSelectedLoc] = useState('ITB Jatinangor');
-  const locations = ['ITB Ganesha', 'ITB Jatinangor', 'ITB Cirebon'];
+  const [selectedLoc, setSelectedLoc] = useState('Semua Kampus');
+  const locations = ['Semua Kampus', 'ITB Ganesha', 'ITB Jatinangor', 'ITB Cirebon'];
+
+  const handleLocSelect = (loc: string) => {
+    setSelectedLoc(loc);
+    setShowLocDropdown(false);
+    
+    // Dispatch a custom event to notify other components (like the homepage)
+    const event = new CustomEvent('campusLocationChange', { detail: loc });
+    window.dispatchEvent(event);
+  };
 
   return (
     <header className={styles.header}>
@@ -52,10 +61,7 @@ export default function Header() {
                   <div 
                     key={loc} 
                     className={`${styles.locDropdownItem} ${selectedLoc === loc ? styles.locDropdownItemActive : ''}`}
-                    onClick={() => {
-                      setSelectedLoc(loc);
-                      setShowLocDropdown(false);
-                    }}
+                    onClick={() => handleLocSelect(loc)}
                   >
                     {loc}
                   </div>

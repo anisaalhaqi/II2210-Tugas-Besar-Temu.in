@@ -158,3 +158,70 @@
   height: 14px;
   object-fit: contain;
 }
+
+/* Home Header & Location Selector */
+.homeHeader {
+  margin-bottom: -24px;
+}
+
+.locSelectorWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.locSelector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: white;
+  padding: 10px 16px;
+  border-radius: 20px;
+  border: 1.5px solid #e5e7eb;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.locSelector:hover {
+  border-color: #008585;
+  box-shadow: 0 4px 12px rgba(0, 133, 133, 0.08);
+}
+
+.locText {
+  font-size: 15px;
+  font-weight: 600;
+  color: #292929;
+}
+
+.locDropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  width: 200px;
+  z-index: 100;
+  overflow: hidden;
+  padding: 6px;
+}
+
+.locOption {
+  padding: 10px 14px;
+  font-size: 14px;
+  color: #292929;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.locOption:hover {
+  background-color: #f3f4f6;
+}
+
+.locOptionActive {
+  background-color: #EEFFFC;
+  color: #008585;
+  font-weight: 600;
+}

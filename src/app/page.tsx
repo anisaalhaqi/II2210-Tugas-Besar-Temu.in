@@ -11,7 +11,9 @@ import {
   Zap, 
   Palette, 
   Package, 
-  Layers
+  Layers,
+  MapPin,
+  ChevronDown
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import Skeleton from '@/components/Skeleton/Skeleton';
@@ -69,26 +71,42 @@ function HomeSkeleton() {
 export default function DesktopHome() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedLocation, setSelectedLocation] = useState('Semua Kampus');
+
+  useEffect(() => {
+    const handleLocationChange = (e: any) => {
+      setSelectedLocation(e.detail);
+    };
+
+    window.addEventListener('campusLocationChange', handleLocationChange);
+    return () => window.removeEventListener('campusLocationChange', handleLocationChange);
+  }, []);
 
   const categories = [
-    { name: 'Alat Hitung', icon: Calculator },
-    { name: 'Alat Lab', icon: FlaskConical },
-    { name: 'Buku', icon: BookOpen },
-    { name: 'Alat Tulis', icon: PencilLine },
-    { name: 'Elektronika', icon: Zap },
-    { name: 'Alat Studio', icon: Palette },
-    { name: 'Penyimpanan', icon: Package },
-    { name: 'Lainnya', icon: Layers },
+    { name: 'Buku & Modul', slug: 'buku-modul', icon: BookOpen },
+    { name: 'Elektronika', slug: 'elektronik', icon: Zap },
+    { name: 'Alat Gambar & Tulis', slug: 'alat-tulis', icon: PencilLine },
+    { name: 'Fashion & Perlengkapan Lab', slug: 'fashion-lab', icon: FlaskConical },
+    { name: 'Perlengkapan Asrama', slug: 'perlengkapan-asrama', icon: Package },
+    { name: 'Hobi & Olahraga', slug: 'hobi-olahraga', icon: Calculator },
+    { name: 'Jasa & Rider', slug: 'jasa-rider', icon: Layers },
+    { name: 'Lainnya', slug: 'lainnya', icon: Palette },
   ];
 
   useEffect(() => {
     async function fetchHomeData() {
       try {
         setLoading(true);
-        const { data, error } = await supabase
+        let query = supabase
           .from('products')
           .select('*')
           .order('created_at', { ascending: false });
+
+        if (selectedLocation !== 'Semua Kampus') {
+          query = query.eq('location', selectedLocation);
+        }
+
+        const { data, error } = await query;
 
         if (error) throw error;
         setProducts(data || []);
@@ -99,7 +117,7 @@ export default function DesktopHome() {
       }
     }
     fetchHomeData();
-  }, []);
+  }, [selectedLocation]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -123,12 +141,17 @@ export default function DesktopHome() {
             {categories.map((cat, idx) => {
               const Icon = cat.icon;
               return (
-                <div key={idx} className={styles.categoryItem}>
+                <Link 
+                  href={`/search?cat=${cat.slug}`} 
+                  key={idx} 
+                  className={styles.categoryItem}
+                  style={{ textDecoration: 'none', color: 'inherit' }}
+                >
                   <div className={styles.categoryIcon}>
                     <Icon size={40} color="#008585" strokeWidth={1.5} />
                   </div>
                   <span className={styles.categoryName}>{cat.name}</span>
-                </div>
+                </Link>
               );
             })}
           </div>
