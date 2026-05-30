@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Heart, MessageCircle, Check, Inbox, X, Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import styles from './aktivitas.module.css';
 import { supabase } from '@/lib/supabase';
 import Skeleton from '@/components/Skeleton/Skeleton';
@@ -66,6 +66,7 @@ function AktivitasSkeleton() {
 
 export default function AktivitasPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState('Menunggu Konfirmasi');
   const [jualChecked, setJualChecked] = useState(true);
   const [beliChecked, setBeliChecked] = useState(true);
@@ -82,10 +83,17 @@ export default function AktivitasPage() {
     'Selesai'
   ];
 
-  // Mapping DB status to UI Tab
+  // Set tab from URL if present
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam && tabs.includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [searchParams]);
+
   const statusMap: Record<string, string> = {
     'waiting_confirmation': 'Menunggu Konfirmasi',
-    'confirmed': 'Belum Bayar', // Or 'Diproses' depending on your flow
+    'confirmed': 'Belum Bayar',
     'completed': 'Selesai',
     'cancelled': 'Dibatalkan'
   };
@@ -93,17 +101,11 @@ export default function AktivitasPage() {
   async function fetchActivities(uid: string) {
     try {
       setLoading(true);
-      // Query from 'orders' table where user is either buyer or seller
       const { data, error } = await supabase
         .from('orders')
         .select(`
-          id, 
-          status, 
-          final_price, 
-          notes, 
-          created_at,
-          buyer_id,
-          seller_id,
+          id, status, final_price, notes, created_at,
+          buyer_id, seller_id,
           product:product_id (title, images),
           buyer:buyer_id (full_name),
           seller:seller_id (full_name)
@@ -184,7 +186,7 @@ export default function AktivitasPage() {
           {tabs.map((tab) => (
             <button
               key={tab}
-              className={`${styles.tab} ${activeTab === tab ? styles.activeTab : ''}`}
+              className={`${styles.tab} ${activeTab === tab ? styles.tabActive : ''}`}
               onClick={() => setActiveTab(tab)}
             >
               {tab}

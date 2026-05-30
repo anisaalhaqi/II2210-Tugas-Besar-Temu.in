@@ -58,31 +58,25 @@ export default function NotificationsPage() {
   }, []);
 
   const filteredNotifications = useMemo(() => {
-    // Currently the DB doesn't have explicit seller/buyer role for notifications
-    // We can filter by type if they contain keywords or just show all in 'Semua'
     if (activeTab === 'Semua') return notifications;
-    
-    // Fallback: simple keyword matching if types are defined that way
     if (activeTab === 'Sebagai Penjual') {
-      return notifications.filter(n => n.type.toLowerCase().includes('penjual') || n.title.toLowerCase().includes('tawaran masuk'));
+      return notifications.filter(n => n.type === 'offer_received' || n.type === 'order_confirmed' && n.title.includes('masuk'));
     }
     if (activeTab === 'Sebagai Pembeli') {
-      return notifications.filter(n => n.type.toLowerCase().includes('pembeli') || n.title.toLowerCase().includes('tawaran diterima'));
+      return notifications.filter(n => n.type === 'offer_accepted' || n.type === 'offer_rejected' || n.type === 'order_completed');
     }
-    
     return notifications;
   }, [activeTab, notifications]);
 
   const markAllAsRead = async () => {
     if (!userId) return;
     try {
-      const { error } = await supabase
+      await supabase
         .from('notifications')
         .update({ is_read: true })
         .eq('user_id', userId)
         .eq('is_read', false);
 
-      if (error) throw error;
       setNotifications(notifications.map(n => ({ ...n, is_read: true })));
     } catch (err) {
       console.error('Error marking all as read:', err);
@@ -105,13 +99,24 @@ export default function NotificationsPage() {
       }
     }
 
-    // Redirect logic based on related_type
-    if (notif.related_type === 'product') {
-      router.push(`/product/${notif.related_id}`);
-    } else if (notif.related_type === 'conversation') {
+    // SMART REDIRECT LOGIC
+    if (notif.related_type === 'conversation') {
+      // Redirect to specific chat
       router.push(`/chat/${notif.related_id}`);
-    } else if (notif.related_type === 'order') {
-      router.push(`/aktivitas`);
+    } 
+    else if (notif.related_type === 'order') {
+      // Redirect to Activity with specific tab based on notif title/type
+      const title = notif.title.toLowerCase();
+      let tab = 'Menunggu Konfirmasi';
+      if (title.includes('selesai') || title.includes('berhasil')) tab = 'Selesai';
+      if (title.includes('batal')) tab = 'Dibatalkan';
+      if (title.includes('konfirmasi') || title.includes('siap cod')) tab = 'Belum Bayar';
+      
+      router.push(`/aktivitas?tab=${encodeURIComponent(tab)}`);
+    }
+    else if (notif.related_type === 'product' || notif.type === 'offer_received') {
+      // Offers usually go to 'Menunggu Konfirmasi' in Activity
+      router.push(`/aktivitas?tab=Menunggu Konfirmasi`);
     }
   };
 
@@ -126,12 +131,12 @@ export default function NotificationsPage() {
     }).replace(/\//g, '-');
   };
 
-  const getStatusClass = (type: string) => {
-    const t = type.toLowerCase();
-    if (t.includes('pengajuan')) return 'status_pengajuan';
-    if (t.includes('ditolak')) return 'status_ditolak';
+  const getStatusClass = (title: string) => {
+    const t = title.toLowerCase();
+    if (t.includes('penawaran') || t.includes('tawaran')) return 'status_pengajuan';
+    if (t.includes('batal') || t.includes('ditolak')) return 'status_ditolak';
     if (t.includes('balik')) return 'status_tawarbalik';
-    if (t.includes('terima')) return 'status_diterima';
+    if (t.includes('selesai') || t.includes('terima') || t.includes('deal')) return 'status_diterima';
     return '';
   };
 
@@ -148,11 +153,7 @@ export default function NotificationsPage() {
       <main className={styles.main}>
         <div className={styles.topRow}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <button 
-              onClick={() => router.back()} 
-              className={styles.backButton}
-              title="Kembali"
-            >
+            <button onClick={() => router.back()} className={styles.backButton} title="Kembali">
               <ArrowLeft size={20} />
             </button>
             <h1 className={styles.pageTitle}>Notifications</h1>
