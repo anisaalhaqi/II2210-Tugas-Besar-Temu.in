@@ -2,18 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Heart, MessageCircle, Check, Inbox, X } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, Check, Inbox, X, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import styles from './aktivitas.module.css';
 import { supabase } from '@/lib/supabase';
 import Skeleton from '@/components/Skeleton/Skeleton';
 
 interface Activity {
-  id: number;
+  id: string;
   type: 'Jual' | 'Beli';
   status: string;
-  price: number;
-  note: string;
+  final_price: number;
+  notes: string;
   created_at: string;
   product: {
     title: string;
@@ -21,7 +21,6 @@ interface Activity {
   };
   counterparty: {
     full_name: string;
-    role: string;
   };
 }
 
@@ -39,9 +38,6 @@ function AktivitasSkeleton() {
           {[...Array(5)].map((_, i) => (
             <Skeleton key={i} width={120} height={40} borderRadius={12} />
           ))}
-        </div>
-        <div className={styles.filterRow} style={{ marginTop: '20px', padding: '16px' }}>
-          <Skeleton width="100%" height={40} borderRadius={8} />
         </div>
       </header>
 
@@ -78,11 +74,6 @@ export default function AktivitasPage() {
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
 
-  // Modal States
-  const [showCounterModal, setShowCounterModal] = useState(false);
-  const [activeCounterId, setActiveCounterId] = useState<number | null>(null);
-  const [counterPrice, setCounterPrice] = useState('31.000');
-
   const tabs = [
     'Menunggu Konfirmasi',
     'Belum Bayar',
@@ -91,23 +82,54 @@ export default function AktivitasPage() {
     'Selesai'
   ];
 
+  // Mapping DB status to UI Tab
+  const statusMap: Record<string, string> = {
+    'waiting_confirmation': 'Menunggu Konfirmasi',
+    'confirmed': 'Belum Bayar', // Or 'Diproses' depending on your flow
+    'completed': 'Selesai',
+    'cancelled': 'Dibatalkan'
+  };
+
   async function fetchActivities(uid: string) {
     try {
       setLoading(true);
+      // Query from 'orders' table where user is either buyer or seller
       const { data, error } = await supabase
-        .from('activities')
+        .from('orders')
         .select(`
-          id, type, status, price, note, created_at,
+          id, 
+          status, 
+          final_price, 
+          notes, 
+          created_at,
+          buyer_id,
+          seller_id,
           product:product_id (title, images),
-          counterparty:counterparty_id (full_name, role)
+          buyer:buyer_id (full_name),
+          seller:seller_id (full_name)
         `)
-        .eq('user_id', uid)
+        .or(`buyer_id.eq.${uid},seller_id.eq.${uid}`)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setActivities(data as any || []);
+
+      const formatted = (data as any[]).map(order => {
+        const isSeller = order.seller_id === uid;
+        return {
+          id: order.id,
+          type: isSeller ? 'Jual' : 'Beli',
+          status: statusMap[order.status] || order.status,
+          price: order.final_price,
+          note: order.notes,
+          created_at: order.created_at,
+          product: order.product,
+          counterparty: isSeller ? order.buyer : order.seller
+        };
+      });
+
+      setActivities(formatted);
     } catch (err) {
-      console.error('Error:', err);
+      console.error('Error fetching activities:', err);
     } finally {
       setLoading(false);
     }
@@ -126,48 +148,6 @@ export default function AktivitasPage() {
     init();
   }, []);
 
-  const updateStatus = async (id: number, newStatus: string) => {
-    try {
-      const { error } = await supabase
-        .from('activities')
-        .update({ status: newStatus })
-        .eq('id', id);
-
-      if (error) throw error;
-      if (userId) fetchActivities(userId); // Refresh list
-    } catch (err) {
-      console.error('Update error:', err);
-    }
-  };
-
-  const handleTawarBalik = (id: number) => {
-    setActiveCounterId(id);
-    const act = activities.find(a => a.id === id);
-    if (act) setCounterPrice(act.price.toString());
-    setShowCounterModal(true);
-  };
-
-  const submitCounterOffer = async () => {
-    if (activeCounterId !== null) {
-      try {
-        const numericPrice = parseInt(counterPrice.replace(/[^0-9]/g, ''));
-        const { error } = await supabase
-          .from('activities')
-          .update({ 
-            price: numericPrice,
-            note: `Menawar balik ke Rp${counterPrice}` 
-          })
-          .eq('id', activeCounterId);
-
-        if (error) throw error;
-        setShowCounterModal(false);
-        if (userId) fetchActivities(userId);
-      } catch (err) {
-        console.error('Counter error:', err);
-      }
-    }
-  };
-
   const filteredActivities = activities.filter(item => {
     const matchesTab = item.status === activeTab;
     const matchesType = (item.type === 'Jual' && jualChecked) || (item.type === 'Beli' && beliChecked);
@@ -182,9 +162,7 @@ export default function AktivitasPage() {
     }).format(price);
   };
 
-  if (loading) {
-    return <AktivitasSkeleton />;
-  }
+  if (loading) return <AktivitasSkeleton />;
 
   return (
     <div className={styles.container}>
@@ -235,34 +213,23 @@ export default function AktivitasPage() {
 
       <div className={styles.activityList}>
         {filteredActivities.length > 0 ? (
-          filteredActivities.map((item) => (
+          filteredActivities.map((item: any) => (
             <div key={item.id} className={styles.transactionCard}>
               <div className={styles.cardHeader}>
-                <span className={styles.counterparty}>{item.counterparty?.full_name || 'User'} ({item.type === 'Jual' ? 'Pembeli' : 'Penjual'})</span>
+                <span className={styles.counterparty}>
+                  {item.counterparty?.full_name || 'User'} ({item.type === 'Jual' ? 'Pembeli' : 'Penjual'})
+                </span>
                 <span className={styles.statusText}>{item.status}</span>
               </div>
               <div className={styles.cardBody}>
-                <img src={item.product?.images[0] || 'https://placehold.co/100x110'} alt="" className={styles.productImg} />
+                <img src={item.product?.images?.[0] || 'https://placehold.co/100x110'} alt="" className={styles.productImg} />
                 <div className={styles.productDetails}>
                   <h3 className={styles.productTitle}>{item.product?.title || 'Produk'}</h3>
-                  <p className={styles.actionType}>{item.type === 'Jual' ? 'Menerima Tawaran' : 'Mengajukan Tawaran'}</p>
+                  <p className={styles.actionType}>{item.type === 'Jual' ? 'Pesanan Masuk' : 'Pesanan Saya'}</p>
                   <p className={styles.priceInfo}>{formatPrice(item.price)}</p>
                   <p className={styles.priceNote}>{item.note}</p>
                 </div>
               </div>
-              {item.status === 'Menunggu Konfirmasi' && (
-                <div className={styles.cardActions}>
-                  <button className={`${styles.btnAction} ${styles.btnTolak}`} onClick={() => updateStatus(item.id, 'Dibatalkan')}>
-                    Tolak
-                  </button>
-                  <button className={`${styles.btnAction} ${styles.btnTawar}`} onClick={() => handleTawarBalik(item.id)}>
-                    Tawar Balik
-                  </button>
-                  <button className={`${styles.btnAction} ${styles.btnTerima}`} onClick={() => updateStatus(item.id, 'Belum Bayar')}>
-                    Terima
-                  </button>
-                </div>
-              )}
             </div>
           ))
         ) : (
@@ -273,27 +240,6 @@ export default function AktivitasPage() {
           </div>
         )}
       </div>
-
-      {showCounterModal && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.counterModal}>
-            <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>Tawar Balik</h3>
-              <button className={styles.navBtn} onClick={() => setShowCounterModal(false)}><X size={24} /></button>
-            </div>
-            <div className={styles.modalBody}>
-              <div className={styles.priceInputArea}>
-                <span className={styles.rpLabel}>Rp</span>
-                <input type="text" className={styles.largeInput} value={counterPrice} onChange={(e) => setCounterPrice(e.target.value)} autoFocus />
-              </div>
-            </div>
-            <div className={styles.modalFooter}>
-              <button className={`${styles.modalBtn} ${styles.btnBatalModal}`} onClick={() => setShowCounterModal(false)}>Batal</button>
-              <button className={`${styles.modalBtn} ${styles.btnAjukanModal}`} onClick={submitCounterOffer}>Ajukan</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
