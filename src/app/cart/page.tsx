@@ -27,7 +27,7 @@ export default function CartPage() {
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  const JAE_HWAN_ID = '00000000-0000-0000-0000-000000000001';
+  const JAE_HWAN_ID = '7b27154b-884e-4a05-a89f-0654d0fed203';
 
   async function fetchCart() {
     try {

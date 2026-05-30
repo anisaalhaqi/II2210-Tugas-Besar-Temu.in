@@ -39,7 +39,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
 
   // Menggunakan ID Jae Hwan dari SEED.sql
-  const JAE_HWAN_ID = '00000000-0000-0000-0000-000000000001';
+  const JAE_HWAN_ID = '7b27154b-884e-4a05-a89f-0654d0fed203';
 
   useEffect(() => {
     async function fetchProfileData() {

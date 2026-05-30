@@ -451,12 +451,12 @@ export type Database = {
           bio: string | null
           campus_location: string
           created_at: string | null
-          department: string
           email: string
           faculty: string
           full_name: string
           id: string
           is_verified: boolean | null
+          jurusan: string
           last_seen_at: string | null
           rating_avg: number | null
           rating_count: number | null
@@ -467,12 +467,12 @@ export type Database = {
           bio?: string | null
           campus_location: string
           created_at?: string | null
-          department: string
           email: string
           faculty: string
           full_name: string
           id: string
           is_verified?: boolean | null
+          jurusan: string
           last_seen_at?: string | null
           rating_avg?: number | null
           rating_count?: number | null
@@ -483,12 +483,12 @@ export type Database = {
           bio?: string | null
           campus_location?: string
           created_at?: string | null
-          department?: string
           email?: string
           faculty?: string
           full_name?: string
           id?: string
           is_verified?: boolean | null
+          jurusan?: string
           last_seen_at?: string | null
           rating_avg?: number | null
           rating_count?: number | null

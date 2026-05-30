@@ -82,7 +82,7 @@ export default function AktivitasPage() {
   const [activeCounterId, setActiveCounterId] = useState<number | null>(null);
   const [counterPrice, setCounterPrice] = useState('31.000');
 
-  const JAE_HWAN_ID = '00000000-0000-0000-0000-000000000001';
+  const JAE_HWAN_ID = '7b27154b-884e-4a05-a89f-0654d0fed203';
 
   const tabs = [
     'Menunggu Konfirmasi',

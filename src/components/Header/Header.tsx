@@ -1,14 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, ShoppingCart, MapPin, ChevronDown } from 'lucide-react';
 import styles from './Header.module.css';
+import { supabase } from '@/lib/supabase';
 
 export default function Header() {
   const [showLocDropdown, setShowLocDropdown] = useState(false);
   const [selectedLoc, setSelectedLoc] = useState('Semua Kampus');
+  const [userProfile, setUserProfile] = useState<any>(null);
+  
   const locations = ['Semua Kampus', 'ITB Ganesha', 'ITB Jatinangor', 'ITB Cirebon'];
+  const ANISA_ID = '7b27154b-884e-4a05-a89f-0654d0fed203';
+
+  useEffect(() => {
+    async function fetchUser() {
+      const { data } = await supabase
+        .from('users')
+        .select('full_name, avatar_url')
+        .eq('id', ANISA_ID)
+        .single();
+      if (data) setUserProfile(data);
+    }
+    fetchUser();
+  }, []);
 
   const handleLocSelect = (loc: string) => {
     setSelectedLoc(loc);
@@ -31,7 +47,7 @@ export default function Header() {
               if (q) window.location.href = `/search?q=${encodeURIComponent(q)}`;
             }}
           >
-            <Search size={20} className={styles.searchIcon} />
+            <Search size={20} className={styles.searchIcon} color="#767676" />
             <input 
               name="q"
               type="text" 
@@ -70,9 +86,13 @@ export default function Header() {
             )}
           </div>
 
-          <div className={styles.userProfile}>
-            <img src="https://placehold.co/100x100" alt="User" className={styles.avatar} />
-          </div>
+          <Link href="/profile" className={styles.userProfile}>
+            <div className={styles.userInfo} style={{ textAlign: 'right', marginRight: '12px' }}>
+              <span className={styles.userNameHeader} style={{ fontWeight: '600', color: '#292929', display: 'block' }}>{userProfile?.full_name?.split(' ')[0] || 'Anisa'}</span>
+              <span style={{ fontSize: '11px', color: '#767676' }}>Mahasiswa</span>
+            </div>
+            <img src={userProfile?.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=anisa'} alt="User" className={styles.avatar} />
+          </Link>
         </div>
       </div>
     </header>

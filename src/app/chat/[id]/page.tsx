@@ -42,7 +42,7 @@ export default function ChatDetailPage() {
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<[number, number]>([-6.8915, 107.6107]);
 
-  const JAE_HWAN_ID = '00000000-0000-0000-0000-000000000001';
+  const JAE_HWAN_ID = '7b27154b-884e-4a05-a89f-0654d0fed203';
 
   useEffect(() => {
     if (!conversationId) return;
@@ -55,14 +55,14 @@ export default function ChatDetailPage() {
         const { data: convData, error: convError } = await supabase
           .from('conversations')
           .select(`
-            participant1:participant1_id (*),
-            participant2:participant2_id (*)
+            buyer:users!conversations_buyer_id_fkey (*),
+            seller:users!conversations_seller_id_fkey (*)
           `)
           .eq('id', conversationId)
           .single();
 
         if (convError) throw convError;
-        const opponentData = convData.participant1_id === JAE_HWAN_ID ? convData.participant2 : convData.participant1;
+        const opponentData = convData.buyer?.id === JAE_HWAN_ID ? convData.seller : convData.buyer;
         setOpponent(opponentData);
 
         // 2. Fetch messages

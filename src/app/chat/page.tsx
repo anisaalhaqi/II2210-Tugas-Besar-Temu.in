@@ -58,7 +58,7 @@ export default function ChatPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const JAE_HWAN_ID = '00000000-0000-0000-0000-000000000001';
+  const JAE_HWAN_ID = '7b27154b-884e-4a05-a89f-0654d0fed203';
 
   const tabs = ['Semua', 'Ketemuan', 'Belum dibaca'];
 
@@ -70,24 +70,28 @@ export default function ChatPage() {
         const { data, error } = await supabase
           .from('conversations')
           .select(`
-            id, last_message, updated_at,
-            participant1:participant1_id (full_name, avatar_url),
-            participant2:participant2_id (full_name, avatar_url)
+            id, last_message_at,
+            buyer:users!conversations_buyer_id_fkey (id, full_name, avatar_url),
+            seller:users!conversations_seller_id_fkey (id, full_name, avatar_url),
+            messages (content)
           `)
-          .or(`participant1_id.eq.${JAE_HWAN_ID},participant2_id.eq.${JAE_HWAN_ID}`)
-          .order('updated_at', { ascending: false });
+          .or(`buyer_id.eq.${JAE_HWAN_ID},seller_id.eq.${JAE_HWAN_ID}`)
+          .order('last_message_at', { ascending: false });
 
         if (error) throw error;
 
         // Process data to identify the opponent
         const formatted = data?.map((con: any) => {
-          const isP1Me = con.participant1_id === JAE_HWAN_ID;
-          const opponent = isP1Me ? con.participant2 : con.participant1;
+          const isBuyerMe = con.buyer?.id === JAE_HWAN_ID;
+          const opponent = isBuyerMe ? con.seller : con.buyer;
+          const messages = con.messages || [];
+          const lastMsg = messages.length > 0 ? messages[messages.length - 1].content : '';
+          
           return {
             id: con.id,
-            last_message: con.last_message,
-            updated_at: con.updated_at,
-            opponent: opponent
+            last_message: lastMsg,
+            last_message_at: con.last_message_at,
+            opponent: opponent || { full_name: 'User', avatar_url: '' }
           };
         });
 

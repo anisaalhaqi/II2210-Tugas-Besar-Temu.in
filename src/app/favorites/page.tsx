@@ -76,7 +76,7 @@ export default function FavoritesPage() {
   const [categoryFilter, setCategoryFilter] = useState<string>('Semua');
   const [openDropdown, setOpenDropdown] = useState<'availability' | 'category' | null>(null);
 
-  const JAE_HWAN_ID = '00000000-0000-0000-0000-000000000001';
+  const JAE_HWAN_ID = '7b27154b-884e-4a05-a89f-0654d0fed203';
 
   async function fetchFavorites() {
     try {

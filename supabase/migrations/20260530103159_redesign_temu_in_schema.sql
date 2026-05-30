@@ -11,12 +11,12 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- Menggunakan UUID yang sinkron dengan auth.users Supabase.
 CREATE TABLE users (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    email TEXT UNIQUE NOT NULL CHECK (email ~* '^[A-Za-z0-9._%+-]+@(mahasiswa\.)?itb\.ac\.id$'),
+    email TEXT UNIQUE NOT NULL,
     full_name TEXT NOT NULL,
     username TEXT UNIQUE NOT NULL,
     avatar_url TEXT,
     faculty TEXT NOT NULL,
-    department TEXT NOT NULL,
+    jurusan TEXT NOT NULL,
     campus_location TEXT NOT NULL CHECK (campus_location IN ('ITB Ganesha', 'ITB Jatinangor', 'ITB Cirebon')),
     bio TEXT,
     is_verified BOOLEAN DEFAULT false,
@@ -66,6 +66,15 @@ CREATE TABLE favorites (
     UNIQUE(user_id, product_id)
 );
 
+-- 4.1 CART ITEMS
+-- Menampung barang dalam keranjang belanja.
+CREATE TABLE cart_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
 -- 5. CONVERSATIONS
 -- Header chat antara pembeli dan penjual untuk produk tertentu.
 CREATE TABLE conversations (
@@ -84,9 +93,10 @@ CREATE TABLE messages (
     conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
     sender_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     content TEXT NOT NULL,
-    message_type TEXT NOT NULL CHECK (message_type IN ('text', 'image', 'offer', 'system')),
+    message_type TEXT NOT NULL CHECK (message_type IN ('text', 'image', 'offer', 'system', 'location')),
     offer_price INTEGER CHECK (offer_price >= 0),
     offer_status TEXT CHECK (offer_status IN ('pending', 'accepted', 'rejected')),
+    metadata JSONB DEFAULT '{}',
     is_read BOOLEAN DEFAULT false,
     created_at TIMESTAMPTZ DEFAULT now()
 );
