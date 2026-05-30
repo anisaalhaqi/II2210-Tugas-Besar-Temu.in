@@ -111,9 +111,18 @@ export default function OrderPage() {
         return;
       }
 
-      // Create orders for each item (or group by seller if your logic allows)
+      // SIMULATION: If QRIS, show a payment prompt first
+      if (paymentMethod === 'qris') {
+        const confirmPayment = window.confirm('Anda memilih QRIS. Silakan selesaikan pembayaran simulasi ini untuk melanjutkan pesanan.');
+        if (!confirmPayment) {
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Create orders for each item
       for (const item of items) {
-        // 1. Check if conversation already exists or create new one
+        // 1. Conversation check/create
         let convId: string;
         const { data: existingConv } = await supabase
           .from('conversations')
@@ -150,17 +159,27 @@ export default function OrderPage() {
             deal_method: deliveryOption === 'ketemuan' ? 'meet-up' : 'jasa ojol',
             meetup_location: deliveryOption === 'ketemuan' ? selectedLocation : null,
             notes: note,
-            status: 'waiting_confirmation'
+            status: 'waiting_confirmation' // Both QRIS (paid) and COD start here for seller confirmation
           }]);
 
         if (orderError) throw orderError;
 
-        // 3. Remove from cart
+        // 3. Notification to Seller
+        await supabase.from('notifications').insert([{
+          user_id: item.product.users.id,
+          type: 'offer_received',
+          title: 'Pesanan Baru Masuk!',
+          body: `${user.user_metadata?.full_name || 'Seseorang'} telah memesan "${item.product.title}". Silakan cek dan konfirmasi.`,
+          related_id: convId,
+          related_type: 'conversation'
+        }]);
+
+        // 4. Remove from cart
         await supabase.from('cart_items').delete().eq('id', item.id);
       }
 
-      alert('Pesanan berhasil dibuat! Silakan tunggu konfirmasi dari penjual.');
-      router.push('/aktivitas');
+      alert(paymentMethod === 'qris' ? 'Pembayaran Berhasil! Pesanan Anda sedang diteruskan ke penjual.' : 'Pesanan berhasil dibuat! Silakan tunggu konfirmasi dari penjual.');
+      router.push('/aktivitas?tab=Menunggu Konfirmasi');
     } catch (err) {
       console.error('Error placing order:', err);
       alert('Terjadi kesalahan saat membuat pesanan.');

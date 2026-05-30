@@ -175,7 +175,12 @@ export default function AktivitasPage() {
         await createNotification(activity.counterparty.id, `order_${newStatus}`, title, body, activity.id, 'order');
       }
 
-      if (userId) fetchActivities(userId);
+      await fetchActivities(userId!);
+      
+      // AUTO-NAVIGATE to the next logical tab
+      const nextTab = statusMap[newStatus];
+      if (nextTab) setActiveTab(nextTab);
+      
       alert(`Berhasil: ${actionName}!`);
     } catch (err) {
       console.error('Action error:', err);
@@ -266,7 +271,7 @@ export default function AktivitasPage() {
                       isNegotiating ? (
                         sellerTurn ? (
                           <div className={styles.actionGrid3}>
-                            <button className={`${styles.btnAction} ${styles.btnTerima} ${styles.btnTerimaGrid}`} onClick={() => handleAction(item, 'processing', 'Diterima')}>Terima</button>
+                            <button className={`${styles.btnAction} ${styles.btnTerima} ${styles.btnTerimaGrid}`} onClick={() => handleAction(item, 'confirmed', 'Diterima')}>Terima</button>
                             <button className={`${styles.btnAction} ${styles.btnTawar} ${styles.btnTawarGrid}`} onClick={() => {
                               const newPrice = prompt('Masukkan harga tawar balik Anda:', item.price.toString());
                               if (newPrice) handleAction(item, 'waiting_confirmation', 'Tawar Balik', parseInt(newPrice));
@@ -277,14 +282,14 @@ export default function AktivitasPage() {
                           <div style={{ padding: '8px 0', color: '#767676', fontSize: '14px', fontStyle: 'italic' }}>Menunggu jawaban pembeli atas tawaran balik Anda...</div>
                         )
                       ) : (
-                        <button className={`${styles.btnAction} ${styles.btnTerima}`} onClick={() => handleAction(item, 'processing', 'Konfirmasi & Kemas')}>Konfirmasi & Kemas</button>
+                        <button className={`${styles.btnAction} ${styles.btnTerima}`} onClick={() => handleAction(item, 'confirmed', 'Konfirmasi & Kemas')}>Konfirmasi & Kemas</button>
                       )
                     ) : (
                       // BUYER SIDE
                       isNegotiating ? (
                         buyerTurn ? (
                           <div className={styles.actionGrid3}>
-                            <button className={`${styles.btnAction} ${styles.btnTerima} ${styles.btnTerimaGrid}`} onClick={() => handleAction(item, 'processing', 'Diterima')}>Terima</button>
+                            <button className={`${styles.btnAction} ${styles.btnTerima} ${styles.btnTerimaGrid}`} onClick={() => handleAction(item, 'confirmed', 'Diterima')}>Terima</button>
                             <button className={`${styles.btnAction} ${styles.btnTawar} ${styles.btnTawarGrid}`} onClick={() => {
                               const newPrice = prompt('Masukkan harga tawar balik baru:', item.price.toString());
                               if (newPrice) handleAction(item, 'waiting_confirmation', 'Tawar Balik', parseInt(newPrice));
@@ -301,7 +306,18 @@ export default function AktivitasPage() {
                   </div>
                 )}
                 
-                {/* Processing items */}
+                {/* Belum Bayar items */}
+                {item.db_status === 'confirmed' && (
+                  <div className={styles.cardActions}>
+                    {isSeller ? (
+                      <div style={{ padding: '8px 0', color: '#767676', fontSize: '14px', fontStyle: 'italic' }}>Menunggu pembeli melakukan pembayaran...</div>
+                    ) : (
+                      <button className={`${styles.btnAction} ${styles.btnTerima}`} onClick={() => handleAction(item, 'processing', 'Bayar Sekarang')}>Bayar Sekarang</button>
+                    )}
+                  </div>
+                )}
+
+                {/* Diproses items */}
                 {item.db_status === 'processing' && (
                    <div className={styles.cardActions}>
                       {isSeller ? (
