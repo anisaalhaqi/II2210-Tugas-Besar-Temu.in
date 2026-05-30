@@ -4,14 +4,14 @@ import { useState, useEffect } from 'react';
 import styles from './page.module.css';
 import Link from 'next/link';
 import { 
-  Calculator, 
-  FlaskConical, 
   BookOpen, 
-  PencilLine, 
   Zap, 
-  Palette, 
-  Package, 
-  Layers,
+  PencilLine, 
+  FlaskConical, 
+  Home, 
+  Dumbbell, 
+  Truck, 
+  MoreHorizontal,
   MapPin,
   ChevronDown
 } from 'lucide-react';
@@ -92,10 +92,10 @@ export default function DesktopHome() {
     { name: 'Elektronika', slug: 'elektronik', icon: Zap },
     { name: 'Alat Gambar & Tulis', slug: 'alat-tulis', icon: PencilLine },
     { name: 'Fashion & Perlengkapan Lab', slug: 'fashion-lab', icon: FlaskConical },
-    { name: 'Perlengkapan Asrama', slug: 'perlengkapan-asrama', icon: Package },
-    { name: 'Hobi & Olahraga', slug: 'hobi-olahraga', icon: Calculator },
-    { name: 'Jasa & Rider', slug: 'jasa-rider', icon: Layers },
-    { name: 'Lainnya', slug: 'lainnya', icon: Palette },
+    { name: 'Perlengkapan Asrama', slug: 'perlengkapan-asrama', icon: Home },
+    { name: 'Hobi & Olahraga', slug: 'hobi-olahraga', icon: Dumbbell },
+    { name: 'Jasa & Rider', slug: 'jasa-rider', icon: Truck },
+    { name: 'Lainnya', slug: 'lainnya', icon: MoreHorizontal },
   ];
 
   useEffect(() => {

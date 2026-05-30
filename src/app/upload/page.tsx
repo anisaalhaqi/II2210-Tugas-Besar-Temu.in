@@ -283,14 +283,14 @@ export default function UploadPage() {
   );
 
   const categories = [
-    { name: 'Alat Hitung', icon: Calculator },
-    { name: 'Alat Lab', icon: FlaskConical },
-    { name: 'Buku', icon: BookOpen },
-    { name: 'Alat Tulis', icon: PencilLine },
+    { name: 'Buku & Modul', icon: BookOpen },
     { name: 'Elektronika', icon: Zap },
-    { name: 'Alat Studio', icon: Palette },
-    { name: 'Penyimpanan', icon: Package },
-    { name: 'Lainnya', icon: Layers },
+    { name: 'Alat Gambar & Tulis', icon: PencilLine },
+    { name: 'Fashion & Perlengkapan Lab', icon: FlaskConical },
+    { name: 'Perlengkapan Asrama', icon: Home },
+    { name: 'Hobi & Olahraga', icon: Dumbbell },
+    { name: 'Jasa & Rider', icon: Truck },
+    { name: 'Lainnya', icon: MoreHorizontal },
   ];
 
   return (
