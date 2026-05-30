@@ -378,14 +378,22 @@ export default function ProductDetail() {
             </div>
 
             <div className={styles.actionButtonsInline}>
-              <button className={styles.chatIconBtnInline} aria-label="Chat">
-                <MessageCircle size={24} />
-              </button>
-              <button className={styles.tawarBtnInline}>Tawar Harga</button>
-              <button className={styles.cartBtnInline}>
-                <Plus size={20} />
-                Keranjang
-              </button>
+              {userId === product.seller_id ? (
+                <button className={styles.cartBtnInline} style={{ flex: 1 }}>
+                  Ubah Status Barang
+                </button>
+              ) : (
+                <>
+                  <button className={styles.chatIconBtnInline} aria-label="Chat">
+                    <MessageCircle size={24} />
+                  </button>
+                  <button className={styles.tawarBtnInline}>Tawar Harga</button>
+                  <button className={styles.cartBtnInline}>
+                    <Plus size={20} />
+                    Keranjang
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
