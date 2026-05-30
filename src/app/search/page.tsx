@@ -4,7 +4,16 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import styles from './search.module.css';
 import Link from 'next/link';
-import { Search, Bell, MessageCircle, PlusCircle, ArrowLeft, MapPin } from 'lucide-react';
+import { Search, Bell, MessageCircle, PlusCircle, ArrowLeft, MapPin, Loader2 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+
+interface Product {
+  id: string;
+  title: string;
+  price: number;
+  location: string;
+  images: string[];
+}
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -13,24 +22,55 @@ export default function SearchPage() {
   const [query, setQuery] = useState(initialQuery);
   const [isSearching, setIsSearching] = useState(initialQuery.length > 0);
   const [activeFilter, setActiveFilter] = useState('Terkait');
+  const [results, setResults] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const suggestions = [
-    'buku mathco',
-    'spek o word',
-    'jas lab',
-    'esp 32'
+    'Calculus Purcell',
+    'Jas Lab',
+    'Casio Classwiz',
+    'Rotring Isograph'
   ];
 
   const filters = ['Terkait', 'Terbaru', 'Harga Tertinggi', 'Harga Terendah'];
 
-  const results = [
-    { id: 1, title: 'Jas Laboratorium Fisika TPB', price: 'Rp32.000', location: 'Ganesha', img: 'https://placehold.co/300x200' },
-    { id: 2, title: 'Jas lab sudah terbiasa terjadi tante', price: 'Rp28.000', location: 'Jatinangor', img: 'https://placehold.co/300x200' },
-    { id: 3, title: 'Jas Laboratorium TPB', price: 'Rp32.000', location: 'Cirebon', img: 'https://placehold.co/300x200' },
-    { id: 4, title: 'Jas Laboratorium ITB masih wangi', price: 'Rp30.000', location: 'Jatinangor', img: 'https://placehold.co/300x200' },
-    { id: 5, title: 'Jas Lab Mulus Ukuran XL', price: 'Rp35.000', location: 'Ganesha', img: 'https://placehold.co/300x200' },
-    { id: 6, title: 'Jas Laboratorium Kimia', price: 'Rp40.000', location: 'Jatinangor', img: 'https://placehold.co/300x200' },
-  ];
+  useEffect(() => {
+    if (initialQuery) {
+      setQuery(initialQuery);
+      setIsSearching(true);
+      fetchResults(initialQuery);
+    } else {
+      setIsSearching(false);
+      setResults([]);
+    }
+  }, [initialQuery]);
+
+  async function fetchResults(q: string) {
+    try {
+      setLoading(true);
+      let queryBuilder = supabase
+        .from('products')
+        .select('id, title, price, location, images')
+        .ilike('title', `%${q}%`);
+
+      if (activeFilter === 'Terbaru') {
+        queryBuilder = queryBuilder.order('created_at', { ascending: false });
+      } else if (activeFilter === 'Harga Tertinggi') {
+        queryBuilder = queryBuilder.order('price', { ascending: false });
+      } else if (activeFilter === 'Harga Terendah') {
+        queryBuilder = queryBuilder.order('price', { ascending: true });
+      }
+
+      const { data, error } = await queryBuilder;
+
+      if (error) throw error;
+      setResults(data || []);
+    } catch (err) {
+      console.error('Error searching:', err);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,14 +86,13 @@ export default function SearchPage() {
     router.push(`/search?q=${encodeURIComponent(s)}`);
   };
 
-  useEffect(() => {
-    if (initialQuery) {
-      setQuery(initialQuery);
-      setIsSearching(true);
-    } else {
-      setIsSearching(false);
-    }
-  }, [initialQuery]);
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(price);
+  };
 
   return (
     <div className={styles.container}>
@@ -117,19 +156,27 @@ export default function SearchPage() {
           </div>
 
           <div className={styles.productGrid}>
-            {results.map((item) => (
-              <Link href={`/product/${item.id}`} key={item.id} className={styles.productCard}>
-                <img src={item.img} alt={item.title} className={styles.productImage} />
-                <div className={styles.productInfo}>
-                  <h3 className={styles.productTitle}>{item.title}</h3>
-                  <p className={styles.productPrice}>{item.price}</p>
-                  <div className={styles.productFooter}>
-                    <MapPin size={14} color="#767676" style={{ marginRight: '6px' }} />
-                    <span className={styles.locationText}>{item.location}</span>
+            {loading ? (
+              <div style={{ gridColumn: '1/-1', display: 'flex', justifyContent: 'center', padding: '40px' }}>
+                <Loader2 className="animate-spin" size={32} color="#008585" />
+              </div>
+            ) : results.length > 0 ? (
+              results.map((item) => (
+                <Link href={`/product/${item.id}`} key={item.id} className={styles.productCard}>
+                  <img src={item.images[0] || 'https://placehold.co/300x200'} alt={item.title} className={styles.productImage} />
+                  <div className={styles.productInfo}>
+                    <h3 className={styles.productTitle}>{item.title}</h3>
+                    <p className={styles.productPrice}>{formatPrice(item.price)}</p>
+                    <div className={styles.productFooter}>
+                      <MapPin size={14} color="#767676" style={{ marginRight: '6px' }} />
+                      <span className={styles.locationText}>{item.location}</span>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              ))
+            ) : (
+              <p style={{ gridColumn: '1/-1', textAlign: 'center', color: '#767676', padding: '40px' }}>Tidak ada barang ditemukan.</p>
+            )}
           </div>
         </main>
       )}

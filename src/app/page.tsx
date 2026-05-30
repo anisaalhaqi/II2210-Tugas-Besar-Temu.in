@@ -17,12 +17,12 @@ import { supabase } from '@/lib/supabase';
 import Skeleton from '@/components/Skeleton/Skeleton';
 
 interface Product {
-  id: number;
+  id: string;
   title: string;
   price: number;
   location: string;
   images: string[];
-  category: string;
+  category_id: string;
 }
 
 function HomeSkeleton() {

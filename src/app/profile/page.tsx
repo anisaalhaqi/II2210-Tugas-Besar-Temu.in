@@ -20,14 +20,14 @@ import { supabase } from '@/lib/supabase';
 interface Profile {
   full_name: string;
   avatar_url: string;
-  location: string;
-  rating: number;
-  review_count: number;
-  joined_at: string;
+  campus_location: string;
+  rating_avg: number;
+  rating_count: number;
+  created_at: string;
 }
 
 interface Product {
-  id: number;
+  id: string;
   title: string;
   price: number;
   images: string[];
@@ -46,15 +46,15 @@ export default function ProfilePage() {
       try {
         setLoading(true);
         
-        // 1. Fetch Profile
+        // 1. Fetch Profile (using users table)
         const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
+          .from('users')
           .select('*')
           .eq('id', JAE_HWAN_ID)
           .single();
 
         if (profileError) throw profileError;
-        setProfile(profileData);
+        setProfile(profileData as any);
 
         // 2. Fetch Products
         const { data: productsData, error: productsError } = await supabase
@@ -107,7 +107,7 @@ export default function ProfilePage() {
                 <h1>{profile.full_name}</h1>
                 <div className={styles.locationInfo}>
                   <MapPin size={16} />
-                  <span>{profile.location}</span>
+                  <span>{profile.campus_location}</span>
                 </div>
               </div>
             </div>
@@ -115,10 +115,10 @@ export default function ProfilePage() {
             <div className={styles.statsSection}>
               <div className={styles.statItem}>
                 <div className={styles.statValue}>
-                  <span>{profile.rating.toFixed(1)}</span>
+                  <span>{profile.rating_avg.toFixed(1)}</span>
                   <Star size={16} fill="#008585" color="#008585" />
                 </div>
-                <span className={styles.statLabel}>{profile.review_count} reviews</span>
+                <span className={styles.statLabel}>{profile.rating_count} reviews</span>
               </div>
               <div className={styles.divider}></div>
               <div className={styles.statItem}>

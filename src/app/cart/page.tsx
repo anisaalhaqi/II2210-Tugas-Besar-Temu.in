@@ -8,13 +8,13 @@ import styles from './cart.module.css';
 import { supabase } from '@/lib/supabase';
 
 interface CartItem {
-  id: number;
+  id: string;
   product: {
-    id: number;
+    id: string;
     title: string;
     price: number;
     images: string[];
-    profiles: {
+    users: {
       full_name: string;
       id: string;
     }
@@ -25,7 +25,7 @@ export default function CartPage() {
   const router = useRouter();
   const [items, setItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const JAE_HWAN_ID = '00000000-0000-0000-0000-000000000001';
 
@@ -38,7 +38,7 @@ export default function CartPage() {
           id,
           product:product_id (
             id, title, price, images,
-            profiles:seller_id (id, full_name)
+            users:seller_id (id, full_name)
           )
         `)
         .eq('user_id', JAE_HWAN_ID);
@@ -56,7 +56,7 @@ export default function CartPage() {
     fetchCart();
   }, []);
 
-  const toggleItem = (id: number) => {
+  const toggleItem = (id: string) => {
     if (selectedIds.includes(id)) {
       setSelectedIds(selectedIds.filter(selectedId => selectedId !== id));
     } else {
@@ -65,7 +65,7 @@ export default function CartPage() {
   };
 
   const toggleSeller = (sellerId: string) => {
-    const sellerItemIds = items.filter(item => item.product.profiles.id === sellerId).map(item => item.id);
+    const sellerItemIds = items.filter(item => item.product.users.id === sellerId).map(item => item.id);
     const allSelected = sellerItemIds.every(id => selectedIds.includes(id));
 
     if (allSelected) {
@@ -84,7 +84,7 @@ export default function CartPage() {
     }
   };
 
-  const deleteItem = async (id: number) => {
+  const deleteItem = async (id: string) => {
     try {
       const { error } = await supabase
         .from('cart_items')
@@ -114,8 +114,8 @@ export default function CartPage() {
   // Group items by seller
   const groupedItems = items.reduce((acc, item) => {
     if (!item.product) return acc;
-    const sellerName = item.product.profiles.full_name;
-    const sellerId = item.product.profiles.id;
+    const sellerName = item.product.users.full_name;
+    const sellerId = item.product.users.id;
     if (!acc[sellerId]) acc[sellerId] = { name: sellerName, items: [] };
     acc[sellerId].items.push(item);
     return acc;

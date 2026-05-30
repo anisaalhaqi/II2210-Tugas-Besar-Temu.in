@@ -9,14 +9,16 @@ import { supabase } from '@/lib/supabase';
 import Skeleton from '@/components/Skeleton/Skeleton';
 
 interface FavoriteItem {
-  id: number;
+  id: string;
   product: {
-    id: number;
+    id: string;
     title: string;
     price: number;
     location: string;
     images: string[];
-    category: string;
+    categories: {
+      name: string;
+    };
   }
 }
 
@@ -84,7 +86,8 @@ export default function FavoritesPage() {
         .select(`
           id,
           product:product_id (
-            id, title, price, location, images, category
+            id, title, price, location, images,
+            categories:category_id (name)
           )
         `)
         .eq('user_id', JAE_HWAN_ID);
@@ -111,14 +114,14 @@ export default function FavoritesPage() {
       let matchesAvailability = true;
       
       let matchesCategory = true;
-      if (categoryFilter !== 'Semua') matchesCategory = item.product.category === categoryFilter;
+      if (categoryFilter !== 'Semua') matchesCategory = item.product.categories?.name === categoryFilter;
       
       return matchesQuery && matchesAvailability && matchesCategory;
     });
   }, [localQuery, availabilityFilter, categoryFilter, favorites]);
 
   const categories = useMemo(() => {
-    const cats = favorites.map(f => f.product?.category).filter(Boolean);
+    const cats = favorites.map(f => f.product?.categories?.name).filter(Boolean);
     return Array.from(new Set(cats));
   }, [favorites]);
 

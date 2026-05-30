@@ -17,7 +17,7 @@ CREATE TABLE users (
     avatar_url TEXT,
     faculty TEXT NOT NULL,
     department TEXT NOT NULL,
-    campus_location TEXT NOT NULL CHECK (campus_location IN ('Ganesha', 'Jatinangor', 'Cirebon')),
+    campus_location TEXT NOT NULL CHECK (campus_location IN ('ITB Ganesha', 'ITB Jatinangor', 'ITB Cirebon')),
     bio TEXT,
     is_verified BOOLEAN DEFAULT false,
     rating_avg NUMERIC(3,2) DEFAULT 0,

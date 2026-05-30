@@ -69,8 +69,12 @@ export default function UploadPage() {
   
   const [showCalendar, setShowCalendar] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date()); 
-  const [rangeStart, setRangeStart] = useState<number | null>(new Date().getDate());
-  const [rangeEnd, setRangeEnd] = useState<number | null>(new Date().getDate() + 3);
+  const [rangeStart, setRangeStart] = useState<Date | null>(new Date());
+  const [rangeEnd, setRangeEnd] = useState<Date | null>(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 3);
+    return d;
+  });
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -88,22 +92,34 @@ export default function UploadPage() {
 
   const formattedRange = useMemo(() => {
     if (!rangeStart) return 'Pilih Tanggal';
-    const monthName = months[currentDate.getMonth()];
-    const year = currentDate.getFullYear();
-    if (!rangeEnd) return `${rangeStart} ${monthName} ${year}`;
-    return `${rangeStart} ${monthName} - ${rangeEnd} ${monthName} ${year}`;
-  }, [rangeStart, rangeEnd, currentDate, months]);
+    
+    const formatDate = (date: Date) => {
+      return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+    };
+
+    if (!rangeEnd) return formatDate(rangeStart);
+    
+    // If same month and year
+    if (rangeStart.getMonth() === rangeEnd.getMonth() && rangeStart.getFullYear() === rangeEnd.getFullYear()) {
+      return `${rangeStart.getDate()} - ${rangeEnd.getDate()} ${months[rangeStart.getMonth()]} ${rangeStart.getFullYear()}`;
+    }
+    
+    // Different months
+    return `${rangeStart.getDate()} ${months[rangeStart.getMonth()]} - ${rangeEnd.getDate()} ${months[rangeEnd.getMonth()]} ${rangeEnd.getFullYear()}`;
+  }, [rangeStart, rangeEnd, months]);
 
   const handleDayClick = (day: number) => {
     if (isDateDisabled(day)) return;
 
+    const clickedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+
     if (!rangeStart || (rangeStart && rangeEnd)) {
-      setRangeStart(day);
+      setRangeStart(clickedDate);
       setRangeEnd(null);
-    } else if (day > rangeStart) {
-      setRangeEnd(day);
+    } else if (clickedDate > rangeStart) {
+      setRangeEnd(clickedDate);
     } else {
-      setRangeStart(day);
+      setRangeStart(clickedDate);
       setRangeEnd(null);
     }
   };
@@ -111,10 +127,6 @@ export default function UploadPage() {
   const changeMonth = (offset: number) => {
     const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + offset, 1);
     setCurrentDate(newDate);
-    // Don't reset range necessarily, but could lead to weird UI if range is in another month
-    // For simplicity of this task, keeping existing reset behavior but with better date handling
-    setRangeStart(null);
-    setRangeEnd(null);
   };
 
   const handleCategorySelect = (category: string) => {
@@ -481,13 +493,22 @@ export default function UploadPage() {
             </div>
             <div className={styles.daysGrid}>
               {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(d => <div key={d} className={styles.weekdayLabel}>{d}</div>)}
-              {Array.from({length: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()}, (_, i) => i + 1).map(day => (
-                <div 
-                  key={day} 
-                  className={`${styles.dayCell} ${day === rangeStart || day === rangeEnd ? styles.dayActive : ''} ${rangeStart && rangeEnd && day > rangeStart && day < rangeEnd ? styles.dayInRange : ''} ${isDateDisabled(day) ? styles.dayDisabled : ''}`}
-                  onClick={() => handleDayClick(day)}
-                >{day}</div>
-              ))}
+              {Array.from({length: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()}, (_, i) => i + 1).map(day => {
+                const checkDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                
+                const isStart = rangeStart && checkDate.getTime() === rangeStart.getTime();
+                const isEnd = rangeEnd && checkDate.getTime() === rangeEnd.getTime();
+                const isInRange = rangeStart && rangeEnd && checkDate > rangeStart && checkDate < rangeEnd;
+                const isDisabled = isDateDisabled(day);
+
+                return (
+                  <div 
+                    key={day} 
+                    className={`${styles.dayCell} ${isStart || isEnd ? styles.dayActive : ''} ${isInRange ? styles.dayInRange : ''} ${isDisabled ? styles.dayDisabled : ''}`}
+                    onClick={() => handleDayClick(day)}
+                  >{day}</div>
+                );
+              })}
             </div>
             <div className={styles.modalFooter}>
               <button className={styles.modalBtn} style={{ border: '1px solid #d1d5db', background: 'white', color: '#767676' }} onClick={() => setShowCalendar(false)}>Batal</button>

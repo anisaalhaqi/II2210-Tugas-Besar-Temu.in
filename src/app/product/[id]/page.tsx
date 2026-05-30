@@ -31,24 +31,26 @@ const campusCoords: Record<string, [number, number]> = {
 interface Seller {
   full_name: string;
   avatar_url: string;
-  rating: number;
-  review_count: number;
+  rating_avg: number;
+  rating_count: number;
 }
 
 interface Product {
-  id: number;
+  id: string;
   title: string;
   price: number;
   location: string;
   description: string;
-  category: string;
-  originality: string;
-  usage_period: string;
-  delivery_dates: string;
+  category_id: string;
+  condition: string;
+  brand: string | null;
   images: string[];
   created_at: string;
   seller_id: string;
-  profiles?: Seller; // Joined from Supabase
+  users?: Seller; // Joined from Supabase
+  categories?: {
+    name: string;
+  };
 }
 
 function ProductSkeleton() {
@@ -116,34 +118,37 @@ export default function ProductDetail() {
     async function fetchProductData() {
       try {
         setLoading(true);
-        // 1. Fetch Product with Seller Profile
+        // 1. Fetch Product with Seller (users table) and Category
         const { data, error } = await supabase
           .from('products')
           .select(`
             *,
-            profiles:seller_id (
+            users:seller_id (
               full_name,
               avatar_url,
-              rating,
-              review_count
+              rating_avg,
+              rating_count
+            ),
+            categories:category_id (
+              name
             )
           `)
           .eq('id', id)
           .single();
 
         if (error) throw error;
-        setProduct(data);
+        setProduct(data as unknown as Product);
         setActiveImageIndex(0);
 
-        // 2. Fetch Recommended (same category)
+        // 2. Fetch Recommended (same category_id)
         const { data: recData } = await supabase
           .from('products')
           .select('*')
-          .eq('category', data.category)
+          .eq('category_id', data.category_id)
           .neq('id', id)
           .limit(4);
         
-        setRecommended(recData || []);
+        setRecommended(recData as unknown as Product[] || []);
 
       } catch (err) {
         console.error('Error:', err);
@@ -169,7 +174,7 @@ export default function ProductDetail() {
 
   if (!product) return <div className={styles.container} style={{ padding: '100px', textAlign: 'center' }}>Produk tidak ditemukan.</div>;
 
-  const seller = product.profiles;
+  const seller = product.users;
 
   return (
     <div className={styles.container}>
@@ -228,18 +233,18 @@ export default function ProductDetail() {
               </li>
               <li>
                 <Hourglass size={18} className={styles.specIcon} color="#008585" />
-                <span className={styles.specLabel}>Pemakaian</span>
-                <span className={styles.specValue}>{product.usage_period || 'Tidak disebutkan'}</span>
+                <span className={styles.specLabel}>Kondisi</span>
+                <span className={styles.specValue}>{product.condition || 'Tidak disebutkan'}</span>
               </li>
               <li>
                 <ShieldCheck size={18} className={styles.specIcon} color="#008585" />
-                <span className={styles.specLabel}>Status</span>
-                <span className={styles.specValue}>{product.originality || 'Original'}</span>
+                <span className={styles.specLabel}>Brand</span>
+                <span className={styles.specValue}>{product.brand || 'Original'}</span>
               </li>
               <li>
                 <Tag size={18} className={styles.specIcon} color="#008585" />
                 <span className={styles.specLabel}>Kategori</span>
-                <span className={styles.specValueBold}>{product.category}</span>
+                <span className={styles.specValueBold}>{product.categories?.name || 'Lainnya'}</span>
               </li>
             </ul>
 
@@ -286,7 +291,7 @@ export default function ProductDetail() {
                 )}
                 <li>
                   <ShoppingBag size={20} color="#008585" />
-                  <span>Jasa Pengiriman ({product.delivery_dates || 'Sesuai kesepakatan'})</span>
+                  <span>Jasa Pengiriman (Sesuai kesepakatan)</span>
                 </li>
               </ul>
             </div>
@@ -307,8 +312,8 @@ export default function ProductDetail() {
               </div>
               <p className={styles.activeTime}>Aktif 1 jam yang lalu</p>
               <div className={styles.ratingBox}>
-                <span className={styles.ratingScore}>{seller?.rating?.toFixed(1) || '5.0'}</span>
-                <span className={styles.ratingTotal}>/{seller?.review_count || 0} Penilaian</span>
+                <span className={styles.ratingScore}>{seller?.rating_avg?.toFixed(1) || '5.0'}</span>
+                <span className={styles.ratingTotal}>/{seller?.rating_count || 0} Penilaian</span>
               </div>
             </div>
           </section>
