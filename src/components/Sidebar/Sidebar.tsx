@@ -31,21 +31,33 @@ export default function Sidebar() {
 
   useEffect(() => {
     setMounted(true);
-    async function fetchUser() {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        return; // Let the page layout handle redirect or keep it empty
-      }
-
+    
+    async function getProfile(uid: string) {
       const { data } = await supabase
         .from('users')
         .select('full_name, avatar_url, campus_location')
-        .eq('id', user.id)
+        .eq('id', uid)
         .single();
       if (data) setUserProfile(data);
     }
-    fetchUser();
+
+    // 1. Initial fetch
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) getProfile(user.id);
+    });
+
+    // 2. Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+        if (session?.user) getProfile(session.user.id);
+      } else if (event === 'SIGNED_OUT') {
+        setUserProfile(null);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleLogout = async (e: React.MouseEvent) => {
@@ -105,8 +117,8 @@ export default function Sidebar() {
               />
               {mounted && (
                 <div className={styles.userDetails}>
-                  <span className={styles.userName}>{userProfile?.full_name || 'Anisa Alhaqi'}</span>
-                  <span className={styles.userRole}>{userProfile?.campus_location || 'ITB Ganesha'}</span>
+                  <span className={styles.userName}>{userProfile?.full_name || 'Memuat...'}</span>
+                  <span className={styles.userRole}>{userProfile?.campus_location || 'ITB'}</span>
                 </div>
               )}
             </div>

@@ -15,6 +15,10 @@ export default function AuthPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [username, setUsername] = useState('');
+  const [faculty, setFaculty] = useState('');
+  const [jurusan, setJurusan] = useState('');
+  const [campusLocation, setCampusLocation] = useState('ITB Ganesha');
 
   // Error States
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -33,14 +37,18 @@ export default function AuthPage() {
     
     const newErrors: Record<string, string> = {};
 
-    // 1. Basic Empty Validation
+    // 1. Validation
     if (!email) newErrors.email = 'Email harus diisi';
     if (!password) newErrors.password = 'Password harus diisi';
-    if (!isLogin && !fullName) newErrors.fullName = 'Nama lengkap harus diisi';
-
-    // 2. Password Complexity (Sign Up only)
-    if (!isLogin && password && !validatePassword(password)) {
-      newErrors.password = 'Password minimal 8 karakter dan mengandung angka atau tanda baca';
+    
+    if (!isLogin) {
+      if (!fullName) newErrors.fullName = 'Nama lengkap harus diisi';
+      if (!username) newErrors.username = 'Username harus diisi';
+      if (!faculty) newErrors.faculty = 'Fakultas harus diisi';
+      if (!jurusan) newErrors.jurusan = 'Jurusan harus diisi';
+      if (password && !validatePassword(password)) {
+        newErrors.password = 'Min. 8 karakter & angka/simbol';
+      }
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -53,7 +61,7 @@ export default function AuthPage() {
     try {
       if (isLogin) {
         // --- LOGIN LOGIC ---
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
@@ -75,12 +83,15 @@ export default function AuthPage() {
           options: {
             data: {
               full_name: fullName,
+              username: username,
+              faculty: faculty,
+              jurusan: jurusan,
+              campus_location: campusLocation
             },
           },
         });
 
         if (error) {
-          // Supabase often returns "User already registered" or similar
           const errMsg = error.message.toLowerCase();
           if (errMsg.includes('already registered') || errMsg.includes('already exists') || errMsg.includes('database error saving new user')) {
             setErrors({ email: 'Akun sudah terdaftar' });
@@ -88,10 +99,9 @@ export default function AuthPage() {
             setFormError(error.message);
           }
         } else if (data.user && (!data.user.identities || data.user.identities.length === 0)) {
-          // In some Supabase configs, a successful call with 0 identities means user already exists
           setErrors({ email: 'Akun sudah terdaftar' });
         } else {
-          alert('Pendaftaran berhasil! Silakan cek email untuk verifikasi (jika diaktifkan) atau langsung masuk.');
+          alert('Pendaftaran berhasil! Akun Anda telah dibuat.');
           setIsLogin(true);
         }
       }
@@ -137,17 +147,30 @@ export default function AuthPage() {
 
         <form className={styles.form} onSubmit={handleAuth} noValidate>
           {!isLogin && (
-            <div className={styles.inputGroup}>
-              <label>Nama Lengkap</label>
-              <input 
-                type="text" 
-                placeholder="Masukkan namamu" 
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-              />
-              {errors.fullName && <span className={styles.errorText}>{errors.fullName}</span>}
-            </div>
+            <>
+              <div className={styles.inputGroup}>
+                <label>Nama Lengkap</label>
+                <input 
+                  type="text" 
+                  placeholder="Masukkan nama lengkap" 
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                />
+                {errors.fullName && <span className={styles.errorText}>{errors.fullName}</span>}
+              </div>
+              <div className={styles.inputGroup}>
+                <label>Username</label>
+                <input 
+                  type="text" 
+                  placeholder="Masukkan username" 
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+                {errors.username && <span className={styles.errorText}>{errors.username}</span>}
+              </div>
+            </>
           )}
+
           <div className={styles.inputGroup}>
             <label>Email</label>
             <input 
@@ -158,6 +181,7 @@ export default function AuthPage() {
             />
             {errors.email && <span className={styles.errorText}>{errors.email}</span>}
           </div>
+
           <div className={styles.inputGroup}>
             <label>Password</label>
             <input 
@@ -168,6 +192,48 @@ export default function AuthPage() {
             />
             {errors.password && <span className={styles.errorText}>{errors.password}</span>}
           </div>
+
+          {!isLogin && (
+            <>
+              <div className={styles.inputGroup}>
+                <label>Fakultas</label>
+                <input 
+                  type="text" 
+                  placeholder="Contoh: STEI" 
+                  value={faculty}
+                  onChange={(e) => setFaculty(e.target.value)}
+                />
+                {errors.faculty && <span className={styles.errorText}>{errors.faculty}</span>}
+              </div>
+              <div className={styles.inputGroup}>
+                <label>Jurusan</label>
+                <input 
+                  type="text" 
+                  placeholder="Contoh: Teknik Informatika" 
+                  value={jurusan}
+                  onChange={(e) => setJurusan(e.target.value)}
+                />
+                {errors.jurusan && <span className={styles.errorText}>{errors.jurusan}</span>}
+              </div>
+              <div className={styles.inputGroup} style={{ paddingBottom: '0' }}>
+                <label>Lokasi Kampus</label>
+                <div className={styles.radioGroup}>
+                  {['ITB Ganesha', 'ITB Jatinangor', 'ITB Cirebon'].map((loc) => (
+                    <label key={loc} className={styles.radioItem}>
+                      <input 
+                        type="radio" 
+                        name="campusLocation" 
+                        value={loc} 
+                        checked={campusLocation === loc}
+                        onChange={(e) => setCampusLocation(e.target.value)}
+                      />
+                      <span className={styles.radioLabel}>{loc}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
           
           {isLogin && (
             <div className={styles.forgotPassword}>

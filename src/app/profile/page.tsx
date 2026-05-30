@@ -134,6 +134,19 @@ export default function ProfilePage() {
     }).format(price);
   };
 
+  const getJoinDuration = (dateStr: string) => {
+    if (!dateStr) return '-';
+    const start = new Date(dateStr);
+    const now = new Date();
+    
+    const diffTime = Math.abs(now.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 30) return `${diffDays} hari`;
+    if (diffDays < 365) return `${Math.floor(diffDays / 30)} bulan`;
+    return `${Math.floor(diffDays / 365)} tahun`;
+  };
+
   if (loading) {
     return (
       <div className={styles.container} style={{ justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -173,7 +186,7 @@ export default function ProfilePage() {
               </div>
               <div className={styles.divider}></div>
               <div className={styles.statItem}>
-                <div className={styles.statValue}>2 tahun</div>
+                <div className={styles.statValue}>{getJoinDuration(profile.created_at)}</div>
                 <span className={styles.statLabel}>di Temu.in</span>
               </div>
             </div>

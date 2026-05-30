@@ -59,6 +59,17 @@
   flex-direction: column;
   gap: 24px;
   box-sizing: border-box;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Hide scrollbar but keep functionality */
+.formContainer::-webkit-scrollbar {
+  width: 4px;
+}
+.formContainer::-webkit-scrollbar-thumb {
+  background: #E5E7EB;
+  border-radius: 10px;
 }
 
 .formContainer h2 {
@@ -69,19 +80,18 @@
   margin-bottom: 8px;
 }
 
-/* SSO Button styles removed */
-
 .form {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
+
 .inputGroup {
   display: flex;
   flex-direction: column;
   gap: 8px;
   position: relative;
-  padding-bottom: 20px;
+  padding-bottom: 22px;
 }
 
 .inputGroup label {
@@ -90,7 +100,8 @@
   color: #292929;
 }
 
-.inputGroup input {
+.inputGroup input,
+.inputGroup select {
   padding: 14px 16px;
   border: 1px solid #D6D6D6;
   border-radius: 10px;
@@ -102,8 +113,43 @@
   width: 100%;
 }
 
-.inputGroup input:focus {
+.inputGroup select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23767676' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 18px;
+}
+
+.inputGroup input:focus,
+.inputGroup select:focus {
   border-color: #008585;
+}
+
+.radioGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.radioItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.radioItem input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  accent-color: #008585;
+  cursor: pointer;
+}
+
+.radioLabel {
+  font-size: 15px;
+  color: #434343;
 }
 
 .errorText {
@@ -154,6 +200,11 @@
 
 .submitBtn:hover {
   background-color: #006b6b;
+}
+
+.submitBtn:disabled {
+  background-color: #D6D6D6;
+  cursor: not-allowed;
 }
 
 .switchMode {
