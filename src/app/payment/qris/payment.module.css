@@ -1,0 +1,279 @@
+.container {
+  min-height: 100vh;
+  background-color: #f8fcfb;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.main {
+  max-width: 1000px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 40px 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.topRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.backButton {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #292929;
+  transition: all 0.2s ease;
+}
+
+.backButton:hover {
+  background-color: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.pageTitle {
+  font-size: 28px;
+  font-weight: 700;
+  color: #292929;
+}
+
+.desktopGrid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+/* Left Column: QR Section */
+.qrSection {
+  background: #EEFFFC; /* Soft Teal background */
+  padding: 60px 40px;
+  border-radius: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  border: 1px solid #d0f2ef;
+}
+
+.merchantInfo {
+  text-align: center;
+}
+
+.merchantName {
+  font-size: 24px;
+  font-weight: 700;
+  color: #292929;
+  margin-bottom: 6px;
+}
+
+.nmid {
+  font-size: 15px;
+  color: #767676;
+  font-weight: 500;
+}
+
+.qrContainer {
+  background: white;
+  padding: 30px;
+  border-radius: 24px;
+  width: 320px;
+  height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12px 40px rgba(0, 133, 133, 0.08);
+}
+
+.qrImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.actionGroup {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.btnSecondary {
+  flex: 1;
+  height: 48px;
+  background: white;
+  color: #008585;
+  border: 1.5px solid #008585;
+  border-radius: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btnSecondary:hover {
+  background: #f0f7f7;
+}
+
+.btnPrimarySmall {
+  flex: 1;
+  height: 48px;
+  background: #008585;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btnPrimarySmall:hover {
+  background: #007575;
+}
+
+/* Right Column: Cards */
+.rightCol {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.timerCard {
+  background: white;
+  padding: 32px;
+  border-radius: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  text-align: center;
+}
+
+.timerHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.timerHeader h3 {
+  font-size: 16px;
+  color: #292929;
+  font-weight: 700;
+}
+
+.timerDisplay {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.timeBox {
+  background: #EEFFFC;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 24px;
+  font-weight: 800;
+  color: #008585;
+  min-width: 54px;
+}
+
+.timerSeparator {
+  font-size: 28px;
+  font-weight: 800;
+  color: #008585;
+}
+
+.deadline {
+  font-size: 15px;
+  font-weight: 600;
+  color: #292929;
+}
+
+.timerHint {
+  font-size: 14px;
+  color: #767676;
+  line-height: 1.5;
+}
+
+.summaryCard {
+  background: white;
+  padding: 32px;
+  border-radius: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.paymentType {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  font-size: 20px;
+  color: #292929;
+}
+
+.divider {
+  height: 1px;
+  background: #f0f0f0;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.totalLabel {
+  font-size: 18px;
+  color: #767676;
+  font-weight: 600;
+}
+
+.totalValue {
+  font-size: 28px;
+  font-weight: 800;
+  color: #008585;
+}
+
+.btnPrimaryFull {
+  width: 100%;
+  height: 56px;
+  background: #008585;
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btnPrimaryFull:hover {
+  background: #007575;
+  box-shadow: 0 8px 24px rgba(0, 133, 133, 0.2);
+}
+
+@media (max-width: 900px) {
+  .desktopGrid {
+    grid-template-columns: 1fr;
+  }
+}

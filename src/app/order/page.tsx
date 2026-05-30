@@ -111,16 +111,28 @@ export default function OrderPage() {
         return;
       }
 
-      // SIMULATION: If QRIS, show a payment prompt first
       if (paymentMethod === 'qris') {
-        const confirmPayment = window.confirm('Anda memilih QRIS. Silakan selesaikan pembayaran simulasi ini untuk melanjutkan pesanan.');
-        if (!confirmPayment) {
-          setLoading(false);
-          return;
+        const orderIds: string[] = [];
+        // Create orders first
+        for (const item of items) {
+          let convId: string;
+          const { data: existingConv } = await supabase.from('conversations').select('id').eq('product_id', item.product.id).eq('buyer_id', user.id).maybeSingle();
+          if (existingConv) convId = existingConv.id;
+          else {
+            const { data: newConv } = await supabase.from('conversations').insert([{ product_id: item.product.id, buyer_id: user.id, seller_id: item.product.users.id }]).select().single();
+            convId = newConv.id;
+          }
+          const { data: newOrder } = await supabase.from('orders').insert([{ conversation_id: convId, product_id: item.product.id, buyer_id: user.id, seller_id: item.product.users.id, final_price: item.product.price, deal_method: deliveryOption === 'ketemuan' ? 'meet-up' : 'jasa ojol', meetup_location: deliveryOption === 'ketemuan' ? selectedLocation : null, notes: note, status: 'confirmed' }]).select().single();
+          if (newOrder) orderIds.push(newOrder.id);
+          await supabase.from('cart_items').delete().eq('id', item.id);
         }
+        
+        // Redirect to QRIS page with amount and order IDs
+        router.push(`/payment/qris?amount=${total.toLocaleString('id-ID')}&orderIds=${orderIds.join(',')}`);
+        return;
       }
 
-      // Create orders for each item
+      // Create orders for each item (Original logic for COD)
       for (const item of items) {
         // 1. Conversation check/create
         let convId: string;

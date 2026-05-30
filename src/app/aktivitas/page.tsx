@@ -250,7 +250,15 @@ export default function AktivitasPage() {
                   <span className={styles.counterparty}>{item.counterparty?.full_name} ({isSeller ? 'Pembeli' : 'Penjual'})</span>
                   <span className={`${styles.statusText} ${item.status === 'Dibatalkan' ? styles.statusTextRed : ''}`}>{item.status}</span>
                 </div>
-                <div className={styles.cardBody}>
+                <div 
+                  className={styles.cardBody} 
+                  onClick={() => {
+                    if (item.db_status === 'confirmed' && item.type === 'Beli') {
+                      router.push(`/payment/qris?amount=${item.price.toLocaleString('id-ID')}&orderIds=${item.id}`);
+                    }
+                  }}
+                  style={{ cursor: (item.db_status === 'confirmed' && item.type === 'Beli') ? 'pointer' : 'default' }}
+                >
                   <img src={item.product?.images?.[0] || 'https://placehold.co/100x110'} alt="" className={styles.productImg} />
                   <div className={styles.productDetails}>
                     <h3 className={styles.productTitle}>{item.product?.title}</h3>
@@ -312,7 +320,12 @@ export default function AktivitasPage() {
                     {isSeller ? (
                       <div style={{ padding: '8px 0', color: '#767676', fontSize: '14px', fontStyle: 'italic' }}>Menunggu pembeli melakukan pembayaran...</div>
                     ) : (
-                      <button className={`${styles.btnAction} ${styles.btnTerima}`} onClick={() => handleAction(item, 'processing', 'Bayar Sekarang')}>Bayar Sekarang</button>
+                      <button 
+                        className={`${styles.btnAction} ${styles.btnTerima}`} 
+                        onClick={() => router.push(`/payment/qris?amount=${item.price.toLocaleString('id-ID')}&orderIds=${item.id}`)}
+                      >
+                        Bayar Sekarang
+                      </button>
                     )}
                   </div>
                 )}
