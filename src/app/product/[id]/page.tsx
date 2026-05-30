@@ -120,7 +120,7 @@ function ProductSkeleton() {
 export default function ProductDetail() {
   const params = useParams();
   const router = useRouter();
-  const id = params?.id;
+  const id = params?.id as string;
   
   const [product, setProduct] = useState<Product | null>(null);
   const [recommended, setRecommended] = useState<Product[]>([]);
@@ -128,9 +128,10 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [isAiExpanded, setIsAiExpanded] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
-  const [likesCount, setLikesCount] = useState(12);
+  const [likesCount, setLikesCount] = useState(0);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -138,6 +139,27 @@ export default function ProductDetail() {
     async function fetchProductData() {
       try {
         setLoading(true);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          setUserId(user.id);
+          // Check if already favorited
+          const { data: favData } = await supabase
+            .from('favorites')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('product_id', id)
+            .maybeSingle();
+          setIsFavorited(!!favData);
+        }
+
+        // Fetch likes count for this product
+        const { count } = await supabase
+          .from('favorites')
+          .select('*', { count: 'exact', head: true })
+          .eq('product_id', id);
+        setLikesCount(count || 0);
+
+        // Fetch Product Data
         const { data, error } = await supabase
           .from('products')
           .select(`
@@ -182,10 +204,39 @@ export default function ProductDetail() {
     fetchProductData();
   }, [id]);
 
-  const handleLike = () => {
-    if (isFavorited) setLikesCount(prev => Math.max(0, prev - 1));
-    else setLikesCount(prev => prev + 1);
-    setIsFavorited(!isFavorited);
+  const handleLike = async () => {
+    if (!userId) {
+      router.push('/auth');
+      return;
+    }
+
+    const previousStatus = isFavorited;
+    const previousCount = likesCount;
+
+    // Optimistic Update
+    setIsFavorited(!previousStatus);
+    setLikesCount(prev => previousStatus ? Math.max(0, prev - 1) : prev + 1);
+
+    try {
+      if (!previousStatus) {
+        const { error } = await supabase
+          .from('favorites')
+          .insert([{ user_id: userId, product_id: id }]);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', userId)
+          .eq('product_id', id);
+        if (error) throw error;
+      }
+    } catch (err) {
+      console.error('Favorite error:', err);
+      // Rollback on error
+      setIsFavorited(previousStatus);
+      setLikesCount(previousCount);
+    }
   };
 
   const formatDate = (dateStr: string) => {
