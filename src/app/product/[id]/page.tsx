@@ -152,7 +152,7 @@ export default function ProductDetail() {
           setIsFavorited(!!favData);
         }
 
-        // Fetch likes count for this product
+        // Fetch likes count
         const { count } = await supabase
           .from('favorites')
           .select('*', { count: 'exact', head: true })
@@ -213,29 +213,42 @@ export default function ProductDetail() {
     const previousStatus = isFavorited;
     const previousCount = likesCount;
 
-    // Optimistic Update
     setIsFavorited(!previousStatus);
     setLikesCount(prev => previousStatus ? Math.max(0, prev - 1) : prev + 1);
 
     try {
       if (!previousStatus) {
-        const { error } = await supabase
-          .from('favorites')
-          .insert([{ user_id: userId, product_id: id }]);
-        if (error) throw error;
+        await supabase.from('favorites').insert([{ user_id: userId, product_id: id }]);
       } else {
-        const { error } = await supabase
-          .from('favorites')
-          .delete()
-          .eq('user_id', userId)
-          .eq('product_id', id);
-        if (error) throw error;
+        await supabase.from('favorites').delete().eq('user_id', userId).eq('product_id', id);
       }
     } catch (err) {
-      console.error('Favorite error:', err);
-      // Rollback on error
       setIsFavorited(previousStatus);
       setLikesCount(previousCount);
+    }
+  };
+
+  const handleAddToCart = async () => {
+    if (!userId) {
+      router.push('/auth');
+      return;
+    }
+    try {
+      setLoading(true);
+      const { error } = await supabase
+        .from('cart_items')
+        .insert([{ user_id: userId, product_id: id }]);
+
+      if (error) {
+        if (error.code === '23505') alert('Barang sudah ada di keranjang Anda!');
+        else throw error;
+      } else {
+        alert('Barang berhasil ditambahkan ke keranjang!');
+      }
+    } catch (err) {
+      alert('Gagal menambahkan ke keranjang.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -265,10 +278,12 @@ export default function ProductDetail() {
              Kembali
           </button>
           <div className={styles.headerActions}>
-            <button className={styles.headerIconBtn} aria-label="Cart"><ShoppingCart size={22} /></button>
+            <Link href="/cart">
+              <button className={styles.headerIconBtn} aria-label="Cart"><ShoppingCart size={22} /></button>
+            </Link>
             <button className={styles.headerIconBtn} aria-label="Share"><Share2 size={22} /></button>
             <div className={styles.vDivider}></div>
-            <button className={styles.headerIconBtn} aria-label="Report"><Flag size={20} /></button>
+            <button className={`${styles.headerIconBtn} ${styles.reportBtn}`} aria-label="Report"><Flag size={20} /></button>
           </div>
         </div>
 
@@ -388,7 +403,7 @@ export default function ProductDetail() {
                     <MessageCircle size={24} />
                   </button>
                   <button className={styles.tawarBtnInline}>Tawar Harga</button>
-                  <button className={styles.cartBtnInline}>
+                  <button className={styles.cartBtnInline} onClick={handleAddToCart}>
                     <Plus size={20} />
                     Keranjang
                   </button>
