@@ -193,6 +193,13 @@
   padding: 20px;
 }
 
+.aiHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
 .aiTitle {
   display: flex;
   align-items: center;
