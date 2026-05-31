@@ -403,7 +403,7 @@ export default function ProductDetail() {
               <li>
                 <Clock size={18} className={styles.specIcon} color="#008585" />
                 <span className={styles.specLabel}>Diposting oleh</span>
-                <Link href="/profile" className={styles.specValueBold}>{seller?.full_name || 'Penjual'}</Link>
+                <Link href={`/profile/${product.seller_id}`} className={styles.specValueBold}>{seller?.full_name || 'Penjual'}</Link>
               </li>
               <li>
                 <Hourglass size={18} className={styles.specIcon} color="#008585" />
@@ -516,12 +516,6 @@ export default function ProductDetail() {
                 </div>
               </div>
             </div>
-            <button 
-              className={`${styles.followBtn} ${isFollowing ? styles.following : ''}`}
-              onClick={() => setIsFollowing(!isFollowing)}
-            >
-              {isFollowing ? 'Mengikuti' : 'Ikuti'}
-            </button>
           </section>
 
           {reviews.length > 0 && (
