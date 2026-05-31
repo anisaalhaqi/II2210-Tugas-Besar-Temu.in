@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Heart, MessageCircle, Check, Inbox, X, Loader2 } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, Check, Inbox, X, Loader2, Star } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import styles from './activity.module.css';
 import { supabase } from '@/lib/supabase';
@@ -26,6 +26,7 @@ interface Activity {
   counterparty: {
     id: string;
     full_name: string;
+    avatar_url?: string;
   };
 }
 
@@ -67,6 +68,14 @@ export default function ActivityPage() {
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
 
+  // Review Modal States
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [rating, setRating] = useState(0);
+  const [hoveredRating, setHoveredRating] = useState(0);
+  const [reviewText, setReviewText] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
+
   const tabs = ['Menunggu Konfirmasi', 'Belum Bayar', 'Diproses', 'Dibatalkan', 'Selesai'];
 
   const statusMap: Record<string, string> = {
@@ -101,8 +110,8 @@ export default function ActivityPage() {
         .select(`
           id, status, final_price, notes, created_at, buyer_id, seller_id, product_id,
           product:product_id (title, images, price),
-          buyer:buyer_id (id, full_name),
-          seller:seller_id (id, full_name)
+          buyer:buyer_id (id, full_name, avatar_url),
+          seller:seller_id (id, full_name, avatar_url)
         `)
         .or(`buyer_id.eq.${uid},seller_id.eq.${uid}`)
         .order('created_at', { ascending: false });
@@ -116,9 +125,9 @@ export default function ActivityPage() {
           type: isSeller ? 'Jual' : 'Beli',
           db_status: order.status,
           status: statusMap[order.status] || order.status,
-          price: order.final_price,
+          final_price: order.final_price,
           original_price: order.product?.price || 0,
-          note: order.notes,
+          notes: order.notes,
           created_at: order.created_at,
           product_id: order.product_id,
           product: order.product,
@@ -133,6 +142,58 @@ export default function ActivityPage() {
       setLoading(false);
     }
   }
+
+  const handleSubmitReview = async () => {
+    if (!selectedActivity || rating === 0) return;
+    
+    try {
+      setSubmittingReview(true);
+      
+      const { error: insertError } = await supabase
+        .from('reviews')
+        .insert([{
+          order_id: selectedActivity.id,
+          product_id: selectedActivity.product_id,
+          reviewer_id: userId,
+          reviewee_id: selectedActivity.counterparty.id,
+          role: selectedActivity.type === 'Beli' ? 'buyer' : 'seller',
+          rating: rating,
+          comment: reviewText
+        }]);
+
+      if (insertError) throw insertError;
+
+      // Update aggregate stats for the counterparty
+      const { data: allReviews } = await supabase
+        .from('reviews')
+        .select('rating')
+        .eq('reviewee_id', selectedActivity.counterparty.id);
+      
+      if (allReviews && allReviews.length > 0) {
+        const count = allReviews.length;
+        const sum = allReviews.reduce((acc, curr) => acc + curr.rating, 0);
+        const avg = sum / count;
+
+        await supabase
+          .from('users')
+          .update({ 
+            rating_avg: parseFloat(avg.toFixed(2)), 
+            rating_count: count 
+          })
+          .eq('id', selectedActivity.counterparty.id);
+      }
+
+      alert('Ulasan berhasil dikirim!');
+      setIsReviewModalOpen(false);
+      setRating(0);
+      setReviewText('');
+    } catch (err: any) {
+      console.error('Error submitting review:', err);
+      alert('Gagal mengirim ulasan.');
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
 
   useEffect(() => {
     async function init() {
@@ -199,7 +260,7 @@ export default function ActivityPage() {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price);
   };
 
-  if (loading) return <ActivitySkeleton />;
+  if (loading && activities.length === 0) return <ActivitySkeleton />;
 
   return (
     <div className={styles.container}>
@@ -239,10 +300,10 @@ export default function ActivityPage() {
       <div className={styles.activityList}>
         {filteredActivities.length > 0 ? (
           filteredActivities.map((item) => {
-            const isNegotiating = item.price !== item.original_price;
+            const isNegotiating = item.final_price !== item.original_price;
             const isSeller = item.type === 'Jual';
-            const sellerTurn = item.note === 'Tawar balik dari Pembeli' || !item.note || item.note === '';
-            const buyerTurn = item.note === 'Tawar balik dari Penjual';
+            const sellerTurn = item.notes === 'Tawar balik dari Pembeli' || !item.notes || item.notes === '';
+            const buyerTurn = item.notes === 'Tawar balik dari Penjual';
             
             return (
               <div key={item.id} className={styles.transactionCard}>
@@ -254,7 +315,7 @@ export default function ActivityPage() {
                   className={styles.cardBody} 
                   onClick={() => {
                     if (item.db_status === 'confirmed' && item.type === 'Beli') {
-                      router.push(`/payment/qris?amount=${item.price.toLocaleString('id-ID')}&orderIds=${item.id}`);
+                      router.push(`/payment/qris?amount=${item.final_price.toLocaleString('id-ID')}&orderIds=${item.id}`);
                     }
                   }}
                   style={{ cursor: (item.db_status === 'confirmed' && item.type === 'Beli') ? 'pointer' : 'default' }}
@@ -264,10 +325,10 @@ export default function ActivityPage() {
                     <h3 className={styles.productTitle}>{item.product?.title}</h3>
                     <p className={styles.actionType}>{isSeller ? 'Pesanan Masuk' : 'Pesanan Saya'}</p>
                     <p className={styles.priceInfo}>
-                      {formatPrice(item.price)} 
+                      {formatPrice(item.final_price)} 
                       {isNegotiating && <span style={{fontSize: '12px', color: '#767676', fontWeight: '400', textDecoration: 'line-through', marginLeft: '8px'}}>(Asli: {formatPrice(item.original_price)})</span>}
                     </p>
-                    {item.note && <p className={styles.priceNote}>"{item.note}"</p>}
+                    {item.notes && <p className={styles.priceNote}>"{item.notes}"</p>}
                   </div>
                 </div>
 
@@ -281,7 +342,7 @@ export default function ActivityPage() {
                           <div className={styles.actionGrid3}>
                             <button className={`${styles.btnAction} ${styles.btnTerima} ${styles.btnTerimaGrid}`} onClick={() => handleAction(item, 'confirmed', 'Diterima')}>Terima</button>
                             <button className={`${styles.btnAction} ${styles.btnTawar} ${styles.btnTawarGrid}`} onClick={() => {
-                              const newPrice = prompt('Masukkan harga tawar balik Anda:', item.price.toString());
+                              const newPrice = prompt('Masukkan harga tawar balik Anda:', item.final_price.toString());
                               if (newPrice) handleAction(item, 'waiting_confirmation', 'Tawar Balik', parseInt(newPrice));
                             }}>Tawar Balik</button>
                             <button className={`${styles.btnAction} ${styles.btnTolakGrid}`} onClick={() => handleAction(item, 'cancelled', 'Ditolak')}>Tolak</button>
@@ -299,7 +360,7 @@ export default function ActivityPage() {
                           <div className={styles.actionGrid3}>
                             <button className={`${styles.btnAction} ${styles.btnTerima} ${styles.btnTerimaGrid}`} onClick={() => handleAction(item, 'confirmed', 'Diterima')}>Terima</button>
                             <button className={`${styles.btnAction} ${styles.btnTawar} ${styles.btnTawarGrid}`} onClick={() => {
-                              const newPrice = prompt('Masukkan harga tawar balik baru:', item.price.toString());
+                              const newPrice = prompt('Masukkan harga tawar balik baru:', item.final_price.toString());
                               if (newPrice) handleAction(item, 'waiting_confirmation', 'Tawar Balik', parseInt(newPrice));
                             }}>Tawar Balik</button>
                             <button className={`${styles.btnAction} ${styles.btnTolakGrid}`} onClick={() => handleAction(item, 'cancelled', 'Ditolak')}>Tolak</button>
@@ -322,7 +383,7 @@ export default function ActivityPage() {
                     ) : (
                       <button 
                         className={`${styles.btnAction} ${styles.btnTerima}`} 
-                        onClick={() => router.push(`/payment/qris?amount=${item.price.toLocaleString('id-ID')}&orderIds=${item.id}`)}
+                        onClick={() => router.push(`/payment/qris?amount=${item.final_price.toLocaleString('id-ID')}&orderIds=${item.id}`)}
                       >
                         Bayar Sekarang
                       </button>
@@ -340,17 +401,98 @@ export default function ActivityPage() {
                       )}
                    </div>
                 )}
+
+                {/* Selesai items */}
+                {item.db_status === 'completed' && (
+                  <div className={styles.cardActions}>
+                    <button 
+                      className={`${styles.btnAction} ${styles.btnTerima}`} 
+                      onClick={() => {
+                        setSelectedActivity(item);
+                        setIsReviewModalOpen(true);
+                      }}
+                    >
+                      Berikan Ulasan
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })
         ) : (
           <div className={styles.emptyState}>
             <div className={styles.emptyIconBox}><Inbox size={64} strokeWidth={1} color="#A5A5A5" /></div>
-            <h3 className={styles.emptyTitle}>No activity yet</h3>
-            <p className={styles.emptySub}>Transaction activity for status <strong>{activeTab}</strong> will appear here.</p>
+            <h3 className={styles.emptyTitle}>Belum ada aktivitas</h3>
+            <p className={styles.emptySub}>Aktivitas transaksi untuk status <strong>{activeTab}</strong> akan muncul di sini.</p>
           </div>
         )}
       </div>
+
+      {/* Review Modal */}
+      {isReviewModalOpen && selectedActivity && (
+        <div className={styles.modalOverlay} onClick={() => setIsReviewModalOpen(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.closeBtn} onClick={() => setIsReviewModalOpen(false)}>
+              <X size={24} />
+            </button>
+            
+            <div className={styles.modalBody}>
+              <h2 className={styles.reviewPromptTitle}>Beri Nilai</h2>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                <img 
+                  src={selectedActivity.counterparty?.avatar_url || 'https://placehold.co/100x100?text=User'} 
+                  alt={selectedActivity.counterparty?.full_name} 
+                  className={styles.reviewerAvatar} 
+                />
+                <span className={styles.reviewerName}>
+                  {selectedActivity.counterparty?.full_name} ({selectedActivity.type === 'Beli' ? 'Penjual' : 'Pembeli'})
+                </span>
+              </div>
+
+              <div className={styles.starRatingContainer}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button 
+                    key={star}
+                    className={styles.starButton}
+                    onMouseEnter={() => setHoveredRating(star)}
+                    onMouseLeave={() => setHoveredRating(0)}
+                    onClick={() => setRating(star)}
+                  >
+                    <Star 
+                      size={36} 
+                      fill={(hoveredRating || rating) >= star ? '#FFC118' : 'none'} 
+                      color={(hoveredRating || rating) >= star ? '#FFC118' : '#A5A5A5'} 
+                      strokeWidth={1.5}
+                    />
+                  </button>
+                ))}
+              </div>
+              <h3 style={{ fontSize: '22px', fontWeight: '700', color: '#292929', margin: '8px 0' }}>Bagaimana transaksimu?</h3>
+
+              <div className={styles.inputGroup}>
+                <label className={styles.inputLabel}>Ulasan</label>
+                <textarea 
+                  className={styles.textAreaField}
+                  placeholder="Masukkan ulasan"
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className={styles.modalFooter}>
+              <button 
+                className={styles.submitBtn} 
+                disabled={rating === 0 || submittingReview}
+                onClick={handleSubmitReview}
+              >
+                {submittingReview ? 'Mengirim...' : 'Kirim Penilaian dan Ulasan'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
