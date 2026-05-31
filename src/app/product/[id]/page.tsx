@@ -542,7 +542,7 @@ export default function ProductDetail() {
                   </div>
                 ))}
               </div>
-              <button className={styles.readAllBtn}>Baca Semua</button>
+              <button className={styles.readAllBtn} onClick={() => router.push(`/reviews/${product.seller_id}`)}>Baca Semua</button>
             </section>
           )}
 

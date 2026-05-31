@@ -8,7 +8,8 @@ import {
   Star, 
   Inbox, 
   Loader2,
-  Flag
+  Flag,
+  X
 } from 'lucide-react';
 import styles from './reviews.module.css';
 import { supabase } from '@/lib/supabase';
@@ -88,6 +89,35 @@ export default function UserReviewsPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'Semua' | 'Penjual' | 'Pembeli'>('Semua');
+
+  // Report Modal States
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [selectedReportReason, setSelectedReportReason] = useState("");
+  const [otherReportReason, setOtherReportReason] = useState("");
+  const [reportingReviewId, setReportingReviewId] = useState<string | null>(null);
+
+  const reportOptionsList = [
+    "Ulasan mengandung unsur SARA, diskriminasi, pornografi, ancaman, dan pelanggaran nilai/normal sosial",
+    "Ulasan tidak sesuai dengan kenyataan",
+    "Ulasan menyesatkan karena promosi terselubung",
+    "Ulasan menyebarkan informasi pribadi orang lain",
+    "Ulasan duplikat/diulang-ulang oleh akun yang sama",
+    "Alasan lainnya"
+  ];
+
+  const handleOpenReportModal = (revId: string) => {
+    setReportingReviewId(revId);
+    setIsReportModalOpen(true);
+  };
+
+  const handleReportSubmit = () => {
+    if (!selectedReportReason) return;
+    alert('Laporan ulasan berhasil dikirim. Terima kasih atas masukan Anda.');
+    setIsReportModalOpen(false);
+    setSelectedReportReason("");
+    setOtherReportReason("");
+    setReportingReviewId(null);
+  };
 
   useEffect(() => {
     if (!userId) return;
@@ -216,7 +246,7 @@ export default function UserReviewsPage() {
                     </div>
                   </div>
                   <div className={styles.reviewMeta}>
-                    <span className={styles.reportLink} onClick={() => alert('Fitur lapor ulasan akan segera hadir.')}>Laporkan</span>
+                    <span className={styles.reportLink} onClick={() => handleOpenReportModal(review.id)}>Laporkan</span>
                     <span className={styles.reviewDate}>{formatDate(review.created_at)}</span>
                   </div>
                 </div>
@@ -250,6 +280,56 @@ export default function UserReviewsPage() {
           )}
         </div>
       </main>
+
+      {/* Report Review Modal */}
+      {isReportModalOpen && (
+        <div className={styles.modalOverlay} onClick={() => setIsReportModalOpen(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.closeBtn} onClick={() => setIsReportModalOpen(false)}>
+              <X size={24} />
+            </button>
+            
+            <div className={styles.modalBody}>
+              <h2 className={styles.reviewPromptTitle}>Laporkan Ulasan</h2>
+              
+              <div className={styles.reportOptions}>
+                {reportOptionsList.map((reason, idx) => (
+                  <div key={idx} className={styles.radioItem} onClick={() => setSelectedReportReason(reason)}>
+                    <input 
+                      type="radio" 
+                      name="reportReason" 
+                      checked={selectedReportReason === reason}
+                      onChange={() => setSelectedReportReason(reason)}
+                    />
+                    <span className={styles.radioLabel}>{reason}</span>
+                  </div>
+                ))}
+              </div>
+
+              {selectedReportReason === 'Alasan lainnya' && (
+                <div className={styles.inputGroup}>
+                  <textarea 
+                    className={styles.textAreaField}
+                    placeholder="Tulis alasan pelaporan di sini"
+                    value={otherReportReason}
+                    onChange={(e) => setOtherReportReason(e.target.value)}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className={styles.modalFooter}>
+              <button 
+                className={styles.submitBtn} 
+                disabled={!selectedReportReason || (selectedReportReason === 'Alasan lainnya' && !otherReportReason.trim())}
+                onClick={handleReportSubmit}
+              >
+                Kirim Laporan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
