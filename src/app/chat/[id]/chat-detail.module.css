@@ -614,3 +614,44 @@
   transform: scale(1.05);
   background-color: #007575;
 }
+
+/* Attachment Dropdown Menu (Elegant Style) */
+.attachmentMenuWrapper {
+  position: relative;
+}
+
+.moreMenuDropdown {
+  position: absolute;
+  bottom: 60px; /* Above the footer */
+  left: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  border: 1px solid #E6E6E6;
+  z-index: 500;
+  min-width: 200px;
+  padding: 8px 0;
+  animation: slideUp 0.2s ease-out;
+}
+
+.moreMenuItem {
+  padding: 12px 20px;
+  font-size: 14px;
+  color: #292929;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.moreMenuItem:hover {
+  background-color: #f9fafb;
+  color: #008585;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

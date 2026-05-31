@@ -60,6 +60,25 @@ export default function ChatPage() {
 
   const tabs = ['Semua', 'Ketemuan', 'Belum dibaca'];
 
+  const formatLastMsg = (content: string, type: string) => {
+    if (type === 'image') return '[Gambar]';
+    if (type === 'location') return '[Lokasi]';
+    if (type === 'offer') return '[Tawaran Harga]';
+    return content;
+  };
+
+  const formatRelativeTime = (dateStr: string) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diff < 60) return 'Baru saja';
+    if (diff < 3600) return `${Math.floor(diff / 60)} menit lalu`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} jam lalu`;
+    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+  };
+
   useEffect(() => {
     async function fetchConversations() {
       try {
@@ -70,14 +89,14 @@ export default function ChatPage() {
           return;
         }
 
-        // Fetch conversations where current user is participant1 or participant2
+        // Fetch conversations where current user is participant
         const { data, error } = await supabase
           .from('conversations')
           .select(`
             id, last_message_at,
             buyer:users!conversations_buyer_id_fkey (id, full_name, avatar_url),
             seller:users!conversations_seller_id_fkey (id, full_name, avatar_url),
-            messages (content)
+            messages (content, message_type, created_at)
           `)
           .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
           .order('last_message_at', { ascending: false });
@@ -88,12 +107,16 @@ export default function ChatPage() {
         const formatted = data?.map((con: any) => {
           const isBuyerMe = con.buyer?.id === user.id;
           const opponent = isBuyerMe ? con.seller : con.buyer;
-          const messages = con.messages || [];
-          const lastMsg = messages.length > 0 ? messages[messages.length - 1].content : '';
+          
+          // Sort messages to get the actual last one
+          const sortedMsgs = (con.messages || []).sort((a: any, b: any) => 
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
+          const lastMsgObj = sortedMsgs[0];
           
           return {
             id: con.id,
-            last_message: lastMsg,
+            last_message: lastMsgObj ? formatLastMsg(lastMsgObj.content, lastMsgObj.message_type) : 'Belum ada pesan',
             last_message_at: con.last_message_at,
             opponent: opponent || { full_name: 'User', avatar_url: '' }
           };
@@ -110,7 +133,6 @@ export default function ChatPage() {
   }, []);
 
   const filteredChats = useMemo(() => {
-    // Basic filtering for demo - can be expanded with more DB columns later
     if (activeTab === 'Semua') return conversations;
     return conversations; 
   }, [activeTab, conversations]);
@@ -120,7 +142,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} style={{ fontFamily: 'var(--font-plus-jakarta-sans)' }}>
       <main className={styles.main}>
         <div className={styles.pageHeader}>
           <button 
@@ -149,13 +171,13 @@ export default function ChatPage() {
           {filteredChats.length > 0 ? (
             filteredChats.map((chat) => (
               <Link href={`/chat/${chat.id}`} key={chat.id} className={styles.chatItem} style={{ textDecoration: 'none' }}>
-                <img src={chat.opponent.avatar_url || 'https://placehold.co/58x58'} alt="" className={styles.avatar} />
+                <img src={chat.opponent.avatar_url || 'https://placehold.co/58x58?text=User'} alt="" className={styles.avatar} />
                 <div className={styles.chatContent}>
                   <div className={styles.chatHeader}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <span className={styles.userName}>{chat.opponent.full_name}</span>
                     </div>
-                    <span className={styles.timestamp}>1 hari lalu</span>
+                    <span className={styles.timestamp}>{formatRelativeTime(chat.last_message_at)}</span>
                   </div>
                   <p className={styles.lastMessage}>{chat.last_message}</p>
                 </div>
