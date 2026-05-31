@@ -15,7 +15,8 @@ import {
   Loader2,
   Inbox,
   ArrowLeft,
-  MessageSquare
+  MessageSquare,
+  X
 } from 'lucide-react';
 import styles from './profile.module.css';
 import { supabase } from '@/lib/supabase';
@@ -51,6 +52,13 @@ export default function PublicProfilePage() {
   const [inventory, setInventory] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Review Modal States
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [hoveredRating, setHoveredRating] = useState(0);
+  const [reviewText, setReviewText] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
+
   // Filter States
   const [localQuery, setLocalQuery] = useState('');
   const [availabilityFilter, setAvailabilityFilter] = useState<'Semua' | 'Tersedia' | 'Tidak Tersedia'>('Semua');
@@ -58,49 +66,48 @@ export default function PublicProfilePage() {
   const [allCategories, setAllCategories] = useState<string[]>([]);
   const [openDropdown, setOpenDropdown] = useState<'availability' | 'category' | null>(null);
 
-  useEffect(() => {
+  const fetchProfileData = async () => {
     if (!sellerId) return;
+    try {
+      setLoading(true);
+      
+      // 1. Fetch Profile
+      const { data: profileData, error: profileError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', sellerId)
+        .single();
 
-    async function fetchProfileData() {
-      try {
-        setLoading(true);
-        
-        // 1. Fetch Profile
-        const { data: profileData, error: profileError } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', sellerId)
-          .single();
+      if (profileError) throw profileError;
+      setProfile(profileData as any);
 
-        if (profileError) throw profileError;
-        setProfile(profileData as any);
+      // 2. Fetch Products with Category
+      const { data: productsData, error: productsError } = await supabase
+        .from('products')
+        .select(`
+          id, title, price, images, status,
+          categories:category_id (name)
+        `)
+        .eq('seller_id', sellerId);
 
-        // 2. Fetch Products with Category
-        const { data: productsData, error: productsError } = await supabase
-          .from('products')
-          .select(`
-            id, title, price, images, status,
-            categories:category_id (name)
-          `)
-          .eq('seller_id', sellerId);
+      if (productsError) throw productsError;
+      setInventory(productsData as any || []);
 
-        if (productsError) throw productsError;
-        setInventory(productsData as any || []);
+      // 3. Fetch All Categories for filter
+      const { data: catData } = await supabase
+        .from('categories')
+        .select('name')
+        .order('name');
+      if (catData) setAllCategories(catData.map(c => c.name));
 
-        // 3. Fetch All Categories for filter
-        const { data: catData } = await supabase
-          .from('categories')
-          .select('name')
-          .order('name');
-        if (catData) setAllCategories(catData.map(c => c.name));
-
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
-      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
     }
+  };
 
+  useEffect(() => {
     fetchProfileData();
   }, [sellerId]);
 
@@ -118,6 +125,95 @@ export default function PublicProfilePage() {
     } else {
       await navigator.clipboard.writeText(url);
       alert('Tautan profil disalin ke clipboard!');
+    }
+  };
+
+  const handleSubmitReview = async () => {
+    if (rating === 0) return;
+    
+    try {
+      setSubmittingReview(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        alert('Anda harus login untuk memberikan ulasan.');
+        router.push('/auth');
+        return;
+      }
+
+      if (user.id === sellerId) {
+        alert('Anda tidak dapat mengulas diri sendiri.');
+        return;
+      }
+
+      const { data: validOrder } = await supabase
+        .from('orders')
+        .select('id, product_id')
+        .eq('buyer_id', user.id)
+        .eq('seller_id', sellerId)
+        .limit(1)
+        .maybeSingle();
+        
+      if (!validOrder) {
+         alert('Anda hanya dapat mengulas penjual jika pernah bertransaksi (melakukan pemesanan) dengan mereka.');
+         return;
+      }
+
+      const { error: insertError } = await supabase
+        .from('reviews')
+        .insert([{
+          order_id: validOrder.id,
+          product_id: validOrder.product_id,
+          reviewer_id: user.id,
+          reviewee_id: sellerId,
+          role: 'buyer',
+          rating: rating,
+          comment: reviewText
+        }]);
+
+      if (insertError) throw insertError;
+
+      // MANUALLY UPDATE SELLER STATS
+      // Since the trigger might be missing, we calculate and update the aggregate in the users table
+      const { data: allReviews } = await supabase
+        .from('reviews')
+        .select('rating')
+        .eq('reviewee_id', sellerId);
+      
+      if (allReviews && allReviews.length > 0) {
+        const count = allReviews.length;
+        const sum = allReviews.reduce((acc, curr) => acc + curr.rating, 0);
+        const avg = sum / count;
+
+        await supabase
+          .from('users')
+          .update({ 
+            rating_avg: parseFloat(avg.toFixed(2)), 
+            rating_count: count 
+          })
+          .eq('id', sellerId);
+      }
+
+      alert('Ulasan berhasil dikirim! Terima kasih atas penilaian Anda.');
+      
+      // Fixed: Potential race condition causing 'removeChild' error
+      // We reset state and then close the modal
+      setRating(0);
+      setReviewText('');
+      
+      // Auto-update local profile view
+      await fetchProfileData();
+      
+      // Small delay before closing modal helps avoid React/DOM sync issues
+      setTimeout(() => {
+        setIsReviewModalOpen(false);
+      }, 100);
+      
+    } catch (err: any) {
+      console.error('Error submitting review:', err);
+      alert('Gagal mengirim ulasan. Pastikan Anda memiliki transaksi yang valid.');
+    } finally {
+      setSubmittingReview(false);
     }
   };
 
@@ -216,7 +312,7 @@ export default function PublicProfilePage() {
             </div>
 
             <div className={styles.actionRow}>
-              <button className={styles.primaryActionBtn} onClick={() => alert('Fitur Berikan Ulasan akan diarahkan ke halaman review.')}>
+              <button className={styles.primaryActionBtn} onClick={() => setIsReviewModalOpen(true)}>
                 <MessageSquare size={18} />
                 Berikan Ulasan
               </button>
@@ -327,6 +423,70 @@ export default function PublicProfilePage() {
           </div>
         </section>
       </main>
+
+      {/* Review Modal */}
+      {isReviewModalOpen && (
+        <div className={styles.modalOverlay} onClick={() => setIsReviewModalOpen(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.closeBtn} onClick={() => setIsReviewModalOpen(false)}>
+              <X size={24} />
+            </button>
+            
+            <div className={styles.modalBody}>
+              <h2 className={styles.reviewPromptTitle}>Nilai Profil</h2>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                <img 
+                  src={profile.avatar_url || 'https://placehold.co/100x100?text=User'} 
+                  alt={profile.full_name} 
+                  className={styles.reviewerAvatar} 
+                />
+                <span className={styles.reviewerName}>{profile.full_name}</span>
+              </div>
+
+              <div className={styles.starRatingContainer}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button 
+                    key={star}
+                    className={styles.starButton}
+                    onMouseEnter={() => setHoveredRating(star)}
+                    onMouseLeave={() => setHoveredRating(0)}
+                    onClick={() => setRating(star)}
+                  >
+                    <Star 
+                      size={36} 
+                      fill={(hoveredRating || rating) >= star ? '#FFC118' : 'none'} 
+                      color={(hoveredRating || rating) >= star ? '#FFC118' : '#A5A5A5'} 
+                      strokeWidth={1.5}
+                    />
+                  </button>
+                ))}
+              </div>
+              <h3 style={{ fontSize: '24px', fontWeight: '700', color: '#292929', margin: '8px 0' }}>Bagaimana transaksimu?</h3>
+
+              <div className={styles.inputGroup}>
+                <label className={styles.inputLabel}>Ulasan</label>
+                <textarea 
+                  className={styles.textAreaField}
+                  placeholder="Masukkan ulasan"
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className={styles.modalFooter}>
+              <button 
+                className={styles.submitBtn} 
+                disabled={rating === 0 || submittingReview}
+                onClick={handleSubmitReview}
+              >
+                {submittingReview ? 'Mengirim...' : 'Kirim Penilaian dan Ulasan'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
