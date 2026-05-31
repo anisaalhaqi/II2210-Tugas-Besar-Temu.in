@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   MapPin, 
   Star, 
@@ -13,7 +13,9 @@ import {
   TrendingUp,
   MoreHorizontal,
   Loader2,
-  Inbox
+  Inbox,
+  X,
+  BadgeCheck
 } from 'lucide-react';
 import styles from './profile.module.css';
 import { supabase } from '@/lib/supabase';
@@ -27,6 +29,9 @@ interface Profile {
   rating_count: number;
   created_at: string;
   bio: string;
+  phone?: string;
+  email?: string;
+  is_verified?: boolean;
 }
 
 interface Product {
@@ -45,6 +50,18 @@ export default function ProfilePage() {
   const [inventory, setInventory] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   
+  // Edit Profile States
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    full_name: '',
+    phone: '',
+    email: '',
+    campus_location: '',
+    bio: ''
+  });
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // Filter States
   const [localQuery, setLocalQuery] = useState('');
   const [availabilityFilter, setAvailabilityFilter] = useState<'Semua' | 'Tersedia' | 'Tidak Tersedia'>('Semua');
@@ -71,7 +88,18 @@ export default function ProfilePage() {
           .single();
 
         if (profileError) throw profileError;
-        setProfile(profileData as any);
+        
+        const loadedProfile = profileData as any;
+        setProfile(loadedProfile);
+        
+        // Pre-fill form
+        setEditForm({
+          full_name: loadedProfile.full_name || '',
+          phone: loadedProfile.phone || '', // Might not exist in DB yet, but preparing it
+          email: user.email || '',
+          campus_location: loadedProfile.campus_location || '',
+          bio: loadedProfile.bio || ''
+        });
 
         // 2. Fetch Products with Category
         const { data: productsData, error: productsError } = await supabase
@@ -101,6 +129,70 @@ export default function ProfilePage() {
 
     fetchProfileData();
   }, []);
+
+  const handleShareProfile = async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Profil ${profile?.full_name} di Temu.in`,
+          url: url
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    } else {
+      await navigator.clipboard.writeText(url);
+      alert('Tautan profil disalin ke clipboard!');
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      if (!profile) return;
+      const { error } = await supabase
+        .from('users')
+        .update({
+          full_name: editForm.full_name,
+          campus_location: editForm.campus_location,
+          bio: editForm.bio,
+          // phone: editForm.phone // Assuming phone column exists or will exist
+        })
+        .eq('id', profile.id);
+
+      if (error) throw error;
+
+      setProfile({
+        ...profile,
+        full_name: editForm.full_name,
+        campus_location: editForm.campus_location,
+        bio: editForm.bio,
+        phone: editForm.phone,
+      });
+
+      setIsEditModalOpen(false);
+      alert('Profil berhasil diperbarui!');
+    } catch (err) {
+      console.error(err);
+      alert('Gagal memperbarui profil.');
+    }
+  };
+
+  const handleKtmUploadClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleKtmFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      alert('KTM berhasil diunggah! Menunggu verifikasi dari admin (Simulasi).');
+    }
+  };
+
+  const handleSsoClick = () => {
+    alert('Fitur SSO ITB sedang dikembangkan.');
+  };
 
   const filteredInventory = useMemo(() => {
     return inventory.filter(item => {
@@ -192,11 +284,11 @@ export default function ProfilePage() {
             </div>
 
             <div className={styles.actionRow}>
-              <button className={styles.editBtn}>
+              <button className={styles.editBtn} onClick={() => setIsEditModalOpen(true)}>
                 <Edit3 size={18} />
                 Edit profil
               </button>
-              <button className={styles.iconBtn} aria-label="Share">
+              <button className={styles.iconBtn} aria-label="Share" onClick={handleShareProfile}>
                 <Share2 size={18} />
               </button>
               <button className={styles.iconBtn} aria-label="More">
@@ -312,6 +404,169 @@ export default function ProfilePage() {
           </div>
         </section>
       </main>
+
+      {/* Edit Profile Modal */}
+      {isEditModalOpen && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <div className={styles.modalHeader}>
+              <button className={styles.closeBtn} onClick={() => setIsEditModalOpen(false)}>
+                <X size={24} color="#292929" />
+              </button>
+              <h2 className={styles.modalTitle}>Edit Profil</h2>
+            </div>
+            
+            <div className={styles.modalBody}>
+              <div className={styles.avatarEditSection}>
+                <img 
+                  src={profile.avatar_url || 'https://placehold.co/106x106'} 
+                  alt="Profile" 
+                  className={styles.avatarEdit} 
+                  onClick={() => document.getElementById('avatarUpload')?.click()}
+                  style={{ cursor: 'pointer' }}
+                />
+                <span 
+                  className={styles.changePhotoText}
+                  onClick={() => document.getElementById('avatarUpload')?.click()}
+                >
+                  Ubah foto profil
+                </span>
+                <input 
+                  type="file" 
+                  id="avatarUpload" 
+                  accept="image/*" 
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = async () => {
+                        const base64String = reader.result as string;
+                        
+                        // Update local state immediately for preview
+                        setProfile(prev => prev ? { ...prev, avatar_url: base64String } : null);
+                        
+                        // We also need to update the database
+                        try {
+                          const { data: { user } } = await supabase.auth.getUser();
+                          if (user) {
+                             const { error } = await supabase
+                              .from('users')
+                              .update({ avatar_url: base64String })
+                              .eq('id', user.id);
+                             if (error) throw error;
+                          }
+                        } catch (err) {
+                          console.error("Failed to upload avatar", err);
+                          alert("Gagal menyimpan foto profil baru.");
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+              </div>
+
+              <div className={styles.inputGroup}>
+                <label className={styles.inputLabel}>Nama</label>
+                <input 
+                  type="text" 
+                  className={styles.inputField} 
+                  value={editForm.full_name} 
+                  onChange={(e) => setEditForm({...editForm, full_name: e.target.value})}
+                  placeholder="Masukkan nama"
+                />
+              </div>
+
+              <div className={styles.inputGroup}>
+                <label className={styles.inputLabel}>Nomor Telepon</label>
+                <input 
+                  type="tel" 
+                  className={styles.inputField} 
+                  value={editForm.phone} 
+                  onChange={(e) => setEditForm({...editForm, phone: e.target.value})}
+                  placeholder="Masukkan nomor telepon"
+                />
+              </div>
+
+              <div className={styles.inputGroup}>
+                <label className={styles.inputLabel}>Email</label>
+                <input 
+                  type="email" 
+                  className={styles.inputField} 
+                  value={editForm.email} 
+                  disabled // typically email is linked to auth and hard to change directly here
+                  style={{ backgroundColor: '#F0F0F0', cursor: 'not-allowed' }}
+                />
+              </div>
+
+              <div className={styles.inputGroup}>
+                <label className={styles.inputLabel}>Multikampus</label>
+                <div className={styles.radioGroupRow}>
+                  {['ITB Ganesha', 'ITB Jatinangor', 'ITB Cirebon'].map((campus) => (
+                    <label key={campus} className={styles.radioLabelOption}>
+                      <input 
+                        type="radio" 
+                        name="campus_location" 
+                        value={campus}
+                        checked={editForm.campus_location === campus}
+                        onChange={(e) => setEditForm({...editForm, campus_location: e.target.value})}
+                        className={styles.radioInput}
+                      />
+                      <span>{campus}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className={styles.inputGroup}>
+                <label className={styles.inputLabel}>Bio</label>
+                <textarea 
+                  className={styles.textAreaField} 
+                  value={editForm.bio} 
+                  onChange={(e) => setEditForm({...editForm, bio: e.target.value})}
+                  placeholder="Masukkan biomu"
+                />
+              </div>
+
+              {/* Verification Section */}
+              <div className={styles.verificationSection}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <span className={styles.verificationTitle}>Verifikasi Mahasiswa</span>
+                    <span className={styles.verificationDesc}>Dapatkan badge pengguna terpercaya</span>
+                  </div>
+                  {profile.is_verified ? (
+                    <span className={styles.trustBadge}>
+                      <BadgeCheck size={14} /> Terverifikasi
+                    </span>
+                  ) : (
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        ref={fileInputRef} 
+                        style={{ display: 'none' }} 
+                        onChange={handleKtmFileChange}
+                      />
+                      <button className={styles.uploadKtmBtn} onClick={handleKtmUploadClick}>
+                        Unggah KTM
+                      </button>
+                      <button className={styles.ssoBtn} onClick={handleSsoClick}>
+                        SSO ITB
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.modalFooter}>
+              <button className={styles.saveBtn} onClick={handleSaveProfile}>Simpan</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
