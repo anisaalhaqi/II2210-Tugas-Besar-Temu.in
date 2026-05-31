@@ -285,13 +285,14 @@ export default function UserReviewsPage() {
       {isReportModalOpen && (
         <div className={styles.modalOverlay} onClick={() => setIsReportModalOpen(false)}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.closeBtn} onClick={() => setIsReportModalOpen(false)}>
-              <X size={24} />
-            </button>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>Laporkan Ulasan</h2>
+              <button className={styles.closeBtn} onClick={() => setIsReportModalOpen(false)}>
+                <X size={24} />
+              </button>
+            </div>
             
             <div className={styles.modalBody}>
-              <h2 className={styles.reviewPromptTitle}>Laporkan Ulasan</h2>
-              
               <div className={styles.reportOptions}>
                 {reportOptionsList.map((reason, idx) => (
                   <div key={idx} className={styles.radioItem} onClick={() => setSelectedReportReason(reason)}>
