@@ -21,7 +21,8 @@ import {
   Flag,
   ShoppingCart,
   MessageCircle,
-  Plus
+  Plus,
+  X
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import Skeleton from '@/components/Skeleton/Skeleton';
@@ -32,6 +33,15 @@ const campusCoords: Record<string, [number, number]> = {
   'ITB Jatinangor': [-6.9281, 107.7705],
   'ITB Cirebon': [-6.6455, 108.4071],
 };
+
+const reportOptionsList = [
+  "Barang mengandung unsur SARA, diskriminasi, pornografi, ancaman, dan pelanggaran nilai/norma sosial",
+  "Barang tidak sesuai dengan deskripsi/kenyataan",
+  "Barang menyesatkan karena promosi terselubung",
+  "Barang menyebarkan informasi pribadi orang lain",
+  "Barang duplikat/diulang-ulang oleh akun yang sama",
+  "Alasan lainnya"
+];
 
 interface Seller {
   id: string;
@@ -132,6 +142,12 @@ export default function ProductDetail() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+
+  // Share & Report States
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [selectedReportReason, setSelectedReportReason] = useState("");
+  const [otherReportReason, setOtherReportReason] = useState("");
+
 
   useEffect(() => {
     if (!id) return;
@@ -264,6 +280,38 @@ export default function ProductDetail() {
     }).format(price);
   };
 
+  const handleShare = async () => {
+    const shareData = {
+      title: product?.title || 'Temu.in Product',
+      text: `Lihat barang ini di Temu.in: ${product?.title}`,
+      url: window.location.href
+    };
+
+    if (navigator.share && navigator.canShare(shareData)) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.error('Error sharing:', err);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        alert('Tautan barang telah disalin ke clipboard!');
+      } catch (err) {
+        alert('Gagal menyalin tautan.');
+      }
+    }
+  };
+
+  const handleReportSubmit = () => {
+    if (!selectedReportReason) return;
+    // In a real scenario, this would post to a 'reports' table
+    alert('Laporan berhasil dikirim. Terima kasih atas masukan Anda.');
+    setIsReportModalOpen(false);
+    setSelectedReportReason("");
+    setOtherReportReason("");
+  };
+
   if (loading) return <ProductSkeleton />;
   if (!product) return <div className={styles.container} style={{ padding: '100px', textAlign: 'center' }}>Produk tidak ditemukan.</div>;
 
@@ -281,9 +329,9 @@ export default function ProductDetail() {
             <Link href="/cart">
               <button className={styles.headerIconBtn} aria-label="Cart"><ShoppingCart size={22} /></button>
             </Link>
-            <button className={styles.headerIconBtn} aria-label="Share"><Share2 size={22} /></button>
+            <button className={styles.headerIconBtn} aria-label="Share" onClick={handleShare}><Share2 size={22} /></button>
             <div className={styles.vDivider}></div>
-            <button className={`${styles.headerIconBtn} ${styles.reportBtn}`} aria-label="Report"><Flag size={20} /></button>
+            <button className={`${styles.headerIconBtn} ${styles.reportBtn}`} aria-label="Report" onClick={() => setIsReportModalOpen(true)}><Flag size={20} /></button>
           </div>
         </div>
 
@@ -496,6 +544,53 @@ export default function ProductDetail() {
           )}
         </div>
       </main>
+
+      {isReportModalOpen && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>Laporkan Produk</h2>
+              <button className={styles.closeBtn} onClick={() => setIsReportModalOpen(false)}>
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className={styles.reportOptions}>
+              {reportOptionsList.map((reason, idx) => (
+                <div key={idx} className={styles.radioItem} onClick={() => setSelectedReportReason(reason)}>
+                  <input 
+                    type="radio" 
+                    name="reportReason" 
+                    checked={selectedReportReason === reason}
+                    onChange={() => setSelectedReportReason(reason)}
+                  />
+                  <span className={styles.radioLabel}>{reason}</span>
+                </div>
+              ))}
+            </div>
+
+            {selectedReportReason === 'Alasan lainnya' && (
+              <div className={styles.otherReasonContainer}>
+                <textarea 
+                  className={styles.otherReasonInput}
+                  rows={3}
+                  placeholder="Tulis alasan pelaporan di sini"
+                  value={otherReportReason}
+                  onChange={(e) => setOtherReportReason(e.target.value)}
+                />
+              </div>
+            )}
+
+            <button 
+              className={styles.submitReportBtn}
+              disabled={!selectedReportReason || (selectedReportReason === 'Alasan lainnya' && !otherReportReason.trim())}
+              onClick={handleReportSubmit}
+            >
+              Kirim Laporan
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

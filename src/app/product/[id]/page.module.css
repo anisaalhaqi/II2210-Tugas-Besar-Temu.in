@@ -490,3 +490,132 @@
   font-size: 12px;
   color: #767676;
 }
+
+/* Modal Overlay */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+/* Modal Content */
+.modalContent {
+  background: white;
+  width: 480px;
+  max-width: 90vw;
+  border-radius: 16px;
+  padding: 32px 24px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.modalTitle {
+  font-size: 22px;
+  font-weight: 600;
+  color: #292929;
+  margin: 0;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #A5A5A5;
+  transition: color 0.2s;
+}
+
+.closeBtn:hover {
+  color: #292929;
+}
+
+.reportOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.radioItem {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  cursor: pointer;
+}
+
+.radioItem input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  accent-color: #008585;
+  margin-top: 2px;
+  cursor: pointer;
+}
+
+.radioLabel {
+  font-size: 15px;
+  color: #292929;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.otherReasonContainer {
+  padding-left: 32px;
+  margin-top: -8px;
+}
+
+.otherReasonInput {
+  width: 100%;
+  padding: 16px;
+  background: #FAFAFA;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-size: 14px;
+  color: #434343;
+  outline: none;
+  resize: none;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.otherReasonInput:focus {
+  border-color: #008585;
+}
+
+.submitReportBtn {
+  width: 100%;
+  padding: 14px;
+  background: #008585;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.submitReportBtn:hover {
+  background: #006b6b;
+}
+
+.submitReportBtn:disabled {
+  background: #A5A5A5;
+  cursor: not-allowed;
+}
