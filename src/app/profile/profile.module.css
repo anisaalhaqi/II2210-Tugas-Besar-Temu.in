@@ -155,6 +155,8 @@
   line-height: 1.6;
   color: #434343;
   font-weight: 500;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .insightsCard {

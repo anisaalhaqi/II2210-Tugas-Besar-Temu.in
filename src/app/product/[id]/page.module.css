@@ -234,6 +234,8 @@
   font-size: 15px;
   line-height: 1.6;
   color: #292929;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 /* Delivery Section */

@@ -334,13 +334,13 @@ export default function ProfilePage() {
             </div>
 
             <div className={styles.statsSection}>
-              <div className={styles.statItem}>
+              <Link href={`/reviews/${profile.id}`} className={styles.statItem} style={{ textDecoration: 'none', cursor: 'pointer' }}>
                 <div className={styles.statValue}>
                   <span>{profile.rating_avg?.toFixed(1) || '0.0'}</span>
                   <Star size={16} fill="#008585" color="#008585" />
                 </div>
                 <span className={styles.statLabel}>{profile.rating_count || 0} reviews</span>
-              </div>
+              </Link>
               <div className={styles.divider}></div>
               <div className={styles.statItem}>
                 <div className={styles.statValue}>{getJoinDuration(profile.created_at)}</div>
