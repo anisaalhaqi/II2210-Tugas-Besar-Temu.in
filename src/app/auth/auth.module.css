@@ -6,7 +6,6 @@
   width: 100vw;
   height: 100vh;
   background-color: #f8fcfb;
-  font-family: var(--font-plus-jakarta-sans), sans-serif;
   z-index: 9999;
 }
 

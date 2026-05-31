@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar/Sidebar";
 import ContentWrapper from "@/components/Layout/ContentWrapper";
 import styles from "./layout.module.css";
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-plus-jakarta-sans",
+});
 
 export const metadata: Metadata = {
   title: "Temu.in - Desktop",
@@ -15,8 +21,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body style={{ fontFamily: 'Inter, system-ui, -apple-system, sans-serif' }}>
+    <html lang="en" className={plusJakartaSans.variable}>
+      <body>
         <div className={styles.wrapper}>
           <Sidebar />
           <ContentWrapper>
