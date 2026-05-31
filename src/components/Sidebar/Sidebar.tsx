@@ -17,7 +17,7 @@ import { supabase } from '@/lib/supabase';
 
 const navItems = [
   { name: 'Beranda', href: '/', icon: Home },
-  { name: 'Aktivitas', href: '/aktivitas', icon: Clock },
+  { name: 'Aktivitas', href: '/activity', icon: Clock },
   { name: 'Favorit', href: '/favorites', icon: Heart },
   { name: 'Chat', href: '/chat', icon: MessageCircle },
   { name: 'Notifikasi', href: '/notifications', icon: Bell },

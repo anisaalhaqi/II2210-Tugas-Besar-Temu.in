@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Heart, MessageCircle, Check, Inbox, X, Loader2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import styles from './aktivitas.module.css';
+import styles from './activity.module.css';
 import { supabase } from '@/lib/supabase';
 import Skeleton from '@/components/Skeleton/Skeleton';
 
@@ -29,7 +29,7 @@ interface Activity {
   };
 }
 
-function AktivitasSkeleton() {
+function ActivitySkeleton() {
   return (
     <div className={styles.container}>
       <header className={styles.pageHeader}>
@@ -56,7 +56,7 @@ function AktivitasSkeleton() {
   );
 }
 
-export default function AktivitasPage() {
+export default function ActivityPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState('Menunggu Konfirmasi');
@@ -199,7 +199,7 @@ export default function AktivitasPage() {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price);
   };
 
-  if (loading) return <AktivitasSkeleton />;
+  if (loading) return <ActivitySkeleton />;
 
   return (
     <div className={styles.container}>
@@ -346,8 +346,8 @@ export default function AktivitasPage() {
         ) : (
           <div className={styles.emptyState}>
             <div className={styles.emptyIconBox}><Inbox size={64} strokeWidth={1} color="#A5A5A5" /></div>
-            <h3 className={styles.emptyTitle}>Belum ada aktivitas</h3>
-            <p className={styles.emptySub}>Aktivitas transaksi untuk status <strong>{activeTab}</strong> akan muncul di sini.</p>
+            <h3 className={styles.emptyTitle}>No activity yet</h3>
+            <p className={styles.emptySub}>Transaction activity for status <strong>{activeTab}</strong> will appear here.</p>
           </div>
         )}
       </div>

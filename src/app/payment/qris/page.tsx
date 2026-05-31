@@ -97,7 +97,7 @@ export default function QrisPaymentPage() {
 
   const handleFinishPayment = async () => {
     if (orderIds.length === 0) {
-      router.push('/aktivitas?tab=Diproses');
+      router.push('/activity?tab=Diproses');
       return;
     }
 
@@ -112,7 +112,7 @@ export default function QrisPaymentPage() {
       if (error) throw error;
 
       alert('Pembayaran Berhasil! Pesanan Anda kini sedang diproses.');
-      router.push('/aktivitas?tab=Diproses');
+      router.push('/activity?tab=Diproses');
     } catch (err) {
       console.error('Update status error:', err);
       alert('Gagal memperbarui status pesanan.');

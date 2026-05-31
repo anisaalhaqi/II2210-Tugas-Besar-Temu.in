@@ -191,7 +191,7 @@ export default function OrderPage() {
       }
 
       alert(paymentMethod === 'qris' ? 'Pembayaran Berhasil! Pesanan Anda sedang diteruskan ke penjual.' : 'Pesanan berhasil dibuat! Silakan tunggu konfirmasi dari penjual.');
-      router.push('/aktivitas?tab=Menunggu Konfirmasi');
+      router.push('/activity?tab=Menunggu Konfirmasi');
     } catch (err) {
       console.error('Error placing order:', err);
       alert('Terjadi kesalahan saat membuat pesanan.');

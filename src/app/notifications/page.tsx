@@ -112,11 +112,11 @@ export default function NotificationsPage() {
       if (title.includes('batal')) tab = 'Dibatalkan';
       if (title.includes('konfirmasi') || title.includes('siap cod')) tab = 'Belum Bayar';
       
-      router.push(`/aktivitas?tab=${encodeURIComponent(tab)}`);
+      router.push(`/activity?tab=${encodeURIComponent(tab)}`);
     }
     else if (notif.related_type === 'product' || notif.type === 'offer_received') {
       // Offers usually go to 'Menunggu Konfirmasi' in Activity
-      router.push(`/aktivitas?tab=Menunggu Konfirmasi`);
+      router.push(`/activity?tab=Menunggu Konfirmasi`);
     }
   };
 
