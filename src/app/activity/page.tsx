@@ -307,30 +307,24 @@ export default function ActivityPage() {
             
             return (
               <div key={item.id} className={styles.transactionCard}>
-                <div className={styles.cardHeader}>
-                  <span className={styles.counterparty}>{item.counterparty?.full_name} ({isSeller ? 'Pembeli' : 'Penjual'})</span>
-                  <span className={`${styles.statusText} ${item.status === 'Dibatalkan' ? styles.statusTextRed : ''}`}>{item.status}</span>
-                </div>
-                <div 
-                  className={styles.cardBody} 
-                  onClick={() => {
-                    if (item.db_status === 'confirmed' && item.type === 'Beli') {
-                      router.push(`/payment/qris?amount=${item.final_price.toLocaleString('id-ID')}&orderIds=${item.id}`);
-                    }
-                  }}
-                  style={{ cursor: (item.db_status === 'confirmed' && item.type === 'Beli') ? 'pointer' : 'default' }}
-                >
-                  <img src={item.product?.images?.[0] || 'https://placehold.co/100x110'} alt="" className={styles.productImg} />
-                  <div className={styles.productDetails}>
-                    <h3 className={styles.productTitle}>{item.product?.title}</h3>
-                    <p className={styles.actionType}>{isSeller ? 'Pesanan Masuk' : 'Pesanan Saya'}</p>
-                    <p className={styles.priceInfo}>
-                      {formatPrice(item.final_price)} 
-                      {isNegotiating && <span style={{fontSize: '12px', color: '#767676', fontWeight: '400', textDecoration: 'line-through', marginLeft: '8px'}}>(Asli: {formatPrice(item.original_price)})</span>}
-                    </p>
-                    {item.notes && <p className={styles.priceNote}>"{item.notes}"</p>}
+                <Link href={`/activity/${item.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <div className={styles.cardHeader}>
+                    <span className={styles.counterparty}>{item.counterparty?.full_name} ({isSeller ? 'Pembeli' : 'Penjual'})</span>
+                    <span className={`${styles.statusText} ${item.status === 'Dibatalkan' ? styles.statusTextRed : ''}`}>{item.status}</span>
                   </div>
-                </div>
+                  <div className={styles.cardBody}>
+                    <img src={item.product?.images?.[0] || 'https://placehold.co/100x110'} alt="" className={styles.productImg} />
+                    <div className={styles.productDetails}>
+                      <h3 className={styles.productTitle}>{item.product?.title}</h3>
+                      <p className={styles.actionType}>{isSeller ? 'Pesanan Masuk' : 'Pesanan Saya'}</p>
+                      <p className={styles.priceInfo}>
+                        {formatPrice(item.final_price)} 
+                        {isNegotiating && <span style={{fontSize: '12px', color: '#767676', fontWeight: '400', textDecoration: 'line-through', marginLeft: '8px'}}>(Asli: {formatPrice(item.original_price)})</span>}
+                      </p>
+                      {item.notes && <p className={styles.priceNote}>"{item.notes}"</p>}
+                    </div>
+                  </div>
+                </Link>
 
                 {/* DYNAMIC BUTTON LOGIC */}
                 {item.db_status === 'waiting_confirmation' && (
