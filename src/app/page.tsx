@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import styles from './page.module.css';
 import Link from 'next/link';
 import { 
@@ -13,7 +13,8 @@ import {
   Truck, 
   MoreHorizontal,
   MapPin,
-  ChevronDown
+  ChevronDown,
+  Loader2
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import Skeleton from '@/components/Skeleton/Skeleton';
@@ -25,7 +26,10 @@ interface Product {
   location: string;
   images: string[];
   category_id: string;
+  status: string;
 }
+
+const ITEMS_PER_PAGE = 8;
 
 function HomeSkeleton() {
   return (
@@ -46,10 +50,9 @@ function HomeSkeleton() {
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
             <Skeleton width={180} height={28} />
-            <Skeleton width={80} height={14} />
           </div>
           <div className={styles.productGrid}>
-            {[...Array(4)].map((_, i) => (
+            {[...Array(8)].map((_, i) => (
               <div key={i} className={styles.productCard}>
                 <Skeleton width="100%" height={220} borderRadius={0} />
                 <div className={styles.productInfo}>
@@ -71,8 +74,25 @@ function HomeSkeleton() {
 export default function DesktopHome() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(0);
   const [selectedLocation, setSelectedLocation] = useState('Semua Kampus');
   const [mounted, setMounted] = useState(false);
+
+  const observer = useRef<IntersectionObserver | null>(null);
+  const lastProductElementRef = useCallback((node: any) => {
+    if (loading || loadingMore) return;
+    if (observer.current) observer.current.disconnect();
+    
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        setPage(prevPage => prevPage + 1);
+      }
+    });
+    
+    if (node) observer.current.observe(node);
+  }, [loading, loadingMore, hasMore]);
 
   useEffect(() => {
     setMounted(true);
@@ -81,6 +101,9 @@ export default function DesktopHome() {
   useEffect(() => {
     const handleLocationChange = (e: any) => {
       setSelectedLocation(e.detail);
+      setProducts([]); // Reset products when location changes
+      setPage(0);
+      setHasMore(true);
     };
 
     window.addEventListener('campusLocationChange', handleLocationChange);
@@ -98,31 +121,44 @@ export default function DesktopHome() {
     { name: 'Lainnya', slug: 'lainnya', icon: MoreHorizontal },
   ];
 
-  useEffect(() => {
-    async function fetchHomeData() {
-      try {
-        setLoading(true);
-        let query = supabase
-          .from('products')
-          .select('*')
-          .order('created_at', { ascending: false });
+  const fetchProducts = async (pageNumber: number, isInitial: boolean = false) => {
+    try {
+      if (isInitial) setLoading(true);
+      else setLoadingMore(true);
 
-        if (selectedLocation !== 'Semua Kampus') {
-          query = query.eq('location', selectedLocation);
-        }
+      let query = supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .range(pageNumber * ITEMS_PER_PAGE, (pageNumber + 1) * ITEMS_PER_PAGE - 1);
 
-        const { data, error } = await query;
-
-        if (error) throw error;
-        setProducts(data || []);
-      } catch (err) {
-        console.error('Error:', err);
-      } finally {
-        setLoading(false);
+      if (selectedLocation !== 'Semua Kampus') {
+        query = query.eq('location', selectedLocation);
       }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+      
+      const newProducts = data || [];
+      if (isInitial) {
+        setProducts(newProducts);
+      } else {
+        setProducts(prev => [...prev, ...newProducts]);
+      }
+      
+      setHasMore(newProducts.length === ITEMS_PER_PAGE);
+    } catch (err) {
+      console.error('Error:', err);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
     }
-    fetchHomeData();
-  }, [selectedLocation]);
+  };
+
+  useEffect(() => {
+    fetchProducts(page, page === 0);
+  }, [page, selectedLocation]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -132,7 +168,7 @@ export default function DesktopHome() {
     }).format(price);
   };
 
-  if (loading || !mounted) {
+  if (loading && page === 0 || !mounted) {
     return <HomeSkeleton />;
   }
 
@@ -162,60 +198,68 @@ export default function DesktopHome() {
           </div>
         </section>
 
-        {/* Barang Terbaru / Favorit Mock */}
+        {/* Barang Terbaru - Continuous Grid */}
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Terbaru di Temu.in</h2>
-            <Link href="/search?filter=Terbaru" className={styles.seeAll}>Lihat Semua &rarr;</Link>
+            <h2 className={styles.sectionTitle}>
+              {selectedLocation === 'Semua Kampus' ? 'Terbaru di Temu.in' : `Terbaru di ${selectedLocation}`}
+            </h2>
           </div>
+          
           <div className={styles.productGrid}>
-            {products.slice(0, 4).map((item) => (
-              <Link href={`/product/${item.id}`} key={item.id} className={styles.productCard}>
-                <img src={item.images[0] || 'https://placehold.co/300x200'} alt={item.title} className={styles.productImage} />
-                <div className={styles.productInfo}>
-                  <h3 className={styles.productTitle}>{item.title}</h3>
-                  <p className={styles.productPrice}>{formatPrice(item.price)}</p>
-                  <div className={styles.productFooter}>
-                    <div className={styles.productLocation}>
-                      <img src="/img/icons/location.png" alt="" className={styles.locIcon} />
-                      <span>{item.location}</span>
+            {products.map((item, index) => {
+              const isLastElement = products.length === index + 1;
+              return (
+                <Link 
+                  href={`/product/${item.id}`} 
+                  key={item.id} 
+                  className={styles.productCard}
+                  ref={isLastElement ? lastProductElementRef : null}
+                >
+                  <div style={{ position: 'relative', width: '100%', height: '220px' }}>
+                    <img 
+                      src={item.images[0] || 'https://placehold.co/300x200'} 
+                      alt={item.title} 
+                      className={styles.productImage} 
+                    />
+                    {item.status && item.status !== 'available' && (
+                      <div style={{ position: 'absolute', top: '10px', left: '10px', background: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold' }}>
+                        {item.status.toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  <div className={styles.productInfo}>
+                    <h3 className={styles.productTitle}>{item.title}</h3>
+                    <p className={styles.productPrice}>{formatPrice(item.price)}</p>
+                    <div className={styles.productFooter}>
+                      <div className={styles.productLocation}>
+                        <img src="/img/icons/location.png" alt="" className={styles.locIcon} />
+                        <span>{item.location}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
-        </section>
 
-        {/* Rekomendasi */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Mungkin Kamu Butuh</h2>
-          <div className={styles.productGrid}>
-            {products.slice(4, 8).map((item) => (
-              <Link href={`/product/${item.id}`} key={item.id} className={styles.productCard}>
-                <img 
-                  src={item.images[0] || 'https://placehold.co/300x200'} 
-                  alt={item.title} 
-                  className={styles.productImage} 
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'https://placehold.co/300x200?text=Gambar+Tidak+Tersedia';
-                  }}
-                />
-                <div className={styles.productInfo}>
-                  <h3 className={styles.productTitle}>{item.title}</h3>
-                  <p className={styles.productPrice}>{formatPrice(item.price)}</p>
-                  <div className={styles.productFooter}>
-                    <div className={styles.productLocation}>
-                      <img src="/img/icons/location.png" alt="" className={styles.locIcon} />
-                      <span>{item.location}</span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-          {products.length === 0 && (
-            <p style={{ textAlign: 'center', color: '#767676' }}>Belum ada barang tersedia.</p>
+          {loadingMore && (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
+              <Loader2 className="animate-spin" size={32} color="#008585" />
+            </div>
+          )}
+
+          {!hasMore && products.length > 0 && (
+            <p style={{ textAlign: 'center', color: '#A5A5A5', marginTop: '40px', fontSize: '14px' }}>
+              Kamu telah melihat semua barang.
+            </p>
+          )}
+
+          {products.length === 0 && !loading && (
+            <div style={{ textAlign: 'center', padding: '80px 0' }}>
+              <Inbox size={64} color="#D6D6D6" strokeWidth={1} style={{ marginBottom: '16px' }} />
+              <p style={{ color: '#767676' }}>Belum ada barang tersedia di {selectedLocation}.</p>
+            </div>
           )}
         </section>
       </main>
