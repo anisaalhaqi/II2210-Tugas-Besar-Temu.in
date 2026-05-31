@@ -29,31 +29,34 @@ export default function SearchPage() {
   const router = useRouter();
   const initialQuery = searchParams.get('q') || '';
   const initialCategory = searchParams.get('cat') || '';
+  const initialFilter = searchParams.get('filter') || 'Terkait';
   
   const [query, setQuery] = useState(initialQuery);
   const [selectedCat, setSelectedCategory] = useState(initialCategory);
-  const [isSearching, setIsSearching] = useState(initialQuery.length > 0 || initialCategory.length > 0);
-  const [activeFilter, setActiveFilter] = useState('Terkait');
+  const [isSearching, setIsSearching] = useState(initialQuery.length > 0 || initialCategory.length > 0 || initialFilter !== 'Terkait');
+  const [activeFilter, setActiveFilter] = useState(initialFilter);
   const [results, setResults] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const q = searchParams.get('q') || '';
     const cat = searchParams.get('cat') || '';
+    const f = searchParams.get('filter') || 'Terkait';
     
     setQuery(q);
     setSelectedCategory(cat);
     
-    if (q || cat) {
+    if (q || cat || f !== 'Terkait') {
       setIsSearching(true);
-      fetchResults(q, cat);
+      if (f !== activeFilter) setActiveFilter(f);
+      fetchResults(q, cat, f);
     } else {
       setIsSearching(false);
       setResults([]);
     }
   }, [searchParams, activeFilter]);
 
-  async function fetchResults(q: string, cat: string) {
+  async function fetchResults(q: string, cat: string, f?: string) {
     try {
       setLoading(true);
       let queryBuilder = supabase
@@ -67,16 +70,13 @@ export default function SearchPage() {
         queryBuilder = queryBuilder.ilike('title', `%${q}%`);
       }
 
-      if (cat) {
-        // Filter by category slug
-        queryBuilder = queryBuilder.filter('categories.slug', 'eq', cat);
-      }
+      const currentFilter = f || activeFilter;
 
-      if (activeFilter === 'Terbaru') {
+      if (currentFilter === 'Terbaru') {
         queryBuilder = queryBuilder.order('created_at', { ascending: false });
-      } else if (activeFilter === 'Harga Tertinggi') {
+      } else if (currentFilter === 'Harga Tertinggi') {
         queryBuilder = queryBuilder.order('price', { ascending: false });
-      } else if (activeFilter === 'Harga Terendah') {
+      } else if (currentFilter === 'Harga Terendah') {
         queryBuilder = queryBuilder.order('price', { ascending: true });
       }
 
@@ -84,11 +84,6 @@ export default function SearchPage() {
 
       if (error) throw error;
       
-      // Filter out items where join failed (if filtering by slug client-side was needed)
-      // Actually Supabase filter above on joined column might need a different syntax or specific join type
-      // Let's ensure it works. If 'filter' on joined table is tricky, we can use a more explicit query.
-      
-      // Alternative if join filter is complex:
       let filteredData = data || [];
       if (cat) {
         filteredData = filteredData.filter((item: any) => item.categories?.slug === cat);
@@ -106,14 +101,14 @@ export default function SearchPage() {
     e.preventDefault();
     if (query.trim()) {
       setIsSearching(true);
-      router.push(`/search?q=${encodeURIComponent(query)}`);
+      router.push(`/search?q=${encodeURIComponent(query)}&filter=${encodeURIComponent(activeFilter)}`);
     }
   };
 
   const handleSuggestionClick = (s: string) => {
     setQuery(s);
     setIsSearching(true);
-    router.push(`/search?q=${encodeURIComponent(s)}`);
+    router.push(`/search?q=${encodeURIComponent(s)}&filter=${encodeURIComponent(activeFilter)}`);
   };
 
   const formatPrice = (price: number) => {
@@ -141,6 +136,9 @@ export default function SearchPage() {
     }
     if (query) {
       return `Hasil Pencarian: "${query}"`;
+    }
+    if (activeFilter === 'Terbaru') {
+      return 'Terbaru di Temu.in';
     }
     return 'Cari Barang';
   };

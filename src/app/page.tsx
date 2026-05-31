@@ -166,7 +166,7 @@ export default function DesktopHome() {
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>Terbaru di Temu.in</h2>
-            <Link href="/search" className={styles.seeAll}>Lihat Semua &rarr;</Link>
+            <Link href="/search?filter=Terbaru" className={styles.seeAll}>Lihat Semua &rarr;</Link>
           </div>
           <div className={styles.productGrid}>
             {products.slice(0, 4).map((item) => (
