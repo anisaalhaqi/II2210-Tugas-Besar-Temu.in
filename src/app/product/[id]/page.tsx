@@ -148,6 +148,9 @@ export default function ProductDetail() {
   const [selectedReportReason, setSelectedReportReason] = useState("");
   const [otherReportReason, setOtherReportReason] = useState("");
 
+  // Status Change States
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<string>("available");
 
   useEffect(() => {
     if (!id) return;
@@ -187,7 +190,9 @@ export default function ProductDetail() {
           .single();
 
         if (error) throw error;
-        setProduct(data as unknown as Product);
+        const prodData = data as unknown as Product;
+        setProduct(prodData);
+        setSelectedStatus(prodData.status || "available");
         setActiveImageIndex(0);
 
         if (data.seller_id) {
@@ -312,6 +317,26 @@ export default function ProductDetail() {
     setOtherReportReason("");
   };
 
+  const handleStatusChangeSubmit = async () => {
+    try {
+      if (!product) return;
+      
+      const { error } = await supabase
+        .from('products')
+        .update({ status: selectedStatus })
+        .eq('id', product.id);
+
+      if (error) throw error;
+
+      setProduct({ ...product, status: selectedStatus });
+      setIsStatusModalOpen(false);
+      alert('Status barang berhasil diubah.');
+    } catch (err) {
+      console.error('Error updating status:', err);
+      alert('Gagal mengubah status barang.');
+    }
+  };
+
   if (loading) return <ProductSkeleton />;
   if (!product) return <div className={styles.container} style={{ padding: '100px', textAlign: 'center' }}>Produk tidak ditemukan.</div>;
 
@@ -360,6 +385,11 @@ export default function ProductDetail() {
           <div className={styles.productInfo}>
             <div className={styles.titleRow}>
               <div className={styles.titleSection}>
+                {product.status && product.status !== 'available' && (
+                  <div className={`${styles.statusBadge} ${product.status === 'sold' ? styles.soldBadge : styles.reservedBadge}`}>
+                    {product.status === 'sold' ? 'SOLD' : 'RESERVED'}
+                  </div>
+                )}
                 <h1 className={styles.productTitle}>{product.title}</h1>
                 <p className={styles.productPrice}>{formatPrice(product.price)}</p>
               </div>
@@ -442,7 +472,7 @@ export default function ProductDetail() {
 
             <div className={styles.actionButtonsInline}>
               {userId === product.seller_id ? (
-                <button className={styles.cartBtnInline} style={{ flex: 1 }}>
+                <button className={styles.cartBtnInline} style={{ flex: 1 }} onClick={() => setIsStatusModalOpen(true)}>
                   Ubah Status Barang
                 </button>
               ) : (
@@ -587,6 +617,46 @@ export default function ProductDetail() {
               onClick={handleReportSubmit}
             >
               Kirim Laporan
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Status Change Modal */}
+      {isStatusModalOpen && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>Ubah Status Barang</h2>
+              <button className={styles.closeBtn} onClick={() => setIsStatusModalOpen(false)}>
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className={styles.reportOptions}>
+              {[
+                { label: 'Tersedia (Available)', value: 'available' },
+                { label: 'Dipesan (Reserved)', value: 'reserved' },
+                { label: 'Terjual (Sold)', value: 'sold' }
+              ].map((statusOption) => (
+                <div key={statusOption.value} className={styles.radioItem} onClick={() => setSelectedStatus(statusOption.value)}>
+                  <input 
+                    type="radio" 
+                    name="productStatus" 
+                    checked={selectedStatus === statusOption.value}
+                    onChange={() => setSelectedStatus(statusOption.value)}
+                  />
+                  <span className={styles.radioLabel}>{statusOption.label}</span>
+                </div>
+              ))}
+            </div>
+
+            <button 
+              className={styles.submitReportBtn}
+              onClick={handleStatusChangeSubmit}
+              style={{ marginTop: '16px' }}
+            >
+              Simpan Perubahan
             </button>
           </div>
         </div>

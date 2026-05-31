@@ -1,21 +1,24 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
+import Link from 'next/link';
 import { 
   MapPin, 
   Star, 
   Edit3, 
   Share2, 
-  MoreVertical, 
   Search, 
   ChevronDown, 
   Heart,
   TrendingUp,
   MoreHorizontal,
+  MoreVertical,
   Loader2,
   Inbox,
   X,
-  BadgeCheck
+  BadgeCheck,
+  Check,
+  ListChecks
 } from 'lucide-react';
 import styles from './profile.module.css';
 import { supabase } from '@/lib/supabase';
@@ -61,6 +64,13 @@ export default function ProfilePage() {
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Bulk Edit States
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const [isBulkEditMode, setIsBulkEditMode] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [isBulkStatusModalOpen, setIsBulkStatusModalOpen] = useState(false);
+  const [bulkStatusValue, setBulkStatusValue] = useState<string>('available');
 
   // Filter States
   const [localQuery, setLocalQuery] = useState('');
@@ -194,6 +204,61 @@ export default function ProfilePage() {
     alert('Fitur SSO ITB sedang dikembangkan.');
   };
 
+  const toggleSelection = (itemId: string) => {
+    setSelectedItems(prev => prev.includes(itemId) ? prev.filter(id => id !== itemId) : [...prev, itemId]);
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedItems.length === 0) return;
+    if (!confirm(`Apakah Anda yakin ingin menghapus ${selectedItems.length} barang terpilih? (Peringatan: Pesanan yang terkait juga akan dihapus)`)) return;
+
+    try {
+      setLoading(true);
+
+      // Delete associated orders first to bypass the ON DELETE RESTRICT constraint
+      await supabase.from('orders').delete().in('product_id', selectedItems);
+
+      // Now delete the products
+      const { error } = await supabase.from('products').delete().in('id', selectedItems);
+      
+      if (error) throw error;
+      
+      setInventory(prev => prev.filter(i => !selectedItems.includes(i.id)));
+      setSelectedItems([]);
+      setIsBulkEditMode(false);
+      alert('Barang berhasil dihapus.');
+    } catch (err: any) {
+      console.error('Error deleting products:', err);
+      alert(err.message || 'Gagal menghapus barang.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBulkStatusChange = async () => {
+    if (selectedItems.length === 0) return;
+    
+    try {
+      setLoading(true);
+      const { error } = await supabase
+        .from('products')
+        .update({ status: bulkStatusValue })
+        .in('id', selectedItems);
+
+      if (error) throw error;
+
+      setInventory(prev => prev.map(i => selectedItems.includes(i.id) ? { ...i, status: bulkStatusValue } : i));
+      setSelectedItems([]);
+      setIsBulkStatusModalOpen(false);
+      setIsBulkEditMode(false);
+      alert('Status barang berhasil diubah.');
+    } catch (err) {
+      alert('Gagal mengubah status barang.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredInventory = useMemo(() => {
     return inventory.filter(item => {
       const matchesQuery = item.title.toLowerCase().includes(localQuery.toLowerCase());
@@ -291,9 +356,25 @@ export default function ProfilePage() {
               <button className={styles.iconBtn} aria-label="Share" onClick={handleShareProfile}>
                 <Share2 size={18} />
               </button>
-              <button className={styles.iconBtn} aria-label="More">
-                <MoreVertical size={18} />
-              </button>
+              <div className={styles.moreDropdownWrapper}>
+                <button className={styles.iconBtn} aria-label="More" onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)}>
+                  <MoreVertical size={18} />
+                </button>
+                {isMoreMenuOpen && (
+                  <div className={styles.moreMenuDropdown}>
+                    <div 
+                      className={styles.moreMenuItem} 
+                      onClick={() => { 
+                        setIsBulkEditMode(true); 
+                        setIsMoreMenuOpen(false); 
+                        setSelectedItems([]);
+                      }}
+                    >
+                      Edit Barang Massal
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -377,21 +458,56 @@ export default function ProfilePage() {
 
           <div className={styles.productGrid}>
             {filteredInventory.length > 0 ? (
-              filteredInventory.map((item) => (
-                <div key={item.id} className={styles.productCard}>
-                  <img src={item.images[0] || 'https://placehold.co/300x300'} alt={item.title} className={styles.productImg} />
-                  <div className={styles.productInfo}>
-                    <div className={styles.productTitleRow}>
-                      <h3 className={styles.productTitle}>{item.title}</h3>
-                      <Heart size={20} className={styles.favIcon} />
+              filteredInventory.map((item) => {
+                const isSelected = selectedItems.includes(item.id);
+                
+                const cardContent = (
+                  <>
+                    <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1' }}>
+                      <img src={item.images[0] || 'https://placehold.co/300x300'} alt={item.title} className={styles.productImg} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      {item.status !== 'available' && (
+                        <div style={{ position: 'absolute', top: '10px', left: '10px', background: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold' }}>
+                          {item.status.toUpperCase()}
+                        </div>
+                      )}
                     </div>
-                    <div className={styles.productPriceRow}>
-                      <span className={styles.productPrice}>{formatPrice(item.price)}</span>
-                      <MoreVertical size={18} className={styles.moreBtn} />
+                    <div className={styles.productInfo}>
+                      <div className={styles.productTitleRow}>
+                        <h3 className={styles.productTitle}>{item.title}</h3>
+                        <Heart size={20} className={styles.favIcon} />
+                      </div>
+                      <div className={styles.productPriceRow}>
+                        <span className={styles.productPrice}>{formatPrice(item.price)}</span>
+                        <MoreVertical size={18} className={styles.moreBtn} />
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))
+
+                    {isBulkEditMode && (
+                      <div className={`${styles.checkboxOverlay} ${isSelected ? styles.checkboxOverlayChecked : ''}`}>
+                        {isSelected && <Check size={16} color="white" strokeWidth={3} />}
+                      </div>
+                    )}
+                  </>
+                );
+
+                if (isBulkEditMode) {
+                  return (
+                    <div 
+                      key={item.id} 
+                      className={`${styles.productCardSelectable} ${isSelected ? styles.productCardSelected : ''}`}
+                      onClick={() => toggleSelection(item.id)}
+                    >
+                      {cardContent}
+                    </div>
+                  );
+                }
+
+                return (
+                  <Link href={`/product/${item.id}`} key={item.id} className={styles.productCard}>
+                    {cardContent}
+                  </Link>
+                );
+              })
             ) : (
               <div className={styles.emptyState}>
                 <div className={styles.emptyIconBox}>
@@ -404,6 +520,74 @@ export default function ProfilePage() {
           </div>
         </section>
       </main>
+
+      {/* Bulk Action Bar */}
+      {isBulkEditMode && (
+        <div className={styles.bulkActionBar}>
+          <span className={styles.bulkActionInfo}>{selectedItems.length} barang terpilih</span>
+          <button 
+            className={styles.bulkActionPrimaryBtn} 
+            disabled={selectedItems.length === 0}
+            style={{ opacity: selectedItems.length === 0 ? 0.5 : 1 }}
+            onClick={() => setIsBulkStatusModalOpen(true)}
+          >
+            Ubah Status
+          </button>
+          <button 
+            className={styles.bulkActionDangerBtn}
+            disabled={selectedItems.length === 0}
+            style={{ opacity: selectedItems.length === 0 ? 0.5 : 1 }}
+            onClick={handleBulkDelete}
+          >
+            Hapus
+          </button>
+          <div style={{ width: '1px', height: '24px', background: '#E6E6E6', margin: '0 8px' }}></div>
+          <button 
+            className={styles.bulkActionBtn}
+            onClick={() => { setIsBulkEditMode(false); setSelectedItems([]); }}
+          >
+            Selesai
+          </button>
+        </div>
+      )}
+
+      {/* Bulk Status Modal */}
+      {isBulkStatusModalOpen && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent} style={{ width: '400px' }}>
+            <div className={styles.modalHeader}>
+              <button className={styles.closeBtn} onClick={() => setIsBulkStatusModalOpen(false)}>
+                <X size={24} color="#292929" />
+              </button>
+              <h2 className={styles.modalTitle} style={{ fontSize: '20px' }}>Ubah Status {selectedItems.length} Barang</h2>
+            </div>
+            
+            <div className={styles.modalBody}>
+              <div className={styles.reportOptions}>
+                {[
+                  { label: 'Tersedia (Available)', value: 'available' },
+                  { label: 'Dipesan (Reserved)', value: 'reserved' },
+                  { label: 'Terjual (Sold)', value: 'sold' }
+                ].map((statusOption) => (
+                  <div key={statusOption.value} className={styles.radioItem} onClick={() => setBulkStatusValue(statusOption.value)}>
+                    <input 
+                      type="radio" 
+                      name="bulkStatus" 
+                      checked={bulkStatusValue === statusOption.value}
+                      onChange={() => setBulkStatusValue(statusOption.value)}
+                    />
+                    <span className={styles.radioLabel}>{statusOption.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className={styles.modalFooter}>
+              <button className={styles.saveBtn} onClick={handleBulkStatusChange}>Terapkan Status</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Edit Profile Modal */}
       {isEditModalOpen && (

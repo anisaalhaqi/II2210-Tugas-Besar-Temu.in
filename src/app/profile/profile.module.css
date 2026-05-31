@@ -660,3 +660,171 @@
   font-weight: 600;
   margin-top: 4px;
 }
+
+/* Bulk Edit Specific Styles */
+.moreDropdownWrapper {
+  position: relative;
+}
+
+.moreMenuDropdown {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border: 1px solid #E6E6E6;
+  z-index: 100;
+  min-width: 180px;
+  padding: 8px 0;
+}
+
+.moreMenuItem {
+  padding: 12px 20px;
+  font-size: 14px;
+  color: #292929;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-weight: 500;
+}
+
+.moreMenuItem:hover {
+  background-color: #f9fafb;
+  color: #008585;
+}
+
+.productCardSelectable {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border: 1px solid #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s;
+  cursor: pointer;
+  position: relative;
+}
+
+.productCardSelected {
+  border: 2px solid #008585;
+  background-color: #EEFFFC;
+}
+
+.checkboxOverlay {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 24px;
+  height: 24px;
+  background: white;
+  border: 2px solid #A5A5A5;
+  border-radius: 6px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkboxOverlayChecked {
+  border-color: #008585;
+  background: #008585;
+}
+
+.bulkActionBar {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border-radius: 100px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  padding: 12px 24px;
+  gap: 16px;
+  z-index: 500;
+  border: 1px solid #E6E6E6;
+}
+
+.bulkActionInfo {
+  font-weight: 700;
+  color: #292929;
+  font-size: 15px;
+  margin-right: 8px;
+}
+
+.bulkActionBtn {
+  background: none;
+  border: none;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.bulkActionBtn:hover {
+  background: #f9fafb;
+}
+
+.bulkActionPrimaryBtn {
+  background: #008585;
+  color: white;
+  border: none;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 10px 20px;
+  border-radius: 100px;
+  transition: background 0.2s;
+}
+
+.bulkActionPrimaryBtn:hover {
+  background: #006b6b;
+}
+
+.bulkActionDangerBtn {
+  background: #FFF5F5;
+  color: #FF4B4B;
+  border: 1px solid #FF4B4B;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 9px 20px;
+  border-radius: 100px;
+  transition: background 0.2s;
+}
+
+.bulkActionDangerBtn:hover {
+  background: #ffebeb;
+}
+
+.reportOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.radioItem {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  cursor: pointer;
+}
+
+.radioItem input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  accent-color: #008585;
+  margin-top: 2px;
+  cursor: pointer;
+}
+
+.radioLabel {
+  font-size: 15px;
+  color: #292929;
+  line-height: 1.4;
+  flex: 1;
+}
