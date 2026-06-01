@@ -114,7 +114,7 @@ CREATE TABLE orders (
     meetup_location TEXT,
     meetup_time TIMESTAMPTZ,
     notes TEXT,
-    status TEXT DEFAULT 'waiting_confirmation' CHECK (status IN ('waiting_confirmation', 'confirmed', 'completed', 'cancelled')),
+    status TEXT DEFAULT 'waiting_confirmation' CHECK (status IN ('waiting_confirmation', 'confirmed', 'processing', 'completed', 'cancelled')),
     cancelled_by UUID REFERENCES users(id),
     cancel_reason TEXT,
     created_at TIMESTAMPTZ DEFAULT now(),

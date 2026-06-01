@@ -104,18 +104,28 @@ export default function QrisPaymentPage() {
     try {
       setLoading(true);
       // Update order status to 'processing' (Diproses) as requested
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('orders')
         .update({ status: 'processing' })
-        .in('id', orderIds);
+        .in('id', orderIds)
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('SUPABASE UPDATE ERROR:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+        throw error;
+      }
 
+      console.log('Update success:', data);
       alert('Pembayaran Berhasil! Pesanan Anda kini sedang diproses.');
       router.push('/activity?tab=Diproses');
-    } catch (err) {
-      console.error('Update status error:', err);
-      alert('Gagal memperbarui status pesanan.');
+    } catch (err: any) {
+      console.error('Caught error:', err);
+      alert(`Gagal memperbarui status pesanan: ${err.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
