@@ -29,9 +29,6 @@ export default function Sidebar() {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [mounted, setMounted] = useState(false);
 
-  // Jangan tampilkan sidebar di halaman auth
-  if (pathname === '/auth') return null;
-
   useEffect(() => {
     setMounted(true);
     
@@ -62,6 +59,9 @@ export default function Sidebar() {
       subscription.unsubscribe();
     };
   }, []);
+
+  // Jangan tampilkan sidebar di halaman auth
+  if (pathname === '/auth') return null;
 
   const handleLogout = async (e: React.MouseEvent) => {
     e.preventDefault();
