@@ -1,23 +1,21 @@
 'use client';
 
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import styles from './upload.module.css';
 import { 
   ArrowLeft, 
   Plus, 
   Calendar, 
   MapPin, 
-  BarChart3, 
   ChevronDown,
-  Calculator,
   FlaskConical,
   BookOpen,
   PencilLine,
   Zap,
-  Palette,
-  Package,
-  Layers,
-  ChevronUp,
+  Home,
+  Dumbbell,
+  Truck,
+  MoreHorizontal,
   X,
   ChevronLeft,
   ChevronRight,
@@ -47,7 +45,6 @@ export default function UploadPage() {
   const [price, setPrice] = useState('');
   const [description, setDescription] = useState('');
   const [originality, setOriginality] = useState<'original' | 'non-original'>('original');
-  const [isAiExpanded, setIsAiExpanded] = useState(false);
   
   // Image Upload State
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -448,29 +445,6 @@ export default function UploadPage() {
             </div>
 
             <aside className={styles.rightColumn}>
-              <div className={`${styles.aiAnalysisCard} ${isAiExpanded ? styles.aiExpanded : ''}`}>
-                <div className={styles.aiHeader} onClick={() => setIsAiExpanded(!isAiExpanded)} style={{ cursor: 'pointer' }}>
-                  <div className={styles.aiTitle}>
-                    <BarChart3 size={20} className={styles.aiIcon} color="#2563EB" />
-                    <span>Analisis AI Temu.in</span>
-                  </div>
-                  {isAiExpanded ? <ChevronUp size={24} style={{ opacity: 0.5 }} /> : <ChevronDown size={24} style={{ opacity: 0.5 }} />}
-                </div>
-                <div className={styles.aiContent}>
-                   <p>Berdasarkan foto yang kamu unggah, berikut analisis kami:</p>
-                   <p><span className={styles.aiBold}>Warna</span>: Putih (Cukup cerah)</p>
-                   <p>✅ Bentuk masih simetris dan jahitan terlihat kokoh.</p>
-                   {isAiExpanded && (
-                     <div className={styles.aiFullContent}>
-                        <p>⚠️ Barang mungkin sedikit kusut karena penyimpanan.</p>
-                        <p>📊 <strong>Kualitas Material:</strong> High Grade (Sangat Awet)</p>
-                        <br/>
-                        <span className={styles.aiBold}>Rekomendasi Harga:</span><br/>
-                        • Kondisi Baik: <span className={styles.aiBold}>Rp65k – Rp85k</span>
-                     </div>
-                   )}
-                </div>
-              </div>
               <button 
                 className={`${styles.submitButton} ${isSubmitting ? styles.btnDisabled : ''}`}
                 onClick={handleFormSubmit}

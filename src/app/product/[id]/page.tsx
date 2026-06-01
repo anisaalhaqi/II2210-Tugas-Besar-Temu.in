@@ -14,9 +14,6 @@ import {
   ShoppingBag, 
   MapPin, 
   Star,
-  BarChart3,
-  ChevronDown,
-  ChevronUp,
   Share2,
   Flag,
   ShoppingCart,
@@ -136,7 +133,6 @@ export default function ProductDetail() {
   const [recommended, setRecommended] = useState<Product[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isAiExpanded, setIsAiExpanded] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -421,28 +417,6 @@ export default function ProductDetail() {
                 <span className={styles.specValueBold}>{product.categories?.name || 'Lainnya'}</span>
               </li>
             </ul>
-
-            <div className={`${styles.aiAnalysisCard} ${isAiExpanded ? styles.aiExpanded : ''}`}>
-              <div className={styles.aiHeader} onClick={() => setIsAiExpanded(!isAiExpanded)} style={{ cursor: 'pointer' }}>
-                <div className={styles.aiTitle}>
-                  <BarChart3 size={20} className={styles.aiIcon} color="#2563EB" />
-                  <span>Ringkasan Kondisi Barang</span>
-                </div>
-                {isAiExpanded ? <ChevronUp size={24} style={{ opacity: 0.5 }} /> : <ChevronDown size={24} style={{ opacity: 0.5 }} />}
-              </div>
-              <div className={styles.aiContent}>
-                <div className={styles.aiBrief}>
-                  <p>Berdasarkan analisis visual cerdas kami terhadap foto produk ini:</p>
-                  <p>✅ Bentuk masih simetris dan jahitan terlihat kokoh.</p>
-                </div>
-                {isAiExpanded && (
-                  <div className={styles.aiFullContent}>
-                    <p>⚠️ Barang mungkin memiliki sedikit kusut karena penyimpanan.</p>
-                    <p>📊 <strong>Kualitas Material:</strong> High Grade (Sangat Awet)</p>
-                  </div>
-                )}
-              </div>
-            </div>
 
             <div className={styles.description}>
               <p>{product.description}</p>
