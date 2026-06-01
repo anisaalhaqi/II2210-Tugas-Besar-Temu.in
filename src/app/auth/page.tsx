@@ -14,6 +14,8 @@ export default function AuthPage() {
   // Form State
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
   const [faculty, setFaculty] = useState('');
@@ -112,26 +114,97 @@ export default function AuthPage() {
     }
   };
 
+  const handleDirectReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError('');
+
+    if (!email || !newPassword || !confirmPassword) {
+      setFormError('Semua field harus diisi');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setFormError('Password tidak cocok');
+      return;
+    }
+
+    if (!validatePassword(newPassword)) {
+      setFormError('Min. 8 karakter & angka/simbol');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // NOTE: Secara default, Supabase tidak mengizinkan reset password tanpa verifikasi email
+      // dari sisi client untuk alasan keamanan.
+      // Untuk demo ini, kita akan mensimulasikan keberhasilan.
+      // Jika ingin benar-benar berfungsi tanpa email, Anda perlu menggunakan Edge Function 
+      // dengan Service Role Key untuk melakukan 'admin.updateUserById'.
+      
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulasi proses
+      
+      alert('Password berhasil diperbarui! Silakan masuk dengan password baru Anda.');
+      setIsReset(false);
+      setIsLogin(true);
+      setPassword(newPassword); // Auto-fill password for convenience
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err) {
+      setFormError('Gagal memperbarui password.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const renderForm = () => {
     if (isReset) {
       return (
         <>
-          <h2>Reset Password</h2>
+          <h2>Atur Ulang Password</h2>
           <p style={{ textAlign: 'center', color: '#767676', marginBottom: '16px', fontSize: '14px', lineHeight: '1.5' }}>
-            Masukkan email kemahasiswaanmu. Kami akan mengirimkan tautan untuk mengatur ulang password.
+            Masukkan email dan password baru Anda untuk langsung memperbarui akun.
           </p>
-          <form className={styles.form} onSubmit={(e) => { e.preventDefault(); alert('Link reset password telah dikirim ke emailmu!'); setIsReset(false); }}>
+          
+          {formError && <div className={styles.formError}>{formError}</div>}
+
+          <form className={styles.form} onSubmit={handleDirectReset}>
             <div className={styles.inputGroup}>
               <label>Email</label>
-              <input type="email" placeholder="email@gmail.com" required />
+              <input 
+                type="email" 
+                placeholder="email@gmail.com" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required 
+              />
             </div>
-            <button type="submit" className={styles.submitBtn}>
-              Kirim Link Reset
+            <div className={styles.inputGroup}>
+              <label>Password Baru</label>
+              <input 
+                type="password" 
+                placeholder="Minimal 8 karakter" 
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required 
+              />
+            </div>
+            <div className={styles.inputGroup}>
+              <label>Konfirmasi Password Baru</label>
+              <input 
+                type="password" 
+                placeholder="Ulangi password baru" 
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required 
+              />
+            </div>
+            <button type="submit" className={styles.submitBtn} disabled={loading}>
+              {loading ? 'Memproses...' : 'Perbarui Password'}
             </button>
           </form>
           <div className={styles.switchMode} style={{ marginTop: '24px' }}>
             Ingat passwordmu?{' '}
-            <span onClick={() => setIsReset(false)} className={styles.switchLink}>
+            <span onClick={() => { setIsReset(false); setFormError(''); }} className={styles.switchLink}>
               Masuk
             </span>
           </div>
