@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import styles from './page.module.css';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   BookOpen, 
   Zap, 
@@ -14,7 +15,8 @@ import {
   MoreHorizontal,
   MapPin,
   ChevronDown,
-  Loader2
+  Loader2,
+  Inbox
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import Skeleton from '@/components/Skeleton/Skeleton';
@@ -72,6 +74,7 @@ function HomeSkeleton() {
 }
 
 export default function DesktopHome() {
+  const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -79,6 +82,20 @@ export default function DesktopHome() {
   const [page, setPage] = useState(0);
   const [selectedLocation, setSelectedLocation] = useState('Semua Kampus');
   const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // Check authentication
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push('/auth');
+      } else {
+        setMounted(true);
+      }
+    };
+    
+    checkAuth();
+  }, [router]);
 
   const observer = useRef<IntersectionObserver | null>(null);
   const lastProductElementRef = useCallback((node: any) => {
@@ -95,10 +112,8 @@ export default function DesktopHome() {
   }, [loading, loadingMore, hasMore]);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    if (!mounted) return;
 
-  useEffect(() => {
     const handleLocationChange = (e: any) => {
       setSelectedLocation(e.detail);
       setProducts([]); // Reset products when location changes
@@ -108,7 +123,7 @@ export default function DesktopHome() {
 
     window.addEventListener('campusLocationChange', handleLocationChange);
     return () => window.removeEventListener('campusLocationChange', handleLocationChange);
-  }, []);
+  }, [mounted]);
 
   const categories = [
     { name: 'Buku & Modul', slug: 'buku-modul', icon: BookOpen },
@@ -122,6 +137,8 @@ export default function DesktopHome() {
   ];
 
   const fetchProducts = async (pageNumber: number, isInitial: boolean = false) => {
+    if (!mounted) return;
+
     try {
       if (isInitial) setLoading(true);
       else setLoadingMore(true);
@@ -157,8 +174,10 @@ export default function DesktopHome() {
   };
 
   useEffect(() => {
-    fetchProducts(page, page === 0);
-  }, [page, selectedLocation]);
+    if (mounted) {
+      fetchProducts(page, page === 0);
+    }
+  }, [page, selectedLocation, mounted]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('id-ID', {
