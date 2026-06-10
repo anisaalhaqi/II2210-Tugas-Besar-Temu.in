@@ -122,7 +122,18 @@ export default function OrderPage() {
             const { data: newConv } = await supabase.from('conversations').insert([{ product_id: item.product.id, buyer_id: user.id, seller_id: item.product.users.id }]).select().single();
             convId = newConv.id;
           }
-          const { data: newOrder } = await supabase.from('orders').insert([{ conversation_id: convId, product_id: item.product.id, buyer_id: user.id, seller_id: item.product.users.id, final_price: item.product.price, deal_method: deliveryOption === 'ketemuan' ? 'meet-up' : 'jasa ojol', meetup_location: deliveryOption === 'ketemuan' ? selectedLocation : null, notes: note, status: 'confirmed' }]).select().single();
+          const { data: newOrder } = await supabase.from('orders').insert([{ 
+            conversation_id: convId, 
+            product_id: item.product.id, 
+            buyer_id: user.id, 
+            seller_id: item.product.users.id, 
+            final_price: item.product.price, 
+            deal_method: deliveryOption === 'ketemuan' ? 'meet-up' : 'jasa ojol', 
+            meetup_location: deliveryOption === 'ketemuan' ? selectedLocation : null, 
+            notes: note, 
+            status: 'confirmed',
+            payment_method: 'qris'
+          }]).select().single();
           if (newOrder) orderIds.push(newOrder.id);
           await supabase.from('cart_items').delete().eq('id', item.id);
         }
@@ -171,7 +182,8 @@ export default function OrderPage() {
             deal_method: deliveryOption === 'ketemuan' ? 'meet-up' : 'jasa ojol',
             meetup_location: deliveryOption === 'ketemuan' ? selectedLocation : null,
             notes: note,
-            status: 'waiting_confirmation' // Both QRIS (paid) and COD start here for seller confirmation
+            status: 'waiting_confirmation', // Both QRIS (paid) and COD start here for seller confirmation
+            payment_method: 'cash'
           }]);
 
         if (orderError) throw orderError;

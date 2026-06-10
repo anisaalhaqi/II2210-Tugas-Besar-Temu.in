@@ -13,6 +13,7 @@ interface Activity {
   type: 'Jual' | 'Beli';
   status: string;
   db_status: string;
+  payment_method: string;
   final_price: number;
   original_price: number;
   notes: string;
@@ -108,7 +109,7 @@ export default function ActivityPage() {
       const { data, error } = await supabase
         .from('orders')
         .select(`
-          id, status, final_price, notes, created_at, buyer_id, seller_id, product_id,
+          id, status, payment_method, final_price, notes, created_at, buyer_id, seller_id, product_id,
           product:product_id (title, images, price),
           buyer:buyer_id (id, full_name, avatar_url),
           seller:seller_id (id, full_name, avatar_url)
@@ -125,6 +126,7 @@ export default function ActivityPage() {
           type: isSeller ? 'Jual' : 'Beli',
           db_status: order.status,
           status: statusMap[order.status] || order.status,
+          payment_method: order.payment_method,
           final_price: order.final_price,
           original_price: order.product?.price || 0,
           notes: order.notes,
@@ -204,6 +206,35 @@ export default function ActivityPage() {
       }
       setUserId(user.id);
       fetchActivities(user.id);
+
+      // Real-time listener for orders
+      const channel = supabase
+        .channel('order-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'orders',
+            filter: `buyer_id=eq.${user.id}`
+          },
+          () => fetchActivities(user.id)
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'orders',
+            filter: `seller_id=eq.${user.id}`
+          },
+          () => fetchActivities(user.id)
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
     init();
   }, []);
@@ -334,7 +365,7 @@ export default function ActivityPage() {
                       isNegotiating ? (
                         sellerTurn ? (
                           <div className={styles.actionGrid3}>
-                            <button className={`${styles.btnAction} ${styles.btnTerima} ${styles.btnTerimaGrid}`} onClick={() => handleAction(item, 'confirmed', 'Diterima')}>Terima</button>
+                            <button className={`${styles.btnAction} ${styles.btnTerima} ${styles.btnTerimaGrid}`} onClick={() => handleAction(item, item.payment_method === 'cash' ? 'processing' : 'confirmed', 'Diterima')}>Terima</button>
                             <button className={`${styles.btnAction} ${styles.btnTawar} ${styles.btnTawarGrid}`} onClick={() => {
                               const newPrice = prompt('Masukkan harga tawar balik Anda:', item.final_price.toString());
                               if (newPrice) handleAction(item, 'waiting_confirmation', 'Tawar Balik', parseInt(newPrice));
@@ -345,14 +376,14 @@ export default function ActivityPage() {
                           <div style={{ padding: '8px 0', color: '#767676', fontSize: '14px', fontStyle: 'italic' }}>Menunggu jawaban pembeli atas tawaran balik Anda...</div>
                         )
                       ) : (
-                        <button className={`${styles.btnAction} ${styles.btnTerima}`} onClick={() => handleAction(item, 'confirmed', 'Konfirmasi & Kemas')}>Konfirmasi & Kemas</button>
+                        <button className={`${styles.btnAction} ${styles.btnTerima}`} onClick={() => handleAction(item, item.payment_method === 'cash' ? 'processing' : 'confirmed', 'Konfirmasi & Kemas')}>Konfirmasi & Kemas</button>
                       )
                     ) : (
                       // BUYER SIDE
                       isNegotiating ? (
                         buyerTurn ? (
                           <div className={styles.actionGrid3}>
-                            <button className={`${styles.btnAction} ${styles.btnTerima} ${styles.btnTerimaGrid}`} onClick={() => handleAction(item, 'confirmed', 'Diterima')}>Terima</button>
+                            <button className={`${styles.btnAction} ${styles.btnTerima} ${styles.btnTerimaGrid}`} onClick={() => handleAction(item, item.payment_method === 'cash' ? 'processing' : 'confirmed', 'Diterima')}>Terima</button>
                             <button className={`${styles.btnAction} ${styles.btnTawar} ${styles.btnTawarGrid}`} onClick={() => {
                               const newPrice = prompt('Masukkan harga tawar balik baru:', item.final_price.toString());
                               if (newPrice) handleAction(item, 'waiting_confirmation', 'Tawar Balik', parseInt(newPrice));
