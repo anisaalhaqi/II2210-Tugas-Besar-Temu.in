@@ -55,7 +55,8 @@ interface Product {
   location: string;
   description: string;
   category_id: string;
-  condition: string;
+  status: string;
+  deal_method: string[];
   brand: string | null;
   images: string[];
   created_at: string;
@@ -64,7 +65,8 @@ interface Product {
   categories?: {
     name: string;
   };
-}
+  }
+
 
 interface Review {
   id: string;
@@ -333,6 +335,134 @@ export default function ProductDetail() {
     }
   };
 
+  const handleChat = async () => {
+    if (!userId) {
+      router.push('/auth');
+      return;
+    }
+    if (!product) return;
+
+    try {
+      setLoading(true);
+      // 1. Cek apakah percakapan sudah ada
+      const { data: existingConv, error: fetchError } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('product_id', id)
+        .eq('buyer_id', userId)
+        .maybeSingle();
+
+      if (fetchError) throw fetchError;
+
+      if (existingConv) {
+        router.push(`/chat/${existingConv.id}`);
+      } else {
+        // 2. Buat percakapan baru
+        const { data: newConv, error: createError } = await supabase
+          .from('conversations')
+          .insert([{
+            product_id: id,
+            buyer_id: userId,
+            seller_id: product.seller_id
+          }])
+          .select()
+          .single();
+
+        if (createError) throw createError;
+        router.push(`/chat/${newConv.id}`);
+      }
+    } catch (err) {
+      console.error('Chat error:', err);
+      alert('Gagal memulai percakapan.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNegotiate = async () => {
+    if (!userId) {
+      router.push('/auth');
+      return;
+    }
+    if (!product) return;
+
+    const offerPriceStr = prompt(`Harga asli: ${formatPrice(product.price)}\nMasukkan harga tawaranmu:`, product.price.toString());
+    
+    if (!offerPriceStr) return;
+
+    const offerPrice = parseInt(offerPriceStr.replace(/[^0-9]/g, ''));
+    if (isNaN(offerPrice) || offerPrice <= 0) {
+      alert('Harga tawaran tidak valid.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      // 1. Create or get conversation
+      let convId;
+      const { data: existingConv } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('product_id', id)
+        .eq('buyer_id', userId)
+        .maybeSingle();
+
+      if (existingConv) {
+        convId = existingConv.id;
+      } else {
+        const { data: newConv, error: createError } = await supabase
+          .from('conversations')
+          .insert([{
+            product_id: id,
+            buyer_id: userId,
+            seller_id: product.seller_id
+          }])
+          .select()
+          .single();
+        if (createError) throw createError;
+        convId = newConv.id;
+      }
+
+      // 2. Send offer message
+      const { error: msgError } = await supabase
+        .from('messages')
+        .insert([{
+          conversation_id: convId,
+          sender_id: userId,
+          content: `Saya ingin menawar barang ini seharga ${formatPrice(offerPrice)}`,
+          message_type: 'offer',
+          offer_price: offerPrice,
+          offer_status: 'pending'
+        }]);
+
+      if (msgError) throw msgError;
+
+      // 3. Buat entri di tabel orders (Halaman Aktivitas)
+      const { error: orderError } = await supabase
+        .from('orders')
+        .insert([{
+          conversation_id: convId,
+          product_id: id,
+          buyer_id: userId,
+          seller_id: product.seller_id,
+          final_price: offerPrice,
+          deal_method: product.deal_method?.[0] || 'Ketemuan',
+          status: 'waiting_confirmation',
+          notes: 'Tawar balik dari Pembeli'
+        }]);
+
+      if (orderError) throw orderError;
+
+      alert('Tawaran berhasil dikirim! Silakan cek status di halaman Aktivitas.');
+      router.push('/activity?tab=Menunggu Konfirmasi');
+    } catch (err) {
+      console.error('Negotiate error:', err);
+      alert('Gagal mengirim tawaran.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading) return <ProductSkeleton />;
   if (!product) return <div className={styles.container} style={{ padding: '100px', textAlign: 'center' }}>Produk tidak ditemukan.</div>;
 
@@ -451,10 +581,10 @@ export default function ProductDetail() {
                 </button>
               ) : (
                 <>
-                  <button className={styles.chatIconBtnInline} aria-label="Chat">
+                  <button className={styles.chatIconBtnInline} aria-label="Chat" onClick={handleChat}>
                     <MessageCircle size={24} />
                   </button>
-                  <button className={styles.tawarBtnInline}>Tawar Harga</button>
+                  <button className={styles.tawarBtnInline} onClick={handleNegotiate}>Tawar Harga</button>
                   <button className={styles.cartBtnInline} onClick={handleAddToCart}>
                     <Plus size={20} />
                     Keranjang

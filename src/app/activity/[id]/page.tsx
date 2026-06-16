@@ -24,6 +24,7 @@ import Skeleton from '@/components/Skeleton/Skeleton';
 interface Order {
   id: string;
   status: string;
+  payment_method: string;
   final_price: number;
   deal_method: string;
   meetup_location: string | null;
@@ -76,19 +77,42 @@ export default function ActivityDetailPage() {
         }
         setUserId(user.id);
 
-        const { data, error } = await supabase
-          .from('orders')
-          .select(`
-            *,
-            product:product_id (title, images, price),
-            buyer:buyer_id (id, full_name, avatar_url),
-            seller:seller_id (id, full_name, avatar_url)
-          `)
-          .eq('id', orderId)
-          .single();
+        const fetchOrder = async () => {
+          const { data, error } = await supabase
+            .from('orders')
+            .select(`
+              *,
+              product:product_id (title, images, price),
+              buyer:buyer_id (id, full_name, avatar_url),
+              seller:seller_id (id, full_name, avatar_url)
+            `)
+            .eq('id', orderId)
+            .single();
 
-        if (error) throw error;
-        setOrder(data as any);
+          if (error) throw error;
+          setOrder(data as any);
+        };
+
+        await fetchOrder();
+
+        // Real-time listener for this specific order
+        const channel = supabase
+          .channel(`order-detail-${orderId}`)
+          .on(
+            'postgres_changes',
+            {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'orders',
+              filter: `id=eq.${orderId}`
+            },
+            () => fetchOrder()
+          )
+          .subscribe();
+
+        return () => {
+          supabase.removeChannel(channel);
+        };
       } catch (err) {
         console.error('Error fetching order detail:', err);
       } finally {
@@ -313,7 +337,7 @@ export default function ActivityDetailPage() {
                 isNegotiating ? (
                   sellerTurn ? (
                     <>
-                      <button className={styles.primaryBtn} onClick={() => handleAction('confirmed', 'Diterima')}>Terima</button>
+                      <button className={styles.primaryBtn} onClick={() => handleAction(order.payment_method === 'cash' ? 'processing' : 'confirmed', 'Diterima')}>Terima</button>
                       <button className={styles.secondaryBtn} onClick={() => {
                         const newPrice = prompt('Masukkan harga tawar balik Anda:', order.final_price.toString());
                         if (newPrice) handleAction('waiting_confirmation', 'Tawar Balik', parseInt(newPrice));
@@ -324,14 +348,14 @@ export default function ActivityDetailPage() {
                     <p style={{ color: '#767676', fontStyle: 'italic', fontSize: '14px' }}>Menunggu jawaban pembeli...</p>
                   )
                 ) : (
-                  <button className={styles.primaryBtn} onClick={() => handleAction('confirmed', 'Konfirmasi & Kemas')}>Konfirmasi & Kemas</button>
+                  <button className={styles.primaryBtn} onClick={() => handleAction(order.payment_method === 'cash' ? 'processing' : 'confirmed', 'Konfirmasi & Kemas')}>Konfirmasi & Kemas</button>
                 )
               ) : (
                 // BUYER logic
                 isNegotiating ? (
                   buyerTurn ? (
                     <>
-                      <button className={styles.primaryBtn} onClick={() => handleAction('confirmed', 'Diterima')}>Terima</button>
+                      <button className={styles.primaryBtn} onClick={() => handleAction(order.payment_method === 'cash' ? 'processing' : 'confirmed', 'Diterima')}>Terima</button>
                       <button className={styles.secondaryBtn} onClick={() => {
                         const newPrice = prompt('Masukkan harga tawar balik baru:', order.final_price.toString());
                         if (newPrice) handleAction('waiting_confirmation', 'Tawar Balik', parseInt(newPrice));
