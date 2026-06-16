@@ -275,6 +275,7 @@ export default function UploadPage() {
       // 2. Insert into Database
       const usage_period = `${usageStartMonth} ${usageStartYear} - ${usageEndMonth} ${usageEndYear}`;
       const numericPrice = parseInt(price.replace(/[^0-9]/g, '')) || 0;
+      const defaultCategoryId = (await supabase.from('categories').select('id').eq('name', 'Lainnya').single()).data?.id ?? '';
 
       const { error } = await supabase
         .from('products')
@@ -284,7 +285,7 @@ export default function UploadPage() {
           price: numericPrice,
           location: codLocation,
           description: description,
-          category_id: (await supabase.from('categories').select('id').eq('name', 'Lainnya').single()).data?.id, // Temporary fallback
+          category_id: defaultCategoryId,
           condition: 'baru', // Temporary fallback
           images: uploadedImageUrls.length > 0 ? uploadedImageUrls : ['https://placehold.co/600x600']
         }]);
