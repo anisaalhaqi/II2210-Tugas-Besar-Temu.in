@@ -20,7 +20,8 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertCircle,
-  Loader2
+  Loader2,
+  Sparkles
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
@@ -51,8 +52,46 @@ export default function UploadPage() {
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [showPhotoWarning, setShowPhotoPhotoWarning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
 
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+
+  const handleGenerateAIDescription = async () => {
+    if (!title) {
+      alert('Tolong masukkan nama barang dulu ya!');
+      return;
+    }
+
+    try {
+      setIsGeneratingAI(true);
+      const usage_period = `${usageStartMonth} ${usageStartYear} - ${usageEndMonth} ${usageEndYear}`;
+      
+      const response = await fetch('/api/generate-description', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title,
+          category: selectedCategory,
+          usagePeriod: usage_period,
+          originality,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.description) {
+        setDescription(data.description);
+      } else {
+        throw new Error(data.error || 'Gagal membuat deskripsi');
+      }
+    } catch (err) {
+      console.error('AI Error:', err);
+      alert('Gagal membuat deskripsi otomatis. Pastikan API Key sudah dimasukkan di .env.local dan restart server jika perlu.');
+    } finally {
+      setIsGeneratingAI(false);
+    }
+  };
   
   const [usageStartMonth, setUsageStartMonth] = useState('Januari');
   const [usageStartYear, setUsageStartYear] = useState('2024');
@@ -389,7 +428,22 @@ export default function UploadPage() {
               </div>
 
               <div className={styles.formGroup}>
-                <label className={styles.label}>Deskripsi</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <label className={styles.label}>Deskripsi</label>
+                  <button 
+                    type="button"
+                    onClick={handleGenerateAIDescription}
+                    disabled={isGeneratingAI || !title}
+                    className={styles.aiButton}
+                  >
+                    {isGeneratingAI ? (
+                      <Loader2 className="animate-spin" size={14} />
+                    ) : (
+                      <Sparkles size={14} />
+                    )}
+                    <span>Bikin Deskripsi (AI)</span>
+                  </button>
+                </div>
                 <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Ceritakan kondisi barangmu lebih detail..." className={`${styles.input} ${styles.textarea}`}></textarea>
               </div>
 
